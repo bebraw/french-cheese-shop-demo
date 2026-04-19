@@ -78,8 +78,8 @@ The TypeScript setup is generic too. `tsconfig.json` covers repo-level `.ts` fil
 The deployed app expects a Vectorize index binding, a Workers AI binding, and basic-auth credentials.
 
 - In `wrangler.jsonc`, the Worker binds:
-  - `AI` for embeddings through Workers AI
-  - `SUPERVISOR_SEARCH_INDEX` for the Vectorize index
+  - `AI` for embeddings through Workers AI, with `remote: true` for local `wrangler dev`
+  - `SUPERVISOR_SEARCH_INDEX` for the Vectorize index, with `remote: true` for local `wrangler dev`
   - `SUPERVISOR_SEARCH_EMBEDDING_MODEL` as a configurable default model id
 - In `.dev.vars`, set:
   - `SUPERVISOR_SEARCH_BASIC_AUTH_USERNAME`
@@ -89,6 +89,8 @@ The deployed app expects a Vectorize index binding, a Workers AI binding, and ba
 - Optional runtime throttling controls:
   - `SUPERVISOR_SEARCH_RATE_LIMIT_MAX_REQUESTS` sets the maximum `/api/search` requests allowed per client within the active window
   - `SUPERVISOR_SEARCH_RATE_LIMIT_WINDOW_MS` sets the throttling window duration in milliseconds
+
+During local development, the Worker code still runs on your machine, but Workers AI and Vectorize must connect to Cloudflare remotely. If `remote: true` is missing from either binding, local search requests fail with errors such as `Binding AI needs to be run remotely`.
 
 For a live Vectorize-backed environment, create an index that matches the embedding model dimensions. With the default `@cf/google/embeddinggemma-300m` model, the expected shape is 768 dimensions with cosine similarity. One example command is:
 
