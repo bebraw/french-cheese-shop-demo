@@ -1,0 +1,13 @@
+node_modules/
+.cache/
+.generated/
+.npm/
+.pnpm-store/
+.wrangler/
+.dev.vars
+.env.agent-ci
+.env
+.env.local
+playwright-report/
+reports/
+test-results/

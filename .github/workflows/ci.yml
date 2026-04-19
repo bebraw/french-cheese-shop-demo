@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality-fast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore npm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: Validate repository shape
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f README.md
+          test -f AGENTS.md
+          test -f .asdlc/SKILL.md
+          test -f package.json
+          test -f package-lock.json
+          test -f .dev.vars.example
+          git diff --check
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+
+      - name: Align npm to repo pin
+        shell: bash
+        run: |
+          npm install -g npm@"$(node -p "require('./package.json').engines.npm")"
+          echo "PINNED_NPM_CLI=$(npm root -g)/npm/bin/npm-cli.js" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        shell: bash
+        run: node "$PINNED_NPM_CLI" ci
+
+      - name: Run fast quality gate
+        shell: bash
+        run: node "$PINNED_NPM_CLI" run quality:gate:fast
+
+  quality-browser:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore npm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+
+      - name: Align npm to repo pin
+        shell: bash
+        run: |
+          npm install -g npm@"$(node -p "require('./package.json').engines.npm")"
+          echo "PINNED_NPM_CLI=$(npm root -g)/npm/bin/npm-cli.js" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        shell: bash
+        run: node "$PINNED_NPM_CLI" ci
+
+      - name: Run browser quality gate
+        shell: bash
+        run: node "$PINNED_NPM_CLI" run quality:gate:browser
