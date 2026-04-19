@@ -1,28 +1,40 @@
 import { createHealthResponse } from "./api/health";
-import { exampleRoutes } from "./app-routes";
+import { createSearchResponse } from "./api/search";
+import { appRoutes } from "./app-routes";
+import { ensureAuthorizedRequest } from "./supervisors/auth";
+import type { SupervisorSearchEnv } from "./supervisors/types";
 import { renderHomePage } from "./views/home";
 import { renderNotFoundPage } from "./views/not-found";
 import { cssResponse, htmlResponse } from "./views/shared";
 
 export default {
-  async fetch(request: Request): Promise<Response> {
-    return await handleRequest(request);
+  async fetch(request: Request, env: SupervisorSearchEnv): Promise<Response> {
+    return await handleRequest(request, env);
   },
 };
 
-export async function handleRequest(request: Request): Promise<Response> {
+export async function handleRequest(request: Request, env: SupervisorSearchEnv): Promise<Response> {
   const url = new URL(request.url);
 
   if (url.pathname === "/styles.css") {
     return cssResponse(await loadStylesheet());
   }
 
-  if (url.pathname === "/") {
-    return htmlResponse(renderHomePage(exampleRoutes));
+  if (url.pathname === "/api/health") {
+    return createHealthResponse(appRoutes.map((route) => route.path));
   }
 
-  if (url.pathname === "/api/health") {
-    return createHealthResponse(exampleRoutes.map((route) => route.path));
+  const authorizationFailure = ensureAuthorizedRequest(request, env);
+  if (authorizationFailure) {
+    return authorizationFailure;
+  }
+
+  if (url.pathname === "/") {
+    return htmlResponse(renderHomePage());
+  }
+
+  if (url.pathname === "/api/search") {
+    return await createSearchResponse(request, env);
   }
 
   return htmlResponse(renderNotFoundPage(url.pathname), 404);

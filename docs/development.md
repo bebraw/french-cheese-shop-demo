@@ -53,7 +53,7 @@ If local CI warns with `No such remote 'origin'`, add `GITHUB_REPO=owner/repo` t
 - Check formatting with `npm run format:check`.
 - If a run pauses on failure, fix the issue and resume with `npm run ci:local:retry -- --name <runner-name>`.
 
-The template now ships with a minimal Worker stub in `src/worker.ts`. `npm run dev` starts it on `http://127.0.0.1:8787`, and Playwright uses `npm run e2e:server` on `http://127.0.0.1:8788` so browser tests can run without extra setup. The e2e server forces Chokidar polling mode to avoid file-watcher exhaustion in macOS-hosted local runs while preserving the normal `npm run dev` developer loop. API modules live under `src/api/`, view modules live under `src/views/`, and tests are colocated under `src/`.
+The Worker now serves the supervisor-search app from `src/worker.ts`. `npm run dev` starts it on `http://127.0.0.1:8787`, and Playwright uses `npm run e2e:server` on `http://127.0.0.1:8788` with test-only credentials and sample supervisor data so browser tests stay deterministic and local. API modules live under `src/api/`, supervisor-domain logic lives under `src/supervisors/`, view modules live under `src/views/`, and tests are colocated under `src/`.
 
 The GitHub Actions CI workflow splits fast checks from browser checks into separate jobs, reads the pinned Node version from `package.json`, upgrades npm to the repo-pinned version from `package.json`, runs repository-shape validation as part of the fast job, runs the browser job in the version-pinned Playwright container image `mcr.microsoft.com/playwright:v1.59.1-noble`, and cancels superseded runs on the same ref. That keeps the browser job from reinstalling Chromium on every run while still matching the repo's pinned Playwright version.
 
@@ -67,7 +67,50 @@ The coverage gate is stricter than the basic test run. `npm run test:coverage` m
 
 The TypeScript setup is generic too. `tsconfig.json` covers repo-level `.ts` files and `src/**/*.ts`, and `npm run typecheck` runs `tsc --noEmit`.
 
-The README includes a committed application screenshot at `docs/screenshots/home.png`. Refresh that asset manually when the starter UI changes materially, but keep screenshot tooling and screenshot automation out of the template baseline.
+## Supervisor Search Setup
+
+The deployed app expects a Vectorize index binding, a Workers AI binding, and basic-auth credentials.
+
+- In `wrangler.jsonc`, the Worker binds:
+  - `AI` for embeddings through Workers AI
+  - `SUPERVISOR_SEARCH_INDEX` for the Vectorize index
+  - `SUPERVISOR_SEARCH_EMBEDDING_MODEL` as a configurable default model id
+- In `.dev.vars`, set:
+  - `SUPERVISOR_SEARCH_BASIC_AUTH_USERNAME`
+  - `SUPERVISOR_SEARCH_BASIC_AUTH_PASSWORD`
+- Optional local-only switch:
+  - `SUPERVISOR_SEARCH_USE_SAMPLE_DATA=true` uses built-in sample supervisors instead of live Vectorize search
+
+For a live Vectorize-backed environment, create an index that matches the embedding model dimensions. With the default `@cf/google/embeddinggemma-300m` model, the expected shape is 768 dimensions with cosine similarity. One example command is:
+
+```bash
+npx wrangler vectorize create supervisor-search --dimensions=768 --metric=cosine
+```
+
+### Local Import Workflow
+
+The confidential HTML source must stay outside the repository. The local import command reads a snapshot from disk, parses supervisors, generates embeddings through Workers AI, and performs a full-snapshot Vectorize sync.
+
+Required environment variables for the import command:
+
+- `CLOUDFLARE_ACCOUNT_ID`
+- `CLOUDFLARE_API_TOKEN`
+- `SUPERVISOR_SEARCH_INDEX_NAME`
+- Optional: `SUPERVISOR_SEARCH_EMBEDDING_MODEL`
+
+Run the import with:
+
+```bash
+npm run import:supervisors -- --input /absolute/path/to/confidential-supervisors.html
+```
+
+Use `--dry-run` to validate parsing and sync counts without mutating Vectorize:
+
+```bash
+npm run import:supervisors -- --input /absolute/path/to/confidential-supervisors.html --dry-run
+```
+
+The API token used for imports needs Workers AI write access and Vectorize read/write access.
 
 ## Security Baseline
 

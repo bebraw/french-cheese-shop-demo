@@ -1,8 +1,6 @@
-# vibe-template
+# supervisor-search
 
-`vibe-template` currently ships as a Cloudflare Worker application served with Wrangler, implemented in JavaScript/TypeScript, and centered on server-rendered HTML with a small JSON API stub.
-
-This is a template for my vibecoding projects and it captures what I consider my best practices so I don't have to repeat them for each experiment.
+`supervisor-search` is a Cloudflare Worker application for helping MSc students find a suitable thesis supervisor. A confidential HTML snapshot is parsed locally, embedded, and synced into Vectorize. The deployed app stays lightweight: it serves a basic-auth-protected search UI and a realtime search API that reranks Vectorize candidates in Worker code.
 
 The repo vendors ASDLC reference material in `.asdlc/` as local guidance instead of recreating it per project. Repo-specific truth lives in `ARCHITECTURE.md`, `specs/`, and `docs/adrs/`: generated code still needs to match those documents, and passing CI alone is not enough.
 
@@ -21,10 +19,11 @@ Local development in this repo targets macOS. Other platforms may need script an
 - Install dependencies with `npm install`.
 - The exact project Node.js version is pinned in `package.json` and mirrored in `.nvmrc` for `nvm` users, and CI reads the `package.json` value directly.
 - npm is also pinned exactly in `package.json`; local development is expected to use `nvm use`, and CI upgrades npm to the exact repo pin when the bundled npm version differs.
-- Copy `.dev.vars.example` to `.dev.vars` before running projects that need local secrets.
+- Copy `.dev.vars.example` to `.dev.vars` before running the Worker locally.
 - Use repo-pinned CLI tools through `npx`, including `npx wrangler` for Cloudflare-based experiments.
-- Start the stub Worker with `npm run dev`, then open `http://127.0.0.1:8787`.
+- Start the Worker with `npm run dev`, then open `http://127.0.0.1:8787`.
 - Rebuild the generated Tailwind stylesheet manually with `npm run build:css` when needed.
+- Import a confidential supervisor snapshot with `npm run import:supervisors -- --input /absolute/path/to/snapshot.html`.
 
 ## Verification
 
@@ -37,19 +36,17 @@ Local development in this repo targets macOS. Other platforms may need script an
 - Run unit tests from colocated `src/**/*.test.ts` files with `npm test`.
 - Run browser tests from colocated `src/**/*.e2e.ts` files with `npm run e2e`.
 
-## Starter App
+## App Surface
 
-- `GET /` serves a minimal HTML Worker stub.
+- `GET /` serves the basic-auth-protected supervisor search page.
 - `GET /styles.css` serves the generated Tailwind stylesheet.
+- `GET /api/search?q=...` serves realtime supervisor search results as JSON.
 - `GET /api/health` serves a JSON health response for smoke tests and tooling.
 
 ## Source Layout
 
 - `src/worker.ts` is the Worker entry point and top-level router.
-- `src/api/` holds API response modules such as the health endpoint.
-- `src/views/` holds HTML rendering modules for the starter UI.
+- `src/api/` holds API response modules such as the search and health endpoints.
+- `src/supervisors/` holds parsing, ranking, auth, and import logic for the supervisor domain.
+- `src/views/` holds HTML rendering modules for the search UI.
 - Tests live next to the code they exercise under `src/`.
-
-## Application Screenshot
-
-![Starter app screenshot](docs/screenshots/home.png)

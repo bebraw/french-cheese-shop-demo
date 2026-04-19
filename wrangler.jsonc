@@ -1,8 +1,11 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "vibe-template-worker",
+  "name": "supervisor-search-worker",
   "main": "src/worker.ts",
   "compatibility_date": "2026-03-28",
+  "ai": {
+    "binding": "AI",
+  },
   "build": {
     "command": "npm run build:css",
     "watch_dir": "src",
@@ -12,6 +15,15 @@
       "type": "Text",
       "globs": ["**/*.css"],
       "fallthrough": true,
+    },
+  ],
+  "vars": {
+    "SUPERVISOR_SEARCH_EMBEDDING_MODEL": "@cf/google/embeddinggemma-300m",
+  },
+  "vectorize": [
+    {
+      "binding": "SUPERVISOR_SEARCH_INDEX",
+      "index_name": "supervisor-search",
     },
   ],
 }

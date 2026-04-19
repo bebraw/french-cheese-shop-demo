@@ -9,6 +9,10 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:8788",
     browserName: "chromium",
     headless: true,
+    httpCredentials: {
+      username: "test-user",
+      password: "test-pass",
+    },
     trace: "retain-on-failure",
   },
   webServer: {

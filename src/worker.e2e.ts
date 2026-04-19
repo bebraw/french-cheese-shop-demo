@@ -1,10 +1,25 @@
 import { expect, test } from "@playwright/test";
 
-test("renders the worker home page", async ({ page }) => {
+test("challenges invalid browser credentials", async ({ browser }) => {
+  const guestContext = await browser.newContext({
+    httpCredentials: {
+      username: "wrong",
+      password: "creds",
+    },
+  });
+  const guestPage = await guestContext.newPage();
+
+  const response = await guestPage.goto("http://127.0.0.1:8788/");
+
+  expect(response?.status()).toBe(401);
+  await guestContext.close();
+});
+
+test("renders the supervisor search home page", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { level: 1, name: "vibe-template Worker" })).toBeVisible();
-  await expect(page.getByText("A minimal Cloudflare Worker baseline for experiments, tests, and local CI.")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Find an MSc Supervisor" })).toBeVisible();
+  await expect(page.getByText("Search supervisors by topic fit and current thesis load.")).toBeVisible();
   await expect(page.getByRole("link", { name: "/api/health" })).toBeVisible();
 });
 
@@ -14,9 +29,18 @@ test("serves the health endpoint", async ({ request }) => {
   expect(response.ok()).toBe(true);
   await expect(response.json()).resolves.toEqual({
     ok: true,
-    name: "vibe-template-worker",
-    routes: ["/", "/api/health"],
+    name: "supervisor-search-worker",
+    routes: ["/", "/api/search", "/api/health"],
   });
+});
+
+test("returns live search results", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByLabel("Topic Search").fill("distributed systems");
+
+  await expect(page.getByText("Showing 4 supervisors ranked for")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 3, name: "Tuomas Koski" })).toBeVisible();
 });
 
 test("serves the generated stylesheet", async ({ request }) => {
@@ -24,5 +48,5 @@ test("serves the generated stylesheet", async ({ request }) => {
 
   expect(response.ok()).toBe(true);
   expect(response.headers()["content-type"]).toContain("text/css");
-  await expect(response.text()).resolves.toContain("--color-app-canvas:#f5efe6");
+  await expect(response.text()).resolves.toContain("--color-app-canvas:#f3eadf");
 });
