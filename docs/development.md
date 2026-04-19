@@ -94,6 +94,8 @@ During local development, the Worker code still runs on your machine, but Worker
 
 Do not start the app with `wrangler dev --local` when you want live search. Cloudflare's local-development docs note that `--local` disables remote bindings, which breaks both the Workers AI and Vectorize paths. Use the normal `npm run dev` script for live Cloudflare-backed search, or enable `SUPERVISOR_SEARCH_USE_SAMPLE_DATA=true` if you want a fully local sample-data session instead.
 
+Local remote-binding development also depends on Cloudflare preview infrastructure. `wrangler.jsonc` enables `preview_urls: true`, but your Cloudflare account still needs a configured `workers.dev` subdomain and Preview URLs enabled for this Worker. If `npm run dev` fails on `/workers/subdomain/edge-preview`, enable those settings in Workers & Pages, run `npm run deploy` once, and then retry local development.
+
 For a live Vectorize-backed environment, create an index that matches the embedding model dimensions. With the default `@cf/google/embeddinggemma-300m` model, the expected shape is 768 dimensions with cosine similarity. One example command is:
 
 ```bash
