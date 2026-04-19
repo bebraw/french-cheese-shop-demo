@@ -1,8 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { resetRateLimitState } from "./rate-limit";
 import worker, { handleRequest } from "./worker";
 import { ensureGeneratedStylesheet } from "./test-support";
 
 ensureGeneratedStylesheet();
+
+beforeEach(() => {
+  resetRateLimitState();
+});
 
 const testEnv = {
   SUPERVISOR_SEARCH_BASIC_AUTH_USERNAME: "student",
@@ -69,6 +74,36 @@ describe("worker", () => {
     expect(payload.ok).toBe(true);
     expect(payload.results[0]).toMatchObject({
       name: "Tuomas Koski",
+    });
+  });
+
+  it("throttles repeated search requests from the same client", async () => {
+    const throttledEnv = {
+      ...testEnv,
+      SUPERVISOR_SEARCH_RATE_LIMIT_MAX_REQUESTS: "1",
+      SUPERVISOR_SEARCH_RATE_LIMIT_WINDOW_MS: "60000",
+    };
+    const headers = {
+      authorization: createAuthorizationHeader(),
+      "cf-connecting-ip": "203.0.113.10",
+    };
+
+    const firstResponse = await handleRequest(
+      new Request("http://example.com/api/search?q=distributed%20systems", { headers }),
+      throttledEnv,
+    );
+    expect(firstResponse.status).toBe(200);
+
+    const secondResponse = await handleRequest(
+      new Request("http://example.com/api/search?q=distributed%20systems", { headers }),
+      throttledEnv,
+    );
+
+    expect(secondResponse.status).toBe(429);
+    expect(secondResponse.headers.get("retry-after")).toBeTruthy();
+    await expect(secondResponse.json()).resolves.toMatchObject({
+      ok: false,
+      error: "Too many search requests. Try again soon.",
     });
   });
 

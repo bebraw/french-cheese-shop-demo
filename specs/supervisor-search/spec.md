@@ -28,6 +28,7 @@ Supervisor Search helps MSc students discover relevant thesis supervisors withou
 - [ ] `GET /` supports both light and dark color schemes without changing the minimal search-first layout.
 - [ ] `GET /api/search?q=...` returns ordered supervisor search results from either Vectorize or explicit local sample mode.
 - [ ] `GET /api/search?q=...` expands common CS aliases such as `HCI`, `LLM`, and `ML` so abbreviated queries still match the underlying topic terms.
+- [ ] `GET /api/search?q=...` applies per-client throttling and returns `429` with retry guidance when a client exceeds the configured local rate limit.
 - [ ] The import command performs full-snapshot parsing and Vectorize sync from a confidential local HTML file.
 - [ ] Spec and ADR updates land in the same change set as the implementation.
 - [ ] Automated tests cover parsing, auth, ranking, import diffing, browser search flows, and committed sanitized import fixtures.
@@ -39,6 +40,7 @@ Supervisor Search helps MSc students discover relevant thesis supervisors withou
 - Sample data mode is a local fallback for development and tests only; it must not replace the live Vectorize path in configured environments.
 - The import command must stop before mutating Vectorize when the parsed snapshot drops suspiciously below the current index size or when the delete set is abnormally large, unless the operator explicitly overrides that safety check.
 - HTML responses must ship with restrictive browser security headers, and client-side search code must load from a same-origin script asset so the CSP can keep `script-src 'self'`.
+- Search throttling must stay enabled in configured environments, with per-client limits tunable through environment variables instead of hard-coded route edits.
 - Any committed HTML import fixture must remain sanitized, anonymized, and free of authenticated page state or direct staff contact details.
 
 ### Verification
@@ -53,6 +55,12 @@ Supervisor Search helps MSc students discover relevant thesis supervisors withou
 - Given: the Worker has valid basic-auth credentials and Vectorize-backed supervisor metadata
 - When: the student searches for a topic such as `distributed systems`
 - Then: `/api/search` returns the best matching supervisors ordered by the hybrid score, and the UI updates without a full reload
+
+**Scenario: Search throttling protects the API**
+
+- Given: a client has already consumed the configured number of `/api/search` requests within the active throttle window
+- When: that same client issues another search request before the window resets
+- Then: the Worker responds with `429` and retry guidance instead of executing another search
 
 **Scenario: Student searches with a common CS abbreviation**
 

@@ -1,6 +1,7 @@
 import { createHealthResponse } from "./api/health";
 import { createSearchResponse } from "./api/search";
 import { appRoutes } from "./app-routes";
+import { enforceSearchRateLimit } from "./rate-limit";
 import { ensureAuthorizedRequest } from "./supervisors/auth";
 import type { SupervisorSearchEnv } from "./supervisors/types";
 import { renderHomePage } from "./views/home";
@@ -39,6 +40,11 @@ export async function handleRequest(request: Request, env: SupervisorSearchEnv):
   }
 
   if (url.pathname === "/api/search") {
+    const rateLimitFailure = enforceSearchRateLimit(request, env);
+    if (rateLimitFailure) {
+      return rateLimitFailure;
+    }
+
     return await createSearchResponse(request, env);
   }
 

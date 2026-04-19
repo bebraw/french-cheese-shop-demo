@@ -86,6 +86,9 @@ The deployed app expects a Vectorize index binding, a Workers AI binding, and ba
   - `SUPERVISOR_SEARCH_BASIC_AUTH_PASSWORD`
 - Optional local-only switch:
   - `SUPERVISOR_SEARCH_USE_SAMPLE_DATA=true` uses built-in sample supervisors instead of live Vectorize search
+- Optional runtime throttling controls:
+  - `SUPERVISOR_SEARCH_RATE_LIMIT_MAX_REQUESTS` sets the maximum `/api/search` requests allowed per client within the active window
+  - `SUPERVISOR_SEARCH_RATE_LIMIT_WINDOW_MS` sets the throttling window duration in milliseconds
 
 For a live Vectorize-backed environment, create an index that matches the embedding model dimensions. With the default `@cf/google/embeddinggemma-300m` model, the expected shape is 768 dimensions with cosine similarity. One example command is:
 
