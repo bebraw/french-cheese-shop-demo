@@ -10,36 +10,15 @@ Local development in this repo targets macOS. Other platforms may need script an
 
 ## Documentation
 
-- Development setup and local CI: `docs/development.md`
+- Development setup, local runtime, imports, and verification: `docs/development.md`
 - Architecture decisions: `docs/adrs/README.md`
 - Feature and architecture specs: `specs/README.md`
 - Agent behavior and project rules: `AGENTS.md`
 
-## Runtime
+## Development
 
-- Run `nvm use` before `npm install` or any other development command so your shell picks up the repo-pinned Node.js version from `.nvmrc` and stays close to the expected npm baseline.
-- Install dependencies with `npm install`.
-- The exact project Node.js version is pinned in `package.json` and mirrored in `.nvmrc` for `nvm` users, and CI reads the `package.json` value directly.
-- npm is also pinned exactly in `package.json`; local development is expected to use `nvm use`, and CI upgrades npm to the exact repo pin when the bundled npm version differs.
-- Copy `.dev.vars.example` to `.dev.vars` before running the Worker locally.
-- Use repo-pinned CLI tools through `npx`, including `npx wrangler` for Cloudflare-based experiments.
-- Start the Worker with `npm run dev`, then open `http://127.0.0.1:8787`.
-- Rebuild the generated Tailwind stylesheet manually with `npm run build:css` when needed.
-- Before running the importer, set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and `SUPERVISOR_SEARCH_INDEX_NAME` in your shell or `.envrc`.
-- Import a confidential supervisor snapshot with `npm run import:supervisors -- --input /absolute/path/to/snapshot.html`.
-- The importer aborts by default when the parsed supervisor count drops sharply relative to the current index or when the delete set is unusually large. Use `--minimum-supervisor-count`, `--max-delete-ratio`, or `--allow-large-delete` only after confirming the parser output.
-- Dry-run the importer against the sanitized fixture with `npm run import:supervisors -- --input ./src/supervisors/fixtures/sanitized-supervisor-snapshot.html --dry-run` after setting the same Cloudflare import variables.
-
-## Verification
-
-- Run the fast local gate with `npm run quality:gate:fast` during normal iteration.
-- Run the baseline repo gate with `npm run quality:gate`.
-- Run the containerized local workflow with `npm run ci:local:quiet`.
-- If local Agent CI warns about `No such remote 'origin'`, set `GITHUB_REPO=owner/repo` in `.env.agent-ci`.
-- Retry a paused local CI run with `npm run ci:local:retry -- --name <runner-name>`.
-- Install the pinned Playwright browser with `npm run playwright:install`.
-- Run unit tests from colocated `src/**/*.test.ts` files with `npm test`.
-- Run browser tests from colocated `src/**/*.e2e.ts` files with `npm run e2e`.
+- Start with [docs/development.md](/Users/juhovepsalainen/Projects/aalto/supervisor-search/docs/development.md) for local setup, runtime commands, import workflow, and verification.
+- The most common commands are `npm run dev`, `npm run import:supervisors -- --input /absolute/path/to/snapshot.html`, `npm run quality:gate`, and `npm run ci:local:quiet`.
 
 ## App Surface
 

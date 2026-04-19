@@ -9,7 +9,7 @@ The template vendors the ASDLC knowledge base in `.asdlc/`.
 - Start with `.asdlc/SKILL.md` for ASDLC concepts, patterns, and practices.
 - Use `AGENTS.md` as the Codex-native context anchor for this repo.
 
-## Local CI
+## Local Setup
 
 This template is set up for the local Agent CI runner from `agent-ci.dev`.
 
@@ -29,20 +29,28 @@ This template is set up for the local Agent CI runner from `agent-ci.dev`.
 
 The repo pins CLI tooling in `devDependencies`, including Wrangler for Cloudflare-based experiments. Prefer invoking those tools through `npx` or repo scripts so the project version is used instead of a global install.
 
+## Local Runtime
+
+- Start the local Worker with `npm run dev`.
+- Open `http://127.0.0.1:8787` in your browser.
+- Rebuild the generated stylesheet manually with `npm run build:css` when needed.
+
+The Worker now serves the supervisor-search app from `src/worker.ts`. `npm run dev` starts it on `http://127.0.0.1:8787`, and Playwright uses `npm run e2e:server` on `http://127.0.0.1:8788` with test-only credentials and sample supervisor data so browser tests stay deterministic and local. API modules live under `src/api/`, supervisor-domain logic lives under `src/supervisors/`, view modules live under `src/views/`, and tests are colocated under `src/`.
+
+## Commands
+
+### Local CI and Verification
+
 If local CI fails with `No such image: ghcr.io/actions/actions-runner:latest`, pull that image manually and re-run the workflow.
 
 If local CI warns with `No such remote 'origin'`, add `GITHUB_REPO=owner/repo` to `.env.agent-ci` and rerun the workflow.
 
-### Commands
-
 - Run the local workflow with `npm run ci:local`.
 - Run the quiet local workflow with `npm run ci:local:quiet`.
 - Run all relevant workflows with `npm run ci:local:all`.
-- Rebuild the generated stylesheet manually with `npm run build:css`.
 - Run the fast local gate with `npm run quality:gate:fast`.
 - Run the baseline quality gate with `npm run quality:gate`.
 - Run the shipped runtime dependency audit with `npm run security:audit`.
-- Start the local Worker with `npm run dev`.
 - Install the Playwright browser with `npm run playwright:install`.
 - Run end-to-end tests with `npm run e2e`.
 - Run unit and integration tests with `npm test`.
@@ -52,8 +60,6 @@ If local CI warns with `No such remote 'origin'`, add `GITHUB_REPO=owner/repo` t
 - Format the repo with `npm run format`.
 - Check formatting with `npm run format:check`.
 - If a run pauses on failure, fix the issue and resume with `npm run ci:local:retry -- --name <runner-name>`.
-
-The Worker now serves the supervisor-search app from `src/worker.ts`. `npm run dev` starts it on `http://127.0.0.1:8787`, and Playwright uses `npm run e2e:server` on `http://127.0.0.1:8788` with test-only credentials and sample supervisor data so browser tests stay deterministic and local. API modules live under `src/api/`, supervisor-domain logic lives under `src/supervisors/`, view modules live under `src/views/`, and tests are colocated under `src/`.
 
 The GitHub Actions CI workflow splits fast checks from browser checks into separate jobs, reads the pinned Node version from `package.json`, upgrades npm to the repo-pinned version from `package.json`, runs repository-shape validation as part of the fast job, runs the browser job in the version-pinned Playwright container image `mcr.microsoft.com/playwright:v1.59.1-noble`, and cancels superseded runs on the same ref. That keeps the browser job from reinstalling Chromium on every run while still matching the repo's pinned Playwright version.
 
@@ -67,7 +73,7 @@ The coverage gate is stricter than the basic test run. `npm run test:coverage` m
 
 The TypeScript setup is generic too. `tsconfig.json` covers repo-level `.ts` files and `src/**/*.ts`, and `npm run typecheck` runs `tsc --noEmit`.
 
-## Supervisor Search Setup
+### Supervisor Search
 
 The deployed app expects a Vectorize index binding, a Workers AI binding, and basic-auth credentials.
 
@@ -87,7 +93,7 @@ For a live Vectorize-backed environment, create an index that matches the embedd
 npx wrangler vectorize create supervisor-search --dimensions=768 --metric=cosine
 ```
 
-### Local Import Workflow
+### Import Workflow
 
 The confidential HTML source must stay outside the repository. The local import command reads a snapshot from disk, parses supervisors, generates embeddings through Workers AI, and performs a full-snapshot Vectorize sync.
 
