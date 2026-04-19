@@ -32,7 +32,7 @@ describe("createSearchResponse", () => {
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toMatchObject({
       ok: false,
-      error: "Supervisor search bindings are not configured.",
+      error: "Supervisor search is currently unavailable.",
     });
   });
 });

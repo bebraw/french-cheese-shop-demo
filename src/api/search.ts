@@ -1,6 +1,8 @@
 import { MINIMUM_QUERY_LENGTH, type SupervisorSearchEnv } from "../supervisors/types";
 import { searchSupervisors } from "../supervisors/service";
 
+const genericSearchErrorMessage = "Supervisor search is currently unavailable.";
+
 export async function createSearchResponse(request: Request, env: SupervisorSearchEnv): Promise<Response> {
   const query = new URL(request.url).searchParams.get("q")?.trim() ?? "";
 
@@ -19,12 +21,12 @@ export async function createSearchResponse(request: Request, env: SupervisorSear
     const response = await searchSupervisors(query, env);
     return Response.json(response);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Supervisor search is currently unavailable.";
+    console.error("Supervisor search failed.", error);
 
     return Response.json(
       {
         ok: false,
-        error: message,
+        error: genericSearchErrorMessage,
       },
       { status: 503 },
     );
