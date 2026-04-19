@@ -52,6 +52,33 @@ test("restores the shared query from the browser URL", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 3, name: "Tuomas Koski" })).toBeVisible();
 });
 
+test("keeps the search bar visible while scrolling through results", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 320 });
+  await page.goto("/?q=distributed%20systems");
+
+  const searchbox = page.getByRole("searchbox", { name: "Search supervisors" });
+
+  await expect(searchbox).toHaveValue("distributed systems");
+  await expect(page.locator("#search-status")).toHaveText("4 results");
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeGreaterThan(0);
+
+  const initialTop = await searchbox.evaluate((element) => element.getBoundingClientRect().top);
+
+  await page.evaluate(() => {
+    window.scrollTo(0, document.documentElement.scrollHeight);
+  });
+
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await expect(page.locator("#search-results li").last()).toBeInViewport();
+  await expect(searchbox).toBeInViewport();
+
+  const scrolledTop = await searchbox.evaluate((element) => element.getBoundingClientRect().top);
+
+  expect(scrolledTop).toBeGreaterThanOrEqual(0);
+  expect(scrolledTop).toBeLessThan(48);
+  expect(scrolledTop).toBeLessThan(initialTop);
+});
+
 test("serves the generated stylesheet", async ({ request }) => {
   const response = await request.get("/styles.css");
 

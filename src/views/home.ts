@@ -22,12 +22,14 @@ export function renderHomePage(): string {
           </div>
         </header>
         <section class="max-w-3xl">
-          <label class="block" for="supervisor-query">
-            <span class="sr-only">Search supervisors</span>
-            <input id="supervisor-query" name="q" type="search" autocomplete="off" spellcheck="false" placeholder="Type a topic, method, or research area" class="w-full rounded-2xl bg-app-accent/6 px-5 py-4 text-xl text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-app-accent/8 focus:ring-2 focus:ring-app-accent/35">
-          </label>
-          <div id="search-status" class="mt-3 text-sm leading-6 text-app-text-soft"></div>
-          <ol id="search-results" class="mt-8 grid gap-6" aria-live="polite"></ol>
+          <div class="sticky top-0 z-10 -mx-3 rounded-[1.75rem] bg-app-canvas/95 px-3 py-3 supports-[backdrop-filter]:bg-app-canvas/80 backdrop-blur-sm">
+            <label class="block" for="supervisor-query">
+              <span class="sr-only">Search supervisors</span>
+              <input id="supervisor-query" name="q" type="search" autocomplete="off" spellcheck="false" placeholder="Type a topic, method, or research area" class="w-full rounded-2xl bg-app-accent/6 px-5 py-4 text-xl text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-app-accent/8 focus:ring-2 focus:ring-app-accent/35">
+            </label>
+            <div id="search-status" class="mt-3 text-sm leading-6 text-app-text-soft"></div>
+          </div>
+          <ol id="search-results" class="mt-8 grid gap-6 pb-12" aria-live="polite"></ol>
         </section>
       </div>
     </main>

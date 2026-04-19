@@ -27,6 +27,7 @@ Supervisor Search helps MSc students discover relevant thesis supervisors withou
 - [ ] `GET /` renders a basic-auth-protected supervisor search page with realtime result updates.
 - [ ] `GET /` keeps the search surface minimal, with a search field and inline typing hint instead of long explanatory help text.
 - [ ] `GET /` supports both light and dark color schemes without changing the minimal search-first layout.
+- [ ] `GET /` keeps the search input and inline status visible with a sticky header treatment while result cards scroll below.
 - [ ] `GET /` reflects the current search query in the browser URL so shared or refreshed pages restore the same query.
 - [ ] `GET /api/search?q=...` returns ordered supervisor search results from either Vectorize or explicit local sample mode.
 - [ ] `GET /api/search?q=...` expands common CS aliases such as `HCI`, `LLM`, `ML`, and `A11Y` so abbreviated queries still match the underlying topic terms.
