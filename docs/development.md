@@ -106,6 +106,11 @@ Run the import with:
 npm run import:supervisors -- --input /absolute/path/to/confidential-supervisors.html
 ```
 
+The importer applies safety checks before mutating Vectorize:
+
+- It rejects parsed snapshots that drop too far below the current index size unless you explicitly lower `--minimum-supervisor-count`.
+- It rejects unusually large delete sets unless you explicitly raise `--max-delete-ratio` or pass `--allow-large-delete`.
+
 Use `--dry-run` to validate parsing and sync counts without mutating Vectorize:
 
 ```bash

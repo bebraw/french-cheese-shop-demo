@@ -27,6 +27,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 - Rebuild the generated Tailwind stylesheet manually with `npm run build:css` when needed.
 - Before running the importer, set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and `SUPERVISOR_SEARCH_INDEX_NAME` in your shell or `.envrc`.
 - Import a confidential supervisor snapshot with `npm run import:supervisors -- --input /absolute/path/to/snapshot.html`.
+- The importer aborts by default when the parsed supervisor count drops sharply relative to the current index or when the delete set is unusually large. Use `--minimum-supervisor-count`, `--max-delete-ratio`, or `--allow-large-delete` only after confirming the parser output.
 - Dry-run the importer against the sanitized fixture with `npm run import:supervisors -- --input ./src/supervisors/fixtures/sanitized-supervisor-snapshot.html --dry-run` after setting the same Cloudflare import variables.
 
 ## Verification

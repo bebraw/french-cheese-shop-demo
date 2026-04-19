@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { parseSupervisorSnapshot, planSupervisorImport } from "./import.ts";
+import { parseSupervisorSnapshot, planSupervisorImport, validateSupervisorImport } from "./import.ts";
 import { buildSupervisorRecord } from "./parser.ts";
 
 describe("planSupervisorImport", () => {
@@ -91,5 +91,101 @@ describe("parseSupervisorSnapshot", () => {
       activeThesisCount: 0,
       topicArea: "Coding and information theory, mathematical foundations of ICT",
     });
+  });
+});
+
+describe("validateSupervisorImport", () => {
+  it("rejects suspiciously small snapshots relative to the existing index", () => {
+    const importedAt = "2026-04-19T12:00:00.000Z";
+    const aino = buildSupervisorRecord({
+      name: "Aino Saarinen",
+      topicArea: "Machine learning systems",
+      activeThesisCount: 2,
+      rawSource: "aino",
+      importedAt,
+    });
+
+    expect(() =>
+      validateSupervisorImport([aino], ["one", "two", "three", "four", "five"], [], {}),
+    ).toThrow("below the safety floor");
+  });
+
+  it("rejects large delete sets unless explicitly allowed", () => {
+    const importedAt = "2026-04-19T12:00:00.000Z";
+    const supervisors = [
+      buildSupervisorRecord({
+        name: "Aino Saarinen",
+        topicArea: "Machine learning systems",
+        activeThesisCount: 2,
+        rawSource: "aino",
+        importedAt,
+      }),
+      buildSupervisorRecord({
+        name: "Tuomas Koski",
+        topicArea: "Distributed systems",
+        activeThesisCount: 3,
+        rawSource: "tuomas",
+        importedAt,
+      }),
+      buildSupervisorRecord({
+        name: "Leena Heikkila",
+        topicArea: "Accessibility and HCI",
+        activeThesisCount: 4,
+        rawSource: "leena",
+        importedAt,
+      }),
+      buildSupervisorRecord({
+        name: "Mikael Lahti",
+        topicArea: "Cybersecurity",
+        activeThesisCount: 1,
+        rawSource: "mikael",
+        importedAt,
+      }),
+    ];
+
+    expect(() =>
+      validateSupervisorImport(supervisors, ["1", "2", "3", "4", "5"], ["2", "3"], {}),
+    ).toThrow("above the safety threshold");
+  });
+
+  it("allows explicit overrides for confirmed large changes", () => {
+    const importedAt = "2026-04-19T12:00:00.000Z";
+    const supervisors = [
+      buildSupervisorRecord({
+        name: "Aino Saarinen",
+        topicArea: "Machine learning systems",
+        activeThesisCount: 2,
+        rawSource: "aino",
+        importedAt,
+      }),
+      buildSupervisorRecord({
+        name: "Tuomas Koski",
+        topicArea: "Distributed systems",
+        activeThesisCount: 3,
+        rawSource: "tuomas",
+        importedAt,
+      }),
+      buildSupervisorRecord({
+        name: "Leena Heikkila",
+        topicArea: "Accessibility and HCI",
+        activeThesisCount: 4,
+        rawSource: "leena",
+        importedAt,
+      }),
+      buildSupervisorRecord({
+        name: "Mikael Lahti",
+        topicArea: "Cybersecurity",
+        activeThesisCount: 1,
+        rawSource: "mikael",
+        importedAt,
+      }),
+    ];
+
+    expect(() =>
+      validateSupervisorImport(supervisors, ["1", "2", "3", "4", "5"], ["2", "3"], {
+        allowLargeDelete: true,
+        minimumSupervisorCount: 4,
+      }),
+    ).not.toThrow();
   });
 });

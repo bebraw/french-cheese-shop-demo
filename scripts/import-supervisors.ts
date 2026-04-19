@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
-import { parseSupervisorSnapshot, planSupervisorImport } from "../src/supervisors/import.ts";
+import { parseSupervisorSnapshot, planSupervisorImport, validateSupervisorImport } from "../src/supervisors/import.ts";
 import { DEFAULT_EMBEDDING_MODEL } from "../src/supervisors/types.ts";
 
 interface CloudflareEnvelope<T> {
@@ -29,6 +29,9 @@ async function main(): Promise<void> {
       "api-token": { type: "string" },
       "index-name": { type: "string" },
       model: { type: "string" },
+      "minimum-supervisor-count": { type: "string" },
+      "max-delete-ratio": { type: "string" },
+      "allow-large-delete": { type: "boolean" },
       "dry-run": { type: "boolean" },
     },
     allowPositionals: false,
@@ -39,6 +42,9 @@ async function main(): Promise<void> {
   const apiToken = values["api-token"] ?? process.env.CLOUDFLARE_API_TOKEN;
   const indexName = values["index-name"] ?? process.env.SUPERVISOR_SEARCH_INDEX_NAME;
   const model = values.model ?? process.env.SUPERVISOR_SEARCH_EMBEDDING_MODEL ?? DEFAULT_EMBEDDING_MODEL;
+  const minimumSupervisorCount = parseIntegerOption(values["minimum-supervisor-count"], "--minimum-supervisor-count");
+  const maxDeleteRatio = parseRatioOption(values["max-delete-ratio"], "--max-delete-ratio");
+  const allowLargeDelete = values["allow-large-delete"] ?? false;
   const dryRun = values["dry-run"] ?? false;
 
   if (!inputPath) {
@@ -65,6 +71,11 @@ async function main(): Promise<void> {
     throw new Error("No supervisors were parsed from the input HTML. Update the parser adapter before importing.");
   }
 
+  const existingIds = await listExistingVectorIds({ accountId, apiToken, indexName });
+  validateSupervisorImport(supervisors, existingIds, [], {
+    minimumSupervisorCount,
+  });
+
   const embeddings = await createEmbeddings({
     accountId,
     apiToken,
@@ -72,8 +83,12 @@ async function main(): Promise<void> {
     texts: supervisors.map((supervisor) => supervisor.searchText),
   });
 
-  const existingIds = await listExistingVectorIds({ accountId, apiToken, indexName });
   const importPlan = planSupervisorImport(supervisors, embeddings, existingIds);
+  validateSupervisorImport(supervisors, existingIds, importPlan.idsToDelete, {
+    minimumSupervisorCount,
+    maxDeleteRatio,
+    allowLargeDelete,
+  });
   const indexInfo = await getIndexInfo({ accountId, apiToken, indexName });
 
   if (typeof indexInfo.dimensions === "number" && importPlan.vectors[0] && importPlan.vectors[0].values.length !== indexInfo.dimensions) {
@@ -242,6 +257,32 @@ function extractEmbeddingResponse(payload: { data?: number[][] } | { result?: { 
   }
 
   return "result" in payload ? (payload.result ?? { data: [] }) : { data: [] };
+}
+
+function parseIntegerOption(rawValue: string | undefined, flagName: string): number | undefined {
+  if (rawValue === undefined) {
+    return undefined;
+  }
+
+  const parsedValue = Number.parseInt(rawValue, 10);
+  if (!Number.isInteger(parsedValue) || parsedValue < 0) {
+    throw new Error(`${flagName} must be a non-negative integer.`);
+  }
+
+  return parsedValue;
+}
+
+function parseRatioOption(rawValue: string | undefined, flagName: string): number | undefined {
+  if (rawValue === undefined) {
+    return undefined;
+  }
+
+  const parsedValue = Number(rawValue);
+  if (!Number.isFinite(parsedValue) || parsedValue < 0 || parsedValue > 1) {
+    throw new Error(`${flagName} must be a number between 0 and 1.`);
+  }
+
+  return parsedValue;
 }
 
 void main().catch((error) => {
