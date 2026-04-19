@@ -12,6 +12,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 
 - Development setup, local runtime, imports, and verification: `docs/development.md`
 - Application architecture overview: `docs/architecture.md`
+- Production deployment runbook: `docs/production.md`
 - Delivery and security roadmap: `docs/roadmap.md`
 - Architecture decisions: `docs/adrs/README.md`
 - Feature and architecture specs: `specs/README.md`
