@@ -1,6 +1,6 @@
 export const DEFAULT_EMBEDDING_MODEL = "@cf/google/embeddinggemma-300m";
 export const DEFAULT_VECTOR_CANDIDATE_LIMIT = 50;
-export const DEFAULT_VISIBLE_RESULT_LIMIT = 10;
+export const DEFAULT_VISIBLE_RESULT_LIMIT = 50;
 export const MINIMUM_QUERY_LENGTH = 2;
 
 export interface SupervisorRecord {
