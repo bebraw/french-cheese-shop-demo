@@ -27,6 +27,7 @@ Supervisor Search helps MSc students discover relevant thesis supervisors withou
 - [ ] `GET /` renders a basic-auth-protected supervisor search page with realtime result updates.
 - [ ] `GET /` keeps the search surface minimal, with a search field and inline typing hint instead of long explanatory help text.
 - [ ] `GET /` supports both light and dark color schemes without changing the minimal search-first layout.
+- [ ] `GET /` reflects the current search query in the browser URL so shared or refreshed pages restore the same query.
 - [ ] `GET /api/search?q=...` returns ordered supervisor search results from either Vectorize or explicit local sample mode.
 - [ ] `GET /api/search?q=...` expands common CS aliases such as `HCI`, `LLM`, `ML`, and `A11Y` so abbreviated queries still match the underlying topic terms.
 - [ ] `GET /api/search?q=...` applies per-client throttling and returns `429` with retry guidance when a client exceeds the configured local rate limit.
@@ -59,6 +60,12 @@ Supervisor Search helps MSc students discover relevant thesis supervisors withou
 - Given: the Worker has valid basic-auth credentials and Vectorize-backed supervisor metadata
 - When: the student searches for a topic such as `distributed systems`
 - Then: `/api/search` returns matching supervisors ordered by weighted relevance, with lower active thesis counts helping break ties among otherwise similar matches, and the UI updates without a full reload
+
+**Scenario: Student refreshes or shares a search URL**
+
+- Given: the search page is open with a query such as `distributed systems`
+- When: the browser refreshes the page or another user opens the shared `?q=` URL
+- Then: the search input is prefilled from the query parameter and the same search runs automatically
 
 **Scenario: Search throttling protects the API**
 

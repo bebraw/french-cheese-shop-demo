@@ -2,6 +2,7 @@ export function renderHomeScript(): string {
   return `const queryInput = document.getElementById("supervisor-query");
 const statusElement = document.getElementById("search-status");
 const resultsElement = document.getElementById("search-results");
+const searchParamName = "q";
 const minimumQueryLength = 2;
 let debounceHandle = null;
 let activeController = null;
@@ -15,6 +16,19 @@ function clearResults() {
   while (resultsElement.firstChild) {
     resultsElement.removeChild(resultsElement.firstChild);
   }
+}
+
+function syncUrlQuery(rawQuery) {
+  const url = new URL(window.location.href);
+  const query = rawQuery.trim();
+
+  if (query) {
+    url.searchParams.set(searchParamName, query);
+  } else {
+    url.searchParams.delete(searchParamName);
+  }
+
+  window.history.replaceState(window.history.state, "", url);
 }
 
 function renderResults(results) {
@@ -115,8 +129,15 @@ async function runSearch(rawQuery) {
 
 queryInput.addEventListener("input", (event) => {
   const nextValue = event.currentTarget.value;
+  syncUrlQuery(nextValue);
   window.clearTimeout(debounceHandle);
   debounceHandle = window.setTimeout(() => runSearch(nextValue), 180);
 });
+
+const initialQuery = new URL(window.location.href).searchParams.get(searchParamName) || "";
+if (initialQuery) {
+  queryInput.value = initialQuery;
+  runSearch(initialQuery);
+}
 `;
 }

@@ -145,6 +145,8 @@ describe("worker", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("application/javascript");
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
-    await expect(response.text()).resolves.toContain('fetch("/api/search?q=" + encodeURIComponent(query)');
+    const body = await response.text();
+    expect(body).toContain('fetch("/api/search?q=" + encodeURIComponent(query)');
+    expect(body).toContain("window.history.replaceState");
   });
 });

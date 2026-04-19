@@ -41,6 +41,15 @@ test("returns live search results", async ({ page }) => {
 
   await expect(page.locator("#search-status")).toHaveText("4 results");
   await expect(page.getByRole("heading", { level: 3, name: "Tuomas Koski" })).toBeVisible();
+  await expect(page).toHaveURL(/[\?&]q=distributed\+systems|[\?&]q=distributed%20systems/);
+});
+
+test("restores the shared query from the browser URL", async ({ page }) => {
+  await page.goto("/?q=distributed%20systems");
+
+  await expect(page.getByRole("searchbox", { name: "Search supervisors" })).toHaveValue("distributed systems");
+  await expect(page.locator("#search-status")).toHaveText("4 results");
+  await expect(page.getByRole("heading", { level: 3, name: "Tuomas Koski" })).toBeVisible();
 });
 
 test("serves the generated stylesheet", async ({ request }) => {
