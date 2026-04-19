@@ -138,8 +138,10 @@ describe("searchSampleSupervisors", () => {
   it("matches common CS aliases against expanded topic terms", () => {
     const hciResponse = searchSampleSupervisors("hci");
     const llmResponse = searchSampleSupervisors("llm");
+    const a11yResponse = searchSampleSupervisors("a11y");
 
     expect(hciResponse.results[0]?.name).toBe("Leena Heikkila");
     expect(llmResponse.results[0]?.name).toBe("Aino Saarinen");
+    expect(a11yResponse.results[0]?.name).toBe("Leena Heikkila");
   });
 });
