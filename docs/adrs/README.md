@@ -31,6 +31,7 @@ Skip an ADR for small, reversible, or purely tactical choices.
 | [ADR-013](./ADR-013-return-to-npm-for-agent-ci-compatibility.md)        | Accepted   | Return to npm because local Agent CI remains unreliable with pnpm warmed dependency mounts.  |
 | [ADR-014](./ADR-014-use-local-import-and-hybrid-vector-reranking.md)    | Accepted   | Keep imports local and rerank Vectorize candidates in Worker code for supervisor search.     |
 | [ADR-015](./ADR-015-run-the-fast-gate-on-pre-push.md)                   | Accepted   | Run the fast quality gate automatically before pushes to catch cheap failures locally.       |
+| [ADR-016](./ADR-016-propose-kv-backed-lexical-search.md)                | Proposed   | Explore replacing Workers AI plus Vectorize retrieval with a KV-backed lexical search path.  |
 
 ## Creating A New ADR
 
