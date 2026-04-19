@@ -3,9 +3,9 @@ import { createSearchText, tokenizeSearchText } from "./parser.ts";
 import type { RankedSupervisorResult, SupervisorRecord, SupervisorSearchSignals } from "./types.ts";
 
 export const SUPERVISOR_SEARCH_WEIGHTS = {
-  vectorSimilarity: 0.65,
-  topicOverlap: 0.25,
-  availability: 0.1,
+  vectorSimilarity: 0.45,
+  topicOverlap: 0.15,
+  availability: 0.4,
 } as const;
 
 const AVAILABILITY_ZERO_SCORE_AT = 10;
@@ -21,6 +21,7 @@ export function rankSupervisorMatches(
         topicOverlap: calculateTopicOverlap(query, supervisor),
         availability: calculateAvailability(supervisor.activeThesisCount),
       };
+      const matchesQuery = signals.vectorSimilarity > 0 || signals.topicOverlap > 0;
 
       const score =
         signals.vectorSimilarity * SUPERVISOR_SEARCH_WEIGHTS.vectorSimilarity +
@@ -34,11 +35,18 @@ export function rankSupervisorMatches(
         activeThesisCount: supervisor.activeThesisCount,
         score: Number(score.toFixed(4)),
         signals,
+        matchesQuery,
       };
     })
-    .sort(
-      (left, right) => right.score - left.score || left.activeThesisCount - right.activeThesisCount || left.name.localeCompare(right.name),
-    );
+    .sort((left, right) => {
+      return (
+        Number(right.matchesQuery) - Number(left.matchesQuery) ||
+        right.score - left.score ||
+        left.activeThesisCount - right.activeThesisCount ||
+        left.name.localeCompare(right.name)
+      );
+    })
+    .map(({ matchesQuery: _matchesQuery, ...result }) => result);
 }
 
 export function calculateTopicOverlap(query: string, supervisor: SupervisorRecord): number {

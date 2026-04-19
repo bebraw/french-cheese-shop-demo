@@ -37,12 +37,13 @@ Supervisor Search helps MSc students discover relevant thesis supervisors withou
 ### Regression Guardrails
 
 - The deployed app must only search stored vectors and vector metadata, never the raw confidential HTML.
-- Search ranking must remain tunable in code by editing exported weighting logic, not by changing the import contract.
+- Search ranking must remain tunable in code by editing exported weighting logic and sort order, not by changing the import contract.
 - Sample data mode is a local fallback for development and tests only; it must not replace the live Vectorize path in configured environments.
 - The import command must stop before mutating Vectorize when the parsed snapshot drops suspiciously below the current index size or when the delete set is abnormally large, unless the operator explicitly overrides that safety check.
 - Imported `supervisorId` values must remain within the current Vectorize identifier length limit.
 - HTML responses must ship with restrictive browser security headers, and client-side search code must load from a same-origin script asset so the CSP can keep `script-src 'self'`.
 - Search throttling must stay enabled in configured environments, with per-client limits tunable through environment variables instead of hard-coded route edits.
+- Search ranking must keep topical relevance ahead of thesis-load differences, while still using lower active thesis counts as a strong tie-breaker and scoring factor among relevant matches.
 - Any committed HTML import fixture must remain sanitized, anonymized, and free of authenticated page state or direct staff contact details.
 
 ### Verification
@@ -56,7 +57,7 @@ Supervisor Search helps MSc students discover relevant thesis supervisors withou
 
 - Given: the Worker has valid basic-auth credentials and Vectorize-backed supervisor metadata
 - When: the student searches for a topic such as `distributed systems`
-- Then: `/api/search` returns the best matching supervisors ordered by the hybrid score, and the UI updates without a full reload
+- Then: `/api/search` returns matching supervisors ordered by weighted relevance, with lower active thesis counts helping break ties among otherwise similar matches, and the UI updates without a full reload
 
 **Scenario: Search throttling protects the API**
 

@@ -3,41 +3,41 @@ import { buildSupervisorRecord } from "./parser.ts";
 import { rankSupervisorMatches } from "./ranking.ts";
 
 describe("rankSupervisorMatches", () => {
-  it("prefers stronger topic overlap when vector scores are comparable", () => {
+  it("prefers stronger query matches over lower thesis load", () => {
     const importedAt = "2026-04-19T12:00:00.000Z";
     const distributed = buildSupervisorRecord({
       name: "Tuomas Koski",
       topicArea: "Distributed systems and edge computing",
-      activeThesisCount: 4,
+      activeThesisCount: 7,
       rawSource: "distributed",
       importedAt,
     });
     const weaker = buildSupervisorRecord({
       name: "Aino Saarinen",
       topicArea: "Machine learning systems",
-      activeThesisCount: 1,
+      activeThesisCount: 6,
       rawSource: "ml",
       importedAt,
     });
 
     const ranked = rankSupervisorMatches("distributed systems", [
-      { supervisor: weaker, vectorSimilarity: 0.7 },
-      { supervisor: distributed, vectorSimilarity: 0.68 },
+      { supervisor: weaker, vectorSimilarity: 0.4 },
+      { supervisor: distributed, vectorSimilarity: 0.95 },
     ]);
 
     expect(ranked[0]?.name).toBe("Tuomas Koski");
   });
 
-  it("prefers lower active thesis counts when topic overlap is equal", () => {
+  it("uses lower thesis load to break ties between equally relevant matches", () => {
     const importedAt = "2026-04-19T12:00:00.000Z";
-    const lowLoad = buildSupervisorRecord({
+    const lowerLoad = buildSupervisorRecord({
       name: "Mikael Lahti",
       topicArea: "Cybersecurity and applied cryptography",
-      activeThesisCount: 1,
+      activeThesisCount: 2,
       rawSource: "low",
       importedAt,
     });
-    const highLoad = buildSupervisorRecord({
+    const higherLoad = buildSupervisorRecord({
       name: "Leena Heikkila",
       topicArea: "Cybersecurity and applied cryptography",
       activeThesisCount: 5,
@@ -46,14 +46,14 @@ describe("rankSupervisorMatches", () => {
     });
 
     const ranked = rankSupervisorMatches("cybersecurity cryptography", [
-      { supervisor: highLoad, vectorSimilarity: 0.75 },
-      { supervisor: lowLoad, vectorSimilarity: 0.75 },
+      { supervisor: higherLoad, vectorSimilarity: 0.75 },
+      { supervisor: lowerLoad, vectorSimilarity: 0.75 },
     ]);
 
     expect(ranked[0]?.name).toBe("Mikael Lahti");
   });
 
-  it("treats common CS aliases as topic matches", () => {
+  it("keeps zero-signal candidates behind relevant results", () => {
     const importedAt = "2026-04-19T12:00:00.000Z";
     const hci = buildSupervisorRecord({
       name: "Leena Heikkila",
@@ -71,7 +71,7 @@ describe("rankSupervisorMatches", () => {
     });
 
     const ranked = rankSupervisorMatches("hci", [
-      { supervisor: systems, vectorSimilarity: 0.72 },
+      { supervisor: systems, vectorSimilarity: 0 },
       { supervisor: hci, vectorSimilarity: 0.7 },
     ]);
 
