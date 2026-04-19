@@ -28,6 +28,8 @@ npm run quality:gate
 npm run ci:local:quiet
 ```
 
+The repo keeps an exact npm pin in `package.json`, but hosted build providers may still execute a nearby npm 11 patch release during dependency installation. The repo's `devEngines` policy is intentionally relaxed to accept compatible npm 11 patch versions so Cloudflare-hosted installs do not fail before the Worker build starts.
+
 ## 2. Authenticate Wrangler
 
 Log in with Wrangler:

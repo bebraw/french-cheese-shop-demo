@@ -19,7 +19,7 @@ This template is set up for the local Agent CI runner from `agent-ci.dev`.
 - Run `nvm use` before `npm install` or any other development command so your shell uses the Node.js version mirrored in `.nvmrc`, which keeps the bundled npm version close to the repo pin as well.
 - Install dependencies with `npm install`.
 - The exact Node.js version is pinned in `package.json`, mirrored in `.nvmrc` for `nvm` users, and read directly by CI through `actions/setup-node`.
-- The repo also pins npm exactly in `package.json`. Using `nvm use` is the expected local path for staying close to that npm baseline, and CI upgrades npm to the exact pinned version after `actions/setup-node` and invokes that pinned CLI directly for install and verification steps.
+- The repo pins npm exactly in `package.json` as the source-of-truth version. Using `nvm use` is the expected local path for staying close to that npm baseline, and CI upgrades npm to the exact pinned version after `actions/setup-node` and invokes that pinned CLI directly for install and verification steps. `devEngines` intentionally accepts a compatible npm 11 patch release so hosted build providers such as Cloudflare can still install dependencies when their bundled npm lags slightly behind the repo pin.
 - Copy `.dev.vars.example` to `.dev.vars` and replace placeholder values when a project needs local secrets.
 - Copy `.env.agent-ci.example` to `.env.agent-ci` when you need machine-local Agent CI overrides. Agent CI loads that file automatically.
 - If your clone has no `origin` remote, set `GITHUB_REPO=owner/repo` in `.env.agent-ci` to stop Agent CI from warning while inferring the repository name.

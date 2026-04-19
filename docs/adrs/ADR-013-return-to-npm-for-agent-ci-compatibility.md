@@ -21,7 +21,8 @@ We will return to npm as the repo's pinned package manager.
 The template now uses:
 
 - `npm@11.12.1` in `package.json#packageManager`
-- exact `node` and `npm` version enforcement through `engines` and `devEngines`
+- exact `node` and `npm` source-of-truth pins through `engines` and `packageManager`
+- `devEngines` enforcement that still requires npm 11 but allows compatible patch-level drift for hosted build providers that do not immediately expose the exact repo-pinned npm patch release
 - CI alignment that upgrades npm to the repo pin after `actions/setup-node` and invokes the pinned npm CLI directly for workflow steps
 - a committed `package-lock.json`
 - npm-based repo scripts and documentation for routine development and verification
@@ -47,7 +48,7 @@ This decision was triggered by repeated local Agent CI failures with pnpm under 
 **Neutral:**
 
 - Node remains pinned in `package.json`.
-- The repo still uses exact tool versions and a committed lockfile.
+- The repo still uses an exact npm source-of-truth pin, a committed lockfile, and compatible hosted-build enforcement through `devEngines`.
 
 ## Alternatives Considered
 
