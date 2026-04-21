@@ -19,6 +19,7 @@ const scenarioParamName = "scenario";
 const audienceParamName = "audience";
 const minimumQueryLength = 2;
 const defaultQuery = "I want something like Brie, but stronger.";
+const challengeSequence = ["challenge-1", "challenge-2", "challenge-3"];
 let debounceHandle = null;
 let activeController = null;
 let requestCounter = 0;
@@ -117,6 +118,15 @@ function getAudienceState(scenario) {
   return audienceState[scenario];
 }
 
+function getScenarioTrail(scenario) {
+  if (scenario === "baseline") {
+    return [];
+  }
+
+  const scenarioIndex = challengeSequence.indexOf(scenario);
+  return scenarioIndex >= 0 ? challengeSequence.slice(0, scenarioIndex + 1) : [];
+}
+
 function getSelectedPresetValues(scenario) {
   const copy = scenarios[scenario];
   const state = getAudienceState(scenario);
@@ -128,20 +138,34 @@ function getSelectedPresetValues(scenario) {
   return copy.presets.filter((preset) => state.selectedPresetIds.includes(preset.id));
 }
 
+function buildAccumulatedAudienceParts(scenario, valueSelector) {
+  const parts = [];
+  const seen = new Set();
+
+  for (const scenarioId of getScenarioTrail(scenario)) {
+    const state = getAudienceState(scenarioId);
+    const presetValues = getSelectedPresetValues(scenarioId).map((preset) => valueSelector(preset));
+    const customText = state.customText.trim();
+
+    for (const part of [...presetValues, customText]) {
+      if (!part || seen.has(part)) {
+        continue;
+      }
+
+      seen.add(part);
+      parts.push(part);
+    }
+  }
+
+  return parts;
+}
+
 function buildAudienceInput(scenario) {
-  if (scenario === "baseline") {
-    return "";
-  }
+  return buildAccumulatedAudienceParts(scenario, (preset) => preset.value).join(". ");
+}
 
-  const state = getAudienceState(scenario);
-  const parts = getSelectedPresetValues(scenario).map((preset) => preset.value);
-  const customText = state.customText.trim();
-
-  if (customText) {
-    parts.push(customText);
-  }
-
-  return parts.join(". ");
+function buildAudienceSummaryItems(scenario) {
+  return buildAccumulatedAudienceParts(scenario, (preset) => preset.label);
 }
 
 function syncUrlState(rawQuery, scenario) {
@@ -189,12 +213,7 @@ function renderAudienceSummary(scenario) {
     return;
   }
 
-  const state = getAudienceState(scenario);
-  const summaryItems = getSelectedPresetValues(scenario).map((preset) => preset.label);
-
-  if (state.customText.trim()) {
-    summaryItems.push(state.customText.trim());
-  }
+  const summaryItems = buildAudienceSummaryItems(scenario);
 
   const hasItems = summaryItems.length > 0;
   audienceSummaryEmptyElement.textContent = hasItems ? "" : "Choose one or more answers below.";

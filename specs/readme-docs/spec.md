@@ -9,8 +9,9 @@ The template README is the first surface contributors see. It should identify th
 ### Architecture
 
 - **Primary document:** `README.md`
+- **Technical reference:** `docs/technical-overview.md`
 - **Committed screenshot asset:** `docs/screenshots/home.png`
-- **Current workflow summary:** runtime, verification, source layout, and documentation contract notes in `README.md`
+- **Current workflow summary:** runtime, verification, and source layout notes in `docs/technical-overview.md`, with the project-facing overview and doc routing in `README.md`
 - **Demo summary:** a short presentation flow in `README.md` that keeps the live demo easy to explain under time pressure
 - **Update model:** manual refresh when the starter UI changes materially
 - **Non-goal:** no screenshot-specific package scripts or screenshot-sync workflows
@@ -22,7 +23,7 @@ The template README is the first surface contributors see. It should identify th
 - Do not let the committed screenshot drift far from the current starter UI.
 - Do not make readers infer the app shape from source files alone before they understand the runtime baseline.
 - Do not imply that generated code becomes authoritative just because CI passes.
-- Do not let the README drift away from the actual commands, ports, or source layout used by the current template.
+- Do not let the README or technical overview drift away from the actual commands, ports, or source layout used by the current template.
 
 ## Contract
 
@@ -31,7 +32,9 @@ The template README is the first surface contributors see. It should identify th
 - [ ] The README includes a working application screenshot reference.
 - [ ] The README identifies the starter as a Cloudflare Worker served with Wrangler near the top.
 - [ ] The README explains how vendored ASDLC guidance relates to repo-specific architecture, spec, and ADR documents.
-- [ ] The README reflects the current runtime and verification commands.
+- [ ] The README routes implementation-facing details to `docs/technical-overview.md`.
+- [ ] `docs/technical-overview.md` reflects the current runtime and verification commands.
+- [ ] `docs/technical-overview.md` reflects the current app surface and source layout.
 - [ ] The screenshot asset is committed in the repo.
 
 ### Regression Guardrails
@@ -39,7 +42,8 @@ The template README is the first surface contributors see. It should identify th
 - `README.md` must reference a committed screenshot file that exists in the repo.
 - `README.md` should let a new reader understand the current app and rendering model before they start exploring the source tree.
 - `README.md` should describe the current documentation contract accurately, including that specs and ADRs remain authoritative over generated code.
-- `README.md` should continue to describe the current starter source layout and verification flow accurately.
+- `README.md` should keep the project-facing overview concise instead of duplicating technical reference sections.
+- `docs/technical-overview.md` should continue to describe the current starter source layout and verification flow accurately.
 - `README.md` should include a concise demo flow that matches the current app behavior.
 - `README.md` should describe the current runtime pin source accurately when the repo toolchain changes.
 - `README.md` should describe the supported host platform baseline accurately when local development constraints change.
@@ -64,7 +68,7 @@ The template README is the first surface contributors see. It should identify th
 **Scenario: Contributor follows the README**
 
 - Given: the current template baseline
-- When: the contributor reads the runtime, verification, and source layout sections
+- When: the contributor follows the README into the technical overview and development docs
 - Then: the commands, ports, and file locations match the current repo behavior
 
 **Scenario: Presenter needs the short version**

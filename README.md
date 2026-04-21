@@ -27,6 +27,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 
 ## Documentation
 
+- Technical summary, routes, and source layout: `docs/technical-overview.md`
 - Development setup and verification: `docs/development.md`
 - Application architecture overview: `docs/architecture.md`
 - Production deployment runbook: `docs/production.md`
@@ -35,24 +36,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 - Feature and architecture specs: `specs/README.md`
 - Agent behavior and project rules: `AGENTS.md`
 
-## Development
+## Technical Notes
 
-- Start with [docs/development.md](/Users/juhovepsalainen/Projects/aalto/french-cheese-shop-demo/docs/development.md) for local setup, runtime commands, and verification.
-- The most common commands are `npm run dev`, `npm run quality:gate`, and `npm run ci:local:quiet`.
-- `npm install` configures the repo-managed `pre-push` hook so `git push` runs `npm run quality:gate:fast` before code leaves your machine.
-
-## App Surface
-
-- `GET /` serves the French cheese shop demo UI.
-- `GET /styles.css` serves the generated Tailwind stylesheet.
-- `GET /app.js` serves the browser tab and search logic.
-- `GET /api/search?q=...&scenario=...&audience=...` serves live demo results as JSON.
-- `GET /api/health` serves a JSON health response for smoke tests and tooling.
-
-## Source Layout
-
-- `src/worker.ts` is the Worker entry point and top-level router.
-- `src/api/` holds API response modules such as search and health.
-- `src/cheese/` holds the deterministic cheese catalog and scenario scoring logic.
-- `src/views/` holds HTML rendering modules and browser script output.
-- Tests live next to the code they exercise under `src/`.
+- Start with [docs/technical-overview.md](/Users/juhovepsalainen/Projects/aalto/french-cheese-shop-demo/docs/technical-overview.md) for the short implementation summary, common commands, runtime routes, and source layout.
+- Use [docs/development.md](/Users/juhovepsalainen/Projects/aalto/french-cheese-shop-demo/docs/development.md) for the full local setup and verification workflow.

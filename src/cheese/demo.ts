@@ -490,14 +490,43 @@ function buildInsights(intent: ParsedIntent, scenario: DemoScenarioId, results: 
   if (intent.targetIntensity !== null) {
     insights.push(`Strength target: ${intent.targetIntensity}/5.`);
   }
+  if (scenario !== "baseline" && intent.desiredMilkTypes.size > 0) {
+    insights.push(`Explicit milk types: ${[...intent.desiredMilkTypes].join(", ")}.`);
+  }
+  if (scenario !== "baseline" && intent.desiredStyles.size > 0) {
+    insights.push(`Explicit styles: ${[...intent.desiredStyles].join(", ")}.`);
+  }
   if (scenario !== "baseline" && intent.desiredTextures.size > 0) {
     insights.push(`Explicit textures: ${[...intent.desiredTextures].join(", ")}.`);
   }
-  if (scenario !== "baseline" && intent.desiredPairings.size > 0) {
+  if ((scenario === "challenge-2" || scenario === "challenge-3") && intent.desiredPairings.size > 0) {
     insights.push(`Context data: ${[...intent.desiredPairings].join(", ")}.`);
   }
-  if (scenario !== "baseline" && intent.requireInStock) {
+  if ((scenario === "challenge-2" || scenario === "challenge-3") && intent.desiredContexts.size > 0) {
+    insights.push(`Serving context: ${[...intent.desiredContexts].join(", ")}.`);
+  }
+  if ((scenario === "challenge-2" || scenario === "challenge-3") && intent.maxPrice !== null) {
+    insights.push(`Budget cap: EUR ${intent.maxPrice}.`);
+  }
+  if ((scenario === "challenge-2" || scenario === "challenge-3") && intent.requireInStock) {
     insights.push("In-stock filtering is on.");
+  }
+  if (scenario === "challenge-3") {
+    const evaluationSignals: string[] = [];
+
+    if (intent.wantsExplanation) {
+      evaluationSignals.push("explain why it fits");
+    }
+    if (intent.wantsBackup) {
+      evaluationSignals.push("give a backup option");
+    }
+    if (intent.wantsShortlist) {
+      evaluationSignals.push("return a shortlist");
+    }
+
+    if (evaluationSignals.length > 0) {
+      insights.push(`Evaluation asks: ${evaluationSignals.join(", ")}.`);
+    }
   }
   if (scenario === "challenge-3" && results.length > 0) {
     const failedChecks = results[0].checks.filter((check) => !check.passed).map((check) => check.label.toLowerCase());

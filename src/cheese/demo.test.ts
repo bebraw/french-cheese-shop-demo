@@ -20,6 +20,7 @@ describe("searchDemoCatalog", () => {
     });
 
     expect(response.results[0]?.name).toBe("Epoisses de Bourgogne");
+    expect(response.insights).toContain("Explicit milk types: cow.");
     expect(response.insights).toContain("Explicit textures: creamy.");
   });
 

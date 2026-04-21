@@ -29,9 +29,11 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` opens with the baseline prompt prefilled so the demo starts in a meaningful default state.
 - [ ] `GET /` keeps the baseline and challenge descriptions visible enough that the audience can tell the four passes apart before the presenter switches tabs.
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific choices before falling back to a custom note.
+- [ ] `GET /` carries forward earlier challenge answers into later challenge searches so the teaching flow can layer requirements instead of replacing them.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...` returns ordered cheese recommendations from the committed catalog.
 - [ ] Search results stay compact by default and can reveal more explanation on demand.
+- [ ] The requirements lens stays synchronized with each active ranking signal, including explicit milk type and carry-forward audience cues from earlier challenges.
 - [ ] `baseline` ranks from the request wording alone.
 - [ ] `challenge-1` makes hidden requirements explicit in the ranking and insight output.
 - [ ] `challenge-2` uses extra product and context cues from the audience input.
@@ -44,6 +46,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - The live demo must stay publicly accessible without basic auth.
 - The runtime path must stay deterministic enough for rehearsal and live teaching.
 - The challenge controls must continue to share the same underlying customer request so the audience can compare behavior shifts.
+- Later challenges must preserve earlier explicit audience cues in both ranking and the requirements lens unless the presenter removes them.
 - The challenge controls should stay visible in a fixed left sidebar on larger screens, and the requirements lens should stay visible in a fixed right sidebar.
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
 - The default baseline prompt should stay visible in the main request input instead of being repeated in separate promo copy.
@@ -84,6 +87,12 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Given: the presenter is on challenge 2
 - When: the audience selects extra context such as `serve it with cider` or `it must be in stock`
 - Then: the ranking changes to use those product and context data cues
+
+**Scenario: Presenter carries earlier requirements into later challenges**
+
+- Given: the presenter selected hidden-need cues such as `keep it creamy` and `cow's milk` in challenge 1
+- When: the presenter switches to challenge 2 or challenge 3 and adds more audience answers
+- Then: the requirements lens and ranking continue to include the earlier cues until the presenter clears them
 
 **Scenario: Audience defines success criteria**
 

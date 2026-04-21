@@ -49,6 +49,28 @@ test("switching to challenge 2 uses audience data to change the top result", asy
   await expect(page.locator("#audience-summary-chips")).toContainText("With cider");
 });
 
+test("signals in play stays synced and cumulative through challenges", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await page.getByRole("button", { name: /Challenge 1/ }).click();
+  await page.getByRole("button", { name: "Keep it creamy" }).click();
+  await page.getByRole("button", { name: "Cow's milk" }).click();
+
+  await expect(page.locator("#scenario-insights")).toContainText("Explicit textures: creamy.");
+  await expect(page.locator("#scenario-insights")).toContainText("Explicit milk types: cow.");
+
+  await page.getByRole("button", { name: /Challenge 2/ }).click();
+  await page.getByRole("button", { name: "With cider" }).click();
+
+  await expect(page.locator("#scenario-insights")).toContainText("Explicit textures: creamy.");
+  await expect(page.locator("#scenario-insights")).toContainText("Explicit milk types: cow.");
+  await expect(page.locator("#scenario-insights")).toContainText("Context data: cider.");
+  await expect(page.locator("#audience-summary-chips")).toContainText("Keep it creamy");
+  await expect(page.locator("#audience-summary-chips")).toContainText("Cow's milk");
+  await expect(page.locator("#audience-summary-chips")).toContainText("With cider");
+});
+
 test("expands a compact result row on demand", async ({ page }) => {
   await page.goto("/");
 
