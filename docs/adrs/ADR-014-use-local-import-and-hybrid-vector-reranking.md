@@ -1,6 +1,6 @@
 # ADR-014: Use Local Import and Hybrid Vector Reranking
 
-**Status:** Accepted
+**Status:** Superseded by ADR-018
 
 ## Context
 

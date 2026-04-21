@@ -1,5 +1,5 @@
 {
-  "name": "supervisor-search",
+  "name": "french-cheese-shop-demo",
   "private": true,
   "packageManager": "npm@11.12.1",
   "engines": {
@@ -25,7 +25,6 @@
     "e2e:server": "node ./scripts/run-e2e-server.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "import:supervisors": "node --experimental-transform-types ./scripts/import-supervisors.ts",
     "lighthouse": "node ./scripts/run-lighthouse.mjs",
     "playwright:install": "playwright install chromium",
     "prepare": "node ./scripts/setup-git-hooks.mjs",

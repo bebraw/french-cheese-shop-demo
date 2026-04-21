@@ -1,11 +1,13 @@
-import { MINIMUM_QUERY_LENGTH, type SupervisorSearchEnv } from "../supervisors/types";
-import { searchSupervisors } from "../supervisors/service";
+import { MINIMUM_QUERY_LENGTH, searchDemoCatalog, type DemoScenarioId } from "../cheese/demo";
 import { jsonResponse } from "../views/shared";
 
-const genericSearchErrorMessage = "Supervisor search is currently unavailable.";
+const genericSearchErrorMessage = "Cheese search is currently unavailable.";
 
-export async function createSearchResponse(request: Request, env: SupervisorSearchEnv): Promise<Response> {
-  const query = new URL(request.url).searchParams.get("q")?.trim() ?? "";
+export async function createSearchResponse(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  const query = url.searchParams.get("q")?.trim() ?? "";
+  const scenario = readScenario(url.searchParams.get("scenario"));
+  const audienceInput = url.searchParams.get("audience")?.trim() ?? "";
 
   if (query.length < MINIMUM_QUERY_LENGTH) {
     return jsonResponse(
@@ -19,10 +21,14 @@ export async function createSearchResponse(request: Request, env: SupervisorSear
   }
 
   try {
-    const response = await searchSupervisors(query, env);
+    const response = searchDemoCatalog({
+      query,
+      scenario,
+      audienceInput,
+    });
     return jsonResponse(response);
   } catch (error) {
-    console.error("Supervisor search failed.", error);
+    console.error("Cheese search failed.", error);
 
     return jsonResponse(
       {
@@ -32,4 +38,12 @@ export async function createSearchResponse(request: Request, env: SupervisorSear
       { status: 503 },
     );
   }
+}
+
+function readScenario(rawScenario: string | null): DemoScenarioId {
+  if (rawScenario === "baseline" || rawScenario === "challenge-1" || rawScenario === "challenge-2" || rawScenario === "challenge-3") {
+    return rawScenario;
+  }
+
+  return "baseline";
 }

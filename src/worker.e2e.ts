@@ -1,26 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-test("challenges invalid browser credentials", async ({ browser }) => {
-  const guestContext = await browser.newContext({
-    httpCredentials: {
-      username: "wrong",
-      password: "creds",
-    },
-  });
-  const guestPage = await guestContext.newPage();
-
-  const response = await guestPage.goto("http://127.0.0.1:8788/");
-
-  expect(response?.status()).toBe(401);
-  await guestContext.close();
-});
-
-test("renders the supervisor search home page", async ({ page }) => {
+test("renders the cheese demo home page", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Find an MSc Supervisor" })).toBeVisible();
-  await expect(page.getByRole("searchbox", { name: "Search supervisors" })).toBeVisible();
-  await expect(page.getByPlaceholder("Type a topic, method, or research area")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "French Cheese Shop" })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Baseline" })).toBeVisible();
+  await expect(page.getByRole("searchbox", { name: "Customer request" })).toBeVisible();
 });
 
 test("serves the health endpoint", async ({ request }) => {
@@ -29,60 +14,31 @@ test("serves the health endpoint", async ({ request }) => {
   expect(response.ok()).toBe(true);
   await expect(response.json()).resolves.toEqual({
     ok: true,
-    name: "supervisor-search-worker",
-    routes: ["/", "/admin", "/api/search", "/api/admin/search-weights", "/api/health"],
+    name: "french-cheese-shop-demo-worker",
+    routes: ["/", "/api/search", "/api/health"],
   });
 });
 
-test("returns live search results", async ({ page }) => {
+test("shows baseline results for a vague request", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByRole("searchbox", { name: "Search supervisors" }).fill("distributed systems");
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
 
-  await expect(page.locator("#search-status")).toHaveText("4 results");
-  await expect(page.getByRole("heading", { level: 3, name: "Tuomas Koski" })).toBeVisible();
-  await expect(page).toHaveURL(/[\?&]q=distributed\+systems|[\?&]q=distributed%20systems/);
+  await expect(page.locator("#search-status")).toHaveText("5 results");
+  await expect(page.getByRole("heading", { level: 3, name: "Brie de Meaux" })).toBeVisible();
+  await expect(page).toHaveURL(
+    /[\?&]q=I\+want\+something\+like\+Brie\+but\+stronger|[\?&]q=I%20want%20something%20like%20Brie%20but%20stronger/,
+  );
 });
 
-test("restores the shared query from the browser URL", async ({ page }) => {
-  await page.goto("/?q=distributed%20systems");
+test("switching to challenge 2 uses audience data to change the top result", async ({ page }) => {
+  await page.goto("/");
 
-  await expect(page.getByRole("searchbox", { name: "Search supervisors" })).toHaveValue("distributed systems");
-  await expect(page.locator("#search-status")).toHaveText("4 results");
-  await expect(page.getByRole("heading", { level: 3, name: "Tuomas Koski" })).toBeVisible();
-});
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await page.getByRole("tab", { name: "Challenge 2" }).click();
+  await page.getByLabel("Extra data the system should use").fill("Prefers washed rind, serving with cider, and it must be in stock.");
 
-test("keeps the search bar visible while scrolling through results", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 320 });
-  await page.goto("/?q=distributed%20systems");
-
-  const searchbox = page.getByRole("searchbox", { name: "Search supervisors" });
-
-  await expect(searchbox).toHaveValue("distributed systems");
-  await expect(page.locator("#search-status")).toHaveText("4 results");
-  await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeGreaterThan(0);
-
-  const initialTop = await searchbox.evaluate((element) => element.getBoundingClientRect().top);
-
-  await page.evaluate(() => {
-    window.scrollTo(0, document.documentElement.scrollHeight);
-  });
-
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-  await expect(page.locator("#search-results li").last()).toBeInViewport();
-  await expect(searchbox).toBeInViewport();
-
-  const scrolledTop = await searchbox.evaluate((element) => element.getBoundingClientRect().top);
-
-  expect(scrolledTop).toBeGreaterThanOrEqual(0);
-  expect(scrolledTop).toBeLessThan(48);
-  expect(scrolledTop).toBeLessThan(initialTop);
-});
-
-test("serves the generated stylesheet", async ({ request }) => {
-  const response = await request.get("/styles.css");
-
-  expect(response.ok()).toBe(true);
-  expect(response.headers()["content-type"]).toContain("text/css");
-  await expect(response.text()).resolves.toContain("--color-app-canvas:");
+  await expect(page.locator("#search-status")).toHaveText("5 results");
+  await expect(page.getByRole("heading", { level: 3, name: "Livarot" })).toBeVisible();
+  await expect(page.locator("#scenario-insights")).toContainText("cider");
 });

@@ -9,7 +9,7 @@ describe("createHealthResponse", () => {
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     await expect(response.json()).resolves.toEqual({
       ok: true,
-      name: "supervisor-search-worker",
+      name: "french-cheese-shop-demo-worker",
       routes: ["/", "/api/search", "/api/health"],
     });
   });

@@ -1,45 +1,47 @@
 @import "tailwindcss";
 
 @theme {
-  --color-app-canvas: #f7fafe;
-  --color-app-surface: #edf3fb;
-  --color-app-text: #10253f;
-  --color-app-text-soft: #61758d;
-  --color-app-accent: #005bbb;
-  --color-app-accent-strong: #004795;
-  --color-app-accent-ghost: rgb(0 91 187 / 0.14);
-  --color-app-line: rgb(16 37 63 / 0.14);
-  --color-app-ink: #10253f;
-  --color-app-ink-text: #eef5fd;
+  --font-display: "Didot", "Bodoni 72", "Times New Roman", serif;
+  --font-body: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
 
-  --shadow-panel: 0 28px 64px -36px rgb(16 37 63 / 0.28);
+  --color-app-canvas: #fbf5ec;
+  --color-app-card: #fff8f0;
+  --color-app-panel: #f7efe4;
+  --color-app-surface: #f3e7d8;
+  --color-app-text: #243548;
+  --color-app-text-soft: #607085;
+  --color-app-primary: #1d3557;
+  --color-app-secondary: #7b1e2b;
+  --color-app-accent: #c6933f;
+  --color-app-cream: #f8efe2;
+  --color-app-line: rgb(29 53 87 / 0.14);
+
+  --shadow-panel: 0 30px 70px -42px rgb(29 53 87 / 0.34);
+  --shadow-soft: 0 20px 40px -30px rgb(29 53 87 / 0.18);
 }
 
-/*
-  Tailwind v4 changed the default border color to `currentcolor`.
-  Keep the starter baseline visually stable unless a project opts into
-  explicit border utilities everywhere.
-*/
 @layer base {
   html {
-    background: var(--color-app-canvas);
+    background:
+      radial-gradient(circle at top left, rgb(198 147 63 / 0.1), transparent 34%),
+      linear-gradient(180deg, #fdf8f2 0%, var(--color-app-canvas) 22%, #f8efe4 100%);
     color-scheme: light;
   }
 
   body {
-    font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font-body);
     text-rendering: optimizeLegibility;
-    background: var(--color-app-canvas);
+    background: transparent;
   }
 
   input,
   textarea,
   select {
-    caret-color: var(--color-app-accent);
+    caret-color: var(--color-app-secondary);
   }
 
   ::selection {
-    background: rgb(0 91 187 / 0.18);
+    background: rgb(198 147 63 / 0.26);
   }
 
   *,
@@ -49,28 +51,14 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
   }
+}
 
-  @media (prefers-color-scheme: dark) {
-    html {
-      color-scheme: dark;
-    }
+@layer components {
+  .demo-tab {
+    @apply rounded-full border border-app-line bg-white px-4 py-2 text-sm font-semibold tracking-[0.16em] text-app-primary uppercase transition hover:border-app-secondary/30 hover:text-app-secondary;
+  }
 
-    :root {
-      --color-app-canvas: #0c1622;
-      --color-app-surface: #132235;
-      --color-app-text: #ecf3fb;
-      --color-app-text-soft: #9fb5cc;
-      --color-app-accent: #6ab2ff;
-      --color-app-accent-strong: #8fc5ff;
-      --color-app-accent-ghost: rgb(106 178 255 / 0.2);
-      --color-app-line: rgb(236 243 251 / 0.12);
-      --color-app-ink: #0c1622;
-      --color-app-ink-text: #ecf3fb;
-      --shadow-panel: 0 28px 64px -36px rgb(0 0 0 / 0.5);
-    }
-
-    ::selection {
-      background: rgb(106 178 255 / 0.28);
-    }
+  .demo-tab-active {
+    @apply border-transparent bg-app-secondary text-white hover:text-white;
   }
 }

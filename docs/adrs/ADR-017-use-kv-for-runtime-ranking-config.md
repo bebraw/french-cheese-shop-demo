@@ -1,6 +1,6 @@
 # ADR-017: Use KV For Runtime Ranking Configuration
 
-**Status:** Accepted
+**Status:** Superseded by ADR-018
 
 **Date:** 2026-04-20
 

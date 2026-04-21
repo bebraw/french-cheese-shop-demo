@@ -1,83 +1,47 @@
 # Application Architecture
 
-This document explains how the `supervisor-search` application is assembled at a system level.
+This document explains how the `french-cheese-shop-demo` application is assembled at a system level.
 
 It complements:
 
 - `ARCHITECTURE.md` for repo-wide rules and documentation conventions
-- `specs/supervisor-search/spec.md` for feature behavior and guardrails
-- `docs/adrs/ADR-014-use-local-import-and-hybrid-vector-reranking.md` for the key storage and retrieval decision
+- `specs/cheese-demo/spec.md` for feature behavior and guardrails
+- `docs/adrs/ADR-018-replace-supervisor-search-with-a-deterministic-cheese-demo.md` for the key architecture change
 
 ## Summary
 
-The application has two main runtime paths:
+The application has one runtime path:
 
-1. A Cloudflare Worker that serves the protected search UI and search API.
-2. A local operator import script that parses a confidential HTML snapshot and syncs supervisors into Cloudflare Vectorize.
+1. A Cloudflare Worker that serves the demo UI and a deterministic JSON search API.
 
-The Worker may also read a small runtime ranking override from Cloudflare KV when the optional admin configuration binding is present.
-
-At query time, the Worker either:
-
-- uses sample data for local/test mode, or
-- expands aliases, creates an embedding with Workers AI, retrieves candidates from Vectorize, and reranks them in Worker code.
+The Worker does not depend on remote AI services, private data imports, or runtime admin configuration. The ranking logic operates over a committed French cheese catalog so the live presentation stays predictable.
 
 ## System Diagram
 
 ```mermaid
 flowchart TD
-    user[Student Browser]
-    operator[Operator Shell]
-    html[Confidential HTML Snapshot]
+    user[Audience Browser]
 
     subgraph Cloudflare
       worker[Cloudflare Worker\nsrc/worker.ts]
-      ai[Workers AI\nAI binding]
-      vectorize[Vectorize Index\nSUPERVISOR_SEARCH_INDEX]
-      configKv[KV Namespace\nSUPERVISOR_SEARCH_CONFIG]
     end
 
     subgraph WorkerCode[Worker Modules]
-      auth[Auth\nsrc/supervisors/auth.ts]
-      rate[Rate Limit\nsrc/rate-limit.ts]
       api[Search API\nsrc/api/search.ts]
-      adminApi[Admin API\nsrc/api/admin-search-weights.ts]
-      service[Search Service\nsrc/supervisors/service.ts]
-      config[Runtime Config\nsrc/supervisors/config.ts]
-      ranking[Ranking\nsrc/supervisors/ranking.ts]
+      health[Health API\nsrc/api/health.ts]
+      demo[Scenario Engine\nsrc/cheese/demo.ts]
+      catalog[Cheese Catalog\nsrc/cheese/catalog.ts]
       views[Views\nsrc/views/*]
     end
 
-    subgraph ImportPath[Local Import Path]
-      importScript[scripts/import-supervisors.ts]
-      parser[Parser\nsrc/supervisors/parser.ts]
-      importLogic[Import Planning\nsrc/supervisors/import.ts]
-    end
-
     user -->|GET /| worker
-    user -->|GET /admin| worker
-    user -->|GET /api/search?q=...| worker
-    user -->|GET/PUT/DELETE /api/admin/search-weights| worker
-    worker --> auth
-    worker --> rate
-    worker --> api
-    worker --> adminApi
+    user -->|GET /api/search| worker
+    user -->|GET /api/health| worker
     worker --> views
-    api --> service
-    adminApi --> config
-    service --> ai
-    service --> vectorize
-    service --> configKv
-    config --> configKv
-    service --> ranking
-    ranking --> vectorize
-
-    operator --> importScript
-    html --> importScript
-    importScript --> parser
-    importScript --> importLogic
-    importScript --> ai
-    importScript --> vectorize
+    worker --> api
+    worker --> health
+    api --> demo
+    demo --> catalog
 ```
 
 ## Runtime Flow
@@ -88,125 +52,90 @@ flowchart TD
 
 It routes:
 
-- `GET /` to the search page
-- `GET /admin` to the runtime ranking admin page
+- `GET /` to the demo page
 - `GET /styles.css` to generated CSS
-- `GET /app.js` to the browser search script
-- `GET /admin.js` to the browser admin script
+- `GET /app.js` to the browser script
 - `GET /api/search` to the JSON search endpoint
-- `GET|PUT|DELETE /api/admin/search-weights` to the runtime ranking config endpoint
 - `GET /api/health` to a minimal health response
 
-Before protected routes run, the Worker enforces:
-
-- shared Basic Auth in `src/supervisors/auth.ts`
-- per-client search throttling in `src/rate-limit.ts`
-- restrictive response headers and CSP via `src/views/shared.ts`
+Shared response headers and CSP come from `src/views/shared.ts`.
 
 ### 2. Search Request Path
 
-`GET /api/search?q=...` flows through these modules:
+`GET /api/search?q=...&scenario=...&audience=...` flows through these modules:
 
-1. `src/api/search.ts` validates the query length and shapes the JSON response.
-2. `src/supervisors/service.ts` expands aliases, loads the current ranking weights, and chooses the data path.
-3. In sample mode, results come from `src/supervisors/sample-data.ts`.
-4. In live mode:
-   - Workers AI creates a query embedding.
-   - Vectorize returns candidate matches with metadata.
-   - `src/supervisors/ranking.ts` reranks candidates with explicit weighted signals.
+1. `src/api/search.ts` validates the query length and normalizes the scenario parameter.
+2. `src/cheese/demo.ts` parses the vague request plus any audience refinement text into explicit signals.
+3. `src/cheese/catalog.ts` provides the deterministic cheese records used for scoring.
+4. `src/cheese/demo.ts` scores the catalog differently for baseline, challenge 1, challenge 2, and challenge 3.
 
-The current ranking signals are:
+The current scenario shifts are:
 
-- vector similarity
-- topic overlap
-- supervisor availability
+- `baseline`: surface wording and direct cheese similarity only
+- `challenge-1`: explicit hidden requirements change the ranking
+- `challenge-2`: extra context and product data cues change the ranking
+- `challenge-3`: evaluation checks supplement ranking with quality criteria
 
-### 3. Runtime Ranking Admin Path
+### 3. Browser Runtime
 
-`GET|PUT|DELETE /api/admin/search-weights` flows through these modules:
+`src/views/home.ts` renders one page shell with:
 
-1. `src/api/admin-search-weights.ts` enforces same-origin JSON mutations and shapes the JSON response.
-2. `src/supervisors/config.ts` validates the weight payload and reads or writes the optional KV-backed override.
-3. `src/supervisors/service.ts` uses the active weight set on subsequent search requests without a redeploy.
+- a shared customer-request search input
+- four tabs for baseline and the three challenges
+- a challenge-specific audience textarea
+- a results list and a teaching-insights panel
 
-## Import Flow
+`src/views/home-script.ts` handles:
 
-The deployed Worker does not ingest confidential source data.
-
-Imports happen locally through `scripts/import-supervisors.ts`:
-
-1. Read a confidential HTML snapshot from disk.
-2. Parse supervisors with `src/supervisors/parser.ts`.
-3. Validate import safety with `src/supervisors/import.ts`.
-4. Create embeddings through Workers AI.
-5. Upsert current supervisors into Vectorize.
-6. Delete stale Vectorize ids if the safety guardrails allow it.
-
-This keeps confidential source HTML outside the public app surface.
+- tab switching
+- URL synchronization for `q`, `scenario`, and `audience`
+- debounced same-origin fetches to `/api/search`
+- client-side rendering of result cards, insights, and evaluation checks
 
 ## Data Model
 
-The durable supervisor record shape lives in `src/supervisors/types.ts` as `SupervisorRecord`.
+The committed cheese record shape lives in `src/cheese/catalog.ts` as `CheeseRecord`.
 
-The main stored fields are:
+The main fields are:
 
-- `supervisorId`
+- `cheeseId`
 - `name`
-- `topicArea`
-- `activeThesisCount`
-- `searchText`
-- `sourceFingerprint`
-- `importedAt`
-
-Vectorize metadata uses this record shape directly so the Worker can render results without a second database.
+- `region`
+- `milkType`
+- `style`
+- `textures`
+- `pairings`
+- `servingContexts`
+- `intensity`
+- `priceEur`
+- `stock`
+- `blurb`
 
 ## Key Configuration
 
-### Worker Bindings
-
 Defined through `wrangler.jsonc`:
 
-- `AI` for Workers AI embeddings
-- `SUPERVISOR_SEARCH_INDEX` for Vectorize
-- optional `SUPERVISOR_SEARCH_CONFIG` for KV-backed runtime ranking overrides
-- `SUPERVISOR_SEARCH_EMBEDDING_MODEL` for the default embedding model id
+- Worker name
+- entry module
+- generated CSS build step
 
-### Runtime Secrets And Controls
-
-Expected at runtime:
-
-- `SUPERVISOR_SEARCH_BASIC_AUTH_USERNAME`
-- `SUPERVISOR_SEARCH_BASIC_AUTH_PASSWORD`
-- `SUPERVISOR_SEARCH_RATE_LIMIT_MAX_REQUESTS`
-- `SUPERVISOR_SEARCH_RATE_LIMIT_WINDOW_MS`
-- `SUPERVISOR_SEARCH_USE_SAMPLE_DATA`
-
-### Import Environment
-
-Expected for the local import script:
-
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_API_TOKEN`
-- `SUPERVISOR_SEARCH_INDEX_NAME`
-- optional `SUPERVISOR_SEARCH_EMBEDDING_MODEL`
+No remote bindings or secret-backed runtime controls are required for the current demo.
 
 ## Code Layout
 
 The source tree is split by responsibility:
 
 - `src/api/` for JSON endpoints
+- `src/cheese/` for the committed cheese catalog and scenario scoring logic
 - `src/views/` for HTML, CSS, JS response helpers, and page rendering
-- `src/supervisors/` for auth, aliases, parsing, ranking, sample data, import logic, and search service code
-- `scripts/` for local operator workflows such as imports
+- `scripts/` for local development helpers such as the Playwright server wrapper
 
 ## Intended Boundaries
 
 The current architecture intentionally avoids:
 
-- uploading confidential HTML through the Worker
-- adding a second persistence layer such as D1 or KV for supervisor metadata
-- embedding ranking logic directly in route handlers
-
-The one explicit exception is the optional KV binding for runtime ranking configuration. That binding stores only the small mutable weight object used by `/admin`, not supervisor records or search result content.
+- remote AI calls in the live demo path
+- private import flows or admin-only configuration surfaces
+- opaque ranking logic hidden inside route handlers
 
 Those constraints come from the current spec and ADR set and should only change with explicit documentation updates.

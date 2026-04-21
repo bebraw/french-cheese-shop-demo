@@ -1,6 +1,2 @@
-# Copy this file to .dev.vars and replace placeholder values before running
-# projects that need local secrets.
-SUPERVISOR_SEARCH_BASIC_AUTH_USERNAME=change-this-username
-SUPERVISOR_SEARCH_BASIC_AUTH_PASSWORD=change-this-password
-# Optional: enable local sample data instead of live Vectorize bindings.
-# SUPERVISOR_SEARCH_USE_SAMPLE_DATA=true
+# Copy this file to .dev.vars when a project adds local-only settings.
+# The French cheese shop demo currently runs without required secrets.

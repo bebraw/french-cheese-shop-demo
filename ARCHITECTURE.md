@@ -7,6 +7,7 @@ Use this file for global constraints. Use feature specs under `specs/` for domai
 ## Global Rules
 
 - Keep the template lightweight, reusable, easy to clone, and easy to prune.
+- Prefer deterministic local-first behavior for live demos unless the purpose of the change is to demonstrate a specific remote AI dependency.
 - Treat repo documentation as living context that should evolve with the code.
 - Treat architectural decisions as explicit records, not implicit tribal knowledge.
 - Treat specs and ADRs as the durable source of truth for expected behavior and architectural intent. Code, including AI-generated code, is only acceptable when it matches those documents or updates them intentionally in the same change set.
