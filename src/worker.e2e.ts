@@ -260,6 +260,24 @@ test("challenge 3 options visibly change the results", async ({ page }) => {
   await expect(topResult).toContainText("Backup choice is visible");
 });
 
+test("show why it fits explains challenge 3 results without reordering them", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await page.getByRole("button", { name: /Challenge 3/ }).click();
+
+  const topBefore = await page.locator("#search-results > li h3").first().textContent();
+
+  await page.getByRole("button", { name: "Show why it fits" }).click();
+
+  await expect(page.locator("#search-results > li h3").first()).toHaveText(topBefore || "");
+  await expect(page.locator("#scenario-insights")).toContainText("explain the current ranking instead of changing it");
+
+  const topResult = page.locator("#search-results > li").first();
+  await topResult.getByRole("button", { name: "More" }).click();
+  await expect(topResult).toContainText("This explanation follows the same ranking signals already in play");
+});
+
 test("expands a compact result row on demand", async ({ page }) => {
   await page.goto("/");
 

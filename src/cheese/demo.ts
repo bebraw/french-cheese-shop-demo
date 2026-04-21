@@ -128,7 +128,7 @@ export function searchDemoCatalog({
       explanation: buildExplanation(cheese, matchedSignals, scenario, intent),
       presentationTag: buildPresentationTag(index, scenario, intent),
       matchedSignals,
-      checks: buildChecks(cheese, intent, scenario, index, backupOptionName, effectiveStock),
+      checks: buildChecks(cheese, intent, scenario, index, backupOptionName, effectiveStock, matchedSignals),
     };
   });
 
@@ -574,11 +574,6 @@ function scoreEvaluationFit(cheese: CheeseRecord, intent: ParsedIntent): number 
       passed: !intent.requireInStock || effectiveStock === "in",
       note: formatStockNote(effectiveStock),
     },
-    {
-      label: "Easy to explain to the audience",
-      passed: intent.wantsExplanation ? cheese.blurb.length > 80 : true,
-      note: intent.wantsExplanation ? "Recommendation includes a comparison-friendly rationale" : "Explanation not requested",
-    },
   ];
 
   return averageOrDefault(
@@ -632,6 +627,7 @@ function buildChecks(
   rank: number,
   backupOptionName: string | null,
   effectiveStock: CheeseRecord["stock"],
+  matchedSignals: string[],
 ): DemoResultCheck[] {
   if (scenario !== "challenge-3") {
     return [];
@@ -658,9 +654,13 @@ function buildChecks(
   });
 
   checks.push({
-    label: "Easy to explain to the audience",
-    passed: intent.wantsExplanation ? cheese.blurb.length > 80 : true,
-    note: intent.wantsExplanation ? "Recommendation includes a comparison-friendly rationale" : "Explanation not requested",
+    label: "Why-it-fits explanation is visible",
+    passed: intent.wantsExplanation ? matchedSignals.length >= 2 : true,
+    note: intent.wantsExplanation
+      ? matchedSignals.length >= 2
+        ? `${matchedSignals.length} grounded ranking signals support the explanation`
+        : "Not enough grounded ranking signals to explain this choice clearly"
+      : "Explanation not requested",
   });
 
   if (intent.wantsBackup && rank === 0) {
@@ -755,7 +755,7 @@ function buildInsights(intent: ParsedIntent, scenario: DemoScenarioId, results: 
       insights.push(`Backup choice is marked on ${results[1].name}.`);
     }
     if (intent.wantsExplanation) {
-      insights.push("Expanded cards include a direct why-it-fits explanation.");
+      insights.push("Expanded cards explain the current ranking instead of changing it.");
     }
   }
   if (scenario === "challenge-3" && results.length > 0) {
@@ -793,9 +793,9 @@ function buildExplanation(cheese: CheeseRecord, matchedSignals: string[], scenar
   }
 
   const leadSignal = matchedSignals[0] || "It is the closest overall fit in the current scenario";
-  const supportSignal = matchedSignals[1] || `its ${cheese.style} style keeps the comparison concrete for the audience`;
+  const supportSignal = matchedSignals[1] || `Its ${cheese.style} style keeps the comparison concrete for the audience`;
 
-  return `${leadSignal}. ${supportSignal}.`;
+  return `This explanation follows the same ranking signals already in play: ${leadSignal}. ${supportSignal}.`;
 }
 
 function formatReason(

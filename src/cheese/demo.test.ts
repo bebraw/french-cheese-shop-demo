@@ -115,11 +115,27 @@ describe("searchDemoCatalog", () => {
     });
 
     expect(response.results[0]?.presentationTag).toBe("Top pick");
-    expect(response.results[0]?.explanation).toContain("Close to the requested strength");
+    expect(response.results[0]?.explanation).toContain("same ranking signals already in play");
     expect(response.results[0]?.checks).toHaveLength(5);
     expect(response.results[1]?.presentationTag).toBe("Backup choice");
     expect(response.insights).toContain(`Backup choice is marked on ${response.results[1]?.name}.`);
+    expect(response.insights).toContain("Expanded cards explain the current ranking instead of changing it.");
     expect(response.insights.at(-1)).toContain("current checks");
+  });
+
+  it("does not reorder challenge 3 results when explanation display is enabled", () => {
+    const baseResponse = searchDemoCatalog({
+      query: "I want something like Brie but stronger",
+      scenario: "challenge-3",
+    });
+    const explainedResponse = searchDemoCatalog({
+      query: "I want something like Brie but stronger",
+      scenario: "challenge-3",
+      audienceInput: "show why it fits",
+    });
+
+    expect(explainedResponse.results[0]?.name).toBe(baseResponse.results[0]?.name);
+    expect(explainedResponse.results[0]?.explanation).toContain("same ranking signals already in play");
   });
 
   it("makes shortlist requests visible in challenge 3 results", () => {

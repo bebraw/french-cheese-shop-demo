@@ -68,6 +68,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Challenge behavior must stay explainable through returned insights and, for challenge 3, evaluation checks.
 - Comparative follow-up requests such as `like Livarot, but stronger` should not keep the named reference cheese as the top result when the request explicitly asks for the next stronger or milder step away from it.
 - The `LLM backend` option must remain local and deterministic enough for rehearsal, even if it intentionally produces a different ranking style from the rules engine.
+- Challenge 3 explanation requests should explain the current ranking signals rather than act as a hidden reranking criterion.
 - Challenge 3 should avoid abstract criteria that do not produce a visible change in the result set or result details.
 - Result rows should prioritize quick scanning and avoid showing every explanation block at full length by default.
 - Incremental audience refinements should not collapse an already expanded result row unless that result leaves the visible list.
@@ -132,3 +133,9 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Given: the presenter is on challenge 3
 - When: the audience selects criteria such as `show why it fits`, `mark a backup choice`, or `keep it to two finalists`
 - Then: the results include visible changes that make the quality judgment inspectable
+
+**Scenario: Presenter asks for a why-it-fits explanation**
+
+- Given: the presenter is on challenge 3 with a visible ranked shortlist
+- When: the presenter selects `show why it fits`
+- Then: expanded cards explain the current ranking signals without changing the order by themselves
