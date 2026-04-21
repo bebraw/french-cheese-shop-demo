@@ -17,34 +17,8 @@ export function renderHomePage(): string {
     <main class="px-5 py-6 sm:px-8 sm:py-8 lg:px-12">
       <div class="mx-auto flex max-w-7xl flex-col gap-6">
         <h1 class="font-display text-[clamp(1.35rem,2.8vw,2rem)] leading-none text-app-primary">${escapeHtml(appTitle)}</h1>
-        <section class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
-          <div>
-            <div class="sticky top-4 z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">
-              <label class="block" for="customer-query">
-                <span class="sr-only">Customer request</span>
-                <input id="customer-query" name="q" type="search" autocomplete="off" spellcheck="false" value="${escapeHtml(defaultQuery)}" placeholder="Type the customer request" class="w-full rounded-[1.35rem] bg-app-surface px-5 py-4 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
-              </label>
-              <div id="audience-controls" class="mt-4 hidden">
-                <p id="audience-prompt" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
-                <div id="audience-presets" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Audience answer options"></div>
-                <label class="mt-4 block" for="audience-custom-input">
-                  <span id="audience-label" class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Other audience note</span>
-                  <input id="audience-custom-input" name="audience-note" type="text" autocomplete="off" spellcheck="false" placeholder="" class="w-full rounded-[1.15rem] bg-app-surface px-4 py-3 text-sm leading-6 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
-                </label>
-                <div class="mt-4 border-t border-app-line pt-4">
-                  <p id="audience-summary-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
-                  <p id="audience-summary-empty" class="mt-3 text-sm leading-6 text-app-text-soft">Choose one or more answers below.</p>
-                  <ul id="audience-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
-                </div>
-              </div>
-              <div id="search-status" class="mt-3 text-sm leading-6 text-app-text-soft"></div>
-            </div>
-            <div id="demo-panel" class="mt-6">
-              <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Search Results</p>
-              <ol id="search-results" class="mt-5 grid gap-4" aria-live="polite"></ol>
-            </div>
-          </div>
-          <aside class="lg:sticky lg:top-6 lg:self-start">
+        <section class="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)_18rem] lg:items-start">
+          <aside class="order-2 lg:order-1 lg:sticky lg:top-6 lg:self-start">
             <section>
               <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Challenges</p>
               <div class="mt-4 grid gap-3" role="group" aria-label="Choose demo challenge">
@@ -70,7 +44,35 @@ export function renderHomePage(): string {
                 </button>
               </div>
             </section>
-            <section class="mt-8 border-t border-app-line pt-6">
+          </aside>
+          <div class="order-1 lg:order-2">
+            <div class="sticky top-4 z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">
+              <label class="block" for="customer-query">
+                <span class="sr-only">Customer request</span>
+                <input id="customer-query" name="q" type="search" autocomplete="off" spellcheck="false" value="${escapeHtml(defaultQuery)}" placeholder="Type the customer request" class="w-full rounded-[1.35rem] bg-app-surface px-5 py-4 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
+              </label>
+              <div id="audience-controls" class="mt-4 hidden">
+                <p id="audience-prompt" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
+                <div id="audience-presets" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Audience answer options"></div>
+                <label class="mt-4 block" for="audience-custom-input">
+                  <span id="audience-label" class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Other audience note</span>
+                  <input id="audience-custom-input" name="audience-note" type="text" autocomplete="off" spellcheck="false" placeholder="" class="w-full rounded-[1.15rem] bg-app-surface px-4 py-3 text-sm leading-6 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
+                </label>
+                <div class="mt-4 border-t border-app-line pt-4">
+                  <p id="audience-summary-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
+                  <p id="audience-summary-empty" class="mt-3 text-sm leading-6 text-app-text-soft">Choose one or more answers below.</p>
+                  <ul id="audience-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
+                </div>
+              </div>
+              <div id="search-status" class="mt-3 text-sm leading-6 text-app-text-soft"></div>
+            </div>
+            <div id="demo-panel" class="mt-6">
+              <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Search Results</p>
+              <ol id="search-results" class="mt-5 grid gap-4" aria-live="polite"></ol>
+            </div>
+          </div>
+          <aside class="order-3 lg:sticky lg:top-6 lg:self-start">
+            <section class="mt-8 border-t border-app-line pt-6 lg:mt-0 lg:border-t-0 lg:pt-0">
               <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Requirements Lens</p>
               <h2 id="scenario-title" class="mt-4 font-display text-[2rem] leading-[0.95] text-app-primary">Baseline</h2>
               <p id="scenario-description" class="mt-4 text-sm leading-7 text-app-text-soft">

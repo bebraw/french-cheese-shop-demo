@@ -24,7 +24,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 ### Definition of Done
 
-- [ ] `GET /` renders a single French cheese shop page with clear sidebar controls for baseline, challenge 1, challenge 2, and challenge 3.
+- [ ] `GET /` renders a three-column French cheese shop page on larger screens with challenge controls on the left, the main search view in the middle, and the requirements lens on the right.
 - [ ] `GET /` keeps one shared customer-request input and a challenge-specific audience answer area.
 - [ ] `GET /` opens with the baseline prompt prefilled so the demo starts in a meaningful default state.
 - [ ] `GET /` keeps the baseline and challenge descriptions visible enough that the audience can tell the four passes apart before the presenter switches tabs.
@@ -44,7 +44,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - The live demo must stay publicly accessible without basic auth.
 - The runtime path must stay deterministic enough for rehearsal and live teaching.
 - The challenge controls must continue to share the same underlying customer request so the audience can compare behavior shifts.
-- The challenge controls should stay visible in the right sidebar on larger screens so the top of the page stays compact during the demo.
+- The challenge controls should stay visible in a fixed left sidebar on larger screens, and the requirements lens should stay visible in a fixed right sidebar.
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
 - The default baseline prompt should stay visible in the main request input instead of being repeated in separate promo copy.
 - The baseline and challenge summaries should remain easy to scan from a distance instead of depending on long body copy or tab switching to become understandable.
