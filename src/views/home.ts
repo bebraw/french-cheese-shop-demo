@@ -18,22 +18,20 @@ export function renderHomePage(): string {
       <div class="mx-auto flex max-w-7xl flex-col gap-6">
         <h1 class="font-display text-[clamp(1.35rem,2.8vw,2rem)] leading-none text-app-primary">${escapeHtml(appTitle)}</h1>
         <section class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
-          <div class="rounded-[2rem] border border-app-line bg-app-panel px-5 py-5 shadow-[var(--shadow-panel)] sm:px-6 sm:py-6">
-            <div class="sticky top-4 z-10 rounded-[1.6rem] border border-app-line bg-app-canvas/92 p-3 shadow-[var(--shadow-soft)] supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">
+          <div>
+            <div class="sticky top-4 z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">
               <label class="block" for="customer-query">
                 <span class="sr-only">Customer request</span>
                 <input id="customer-query" name="q" type="search" autocomplete="off" spellcheck="false" value="${escapeHtml(defaultQuery)}" placeholder="Type the customer request" class="w-full rounded-[1.35rem] bg-app-surface px-5 py-4 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
               </label>
               <div id="audience-controls" class="mt-4 hidden">
-                <div class="rounded-[1.35rem] border border-app-line bg-white/72 px-4 py-4">
-                  <p id="audience-prompt" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
-                  <div id="audience-presets" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Audience answer options"></div>
-                  <label class="mt-4 block" for="audience-custom-input">
-                    <span id="audience-label" class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Other audience note</span>
-                    <input id="audience-custom-input" name="audience-note" type="text" autocomplete="off" spellcheck="false" placeholder="" class="w-full rounded-[1.15rem] bg-app-surface px-4 py-3 text-sm leading-6 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
-                  </label>
-                </div>
-                <div class="mt-4 rounded-[1.35rem] border border-app-line bg-app-surface px-4 py-4">
+                <p id="audience-prompt" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
+                <div id="audience-presets" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Audience answer options"></div>
+                <label class="mt-4 block" for="audience-custom-input">
+                  <span id="audience-label" class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Other audience note</span>
+                  <input id="audience-custom-input" name="audience-note" type="text" autocomplete="off" spellcheck="false" placeholder="" class="w-full rounded-[1.15rem] bg-app-surface px-4 py-3 text-sm leading-6 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
+                </label>
+                <div class="mt-4 border-t border-app-line pt-4">
                   <p id="audience-summary-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
                   <p id="audience-summary-empty" class="mt-3 text-sm leading-6 text-app-text-soft">Choose one or more answers below.</p>
                   <ul id="audience-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
@@ -42,51 +40,45 @@ export function renderHomePage(): string {
               <div id="search-status" class="mt-3 text-sm leading-6 text-app-text-soft"></div>
             </div>
             <div id="demo-panel" class="mt-6">
-              <div class="rounded-[1.6rem] border border-app-line bg-white px-5 py-5">
-                <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Search Results</p>
-                <ol id="search-results" class="mt-5 grid gap-4" aria-live="polite"></ol>
-              </div>
+              <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Search Results</p>
+              <ol id="search-results" class="mt-5 grid gap-4" aria-live="polite"></ol>
             </div>
           </div>
           <aside class="lg:sticky lg:top-6 lg:self-start">
-            <div class="space-y-6 rounded-[2rem] border border-app-line bg-app-canvas px-5 py-5 shadow-[var(--shadow-panel)] sm:px-6 sm:py-6">
-              <section>
-                <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Challenges</p>
-                <div class="mt-4 grid gap-3" role="group" aria-label="Choose demo challenge">
-                  <button type="button" class="scenario-guide-item scenario-guide-item-active text-left" data-scenario="baseline" aria-pressed="true">
-                    <p class="scenario-guide-kicker">Baseline</p>
-                    <p class="scenario-guide-title">Surface match</p>
-                    <p class="scenario-guide-copy">Use “${escapeHtml(defaultQuery)}” as-is.</p>
-                  </button>
-                  <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-1" aria-pressed="false">
-                    <p class="scenario-guide-kicker">Challenge 1</p>
-                    <p class="scenario-guide-title">Hidden needs</p>
-                    <p class="scenario-guide-copy">Clarify what the customer means.</p>
-                  </button>
-                  <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-2" aria-pressed="false">
-                    <p class="scenario-guide-kicker">Challenge 2</p>
-                    <p class="scenario-guide-title">Missing data</p>
-                    <p class="scenario-guide-copy">Add facts or context.</p>
-                  </button>
-                  <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-3" aria-pressed="false">
-                    <p class="scenario-guide-kicker">Challenge 3</p>
-                    <p class="scenario-guide-title">Evaluation</p>
-                    <p class="scenario-guide-copy">Define a good answer.</p>
-                  </button>
-                </div>
-              </section>
-              <section>
-                <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Requirements Lens</p>
-                <h2 id="scenario-title" class="mt-4 font-display text-[2rem] leading-[0.95] text-app-primary">Baseline</h2>
-                <p id="scenario-description" class="mt-4 text-sm leading-7 text-app-text-soft">
-                  Start with the request text alone and show the first plausible answer.
-                </p>
-                <div class="mt-6 rounded-[1.5rem] border border-app-line bg-app-surface px-4 py-4">
-                  <p id="insights-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Signals in play</p>
-                  <ul id="scenario-insights" class="mt-4 grid gap-3 text-sm leading-6 text-app-text-soft"></ul>
-                </div>
-              </section>
-            </div>
+            <section>
+              <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Challenges</p>
+              <div class="mt-4 grid gap-3" role="group" aria-label="Choose demo challenge">
+                <button type="button" class="scenario-guide-item scenario-guide-item-active text-left" data-scenario="baseline" aria-pressed="true">
+                  <p class="scenario-guide-kicker">Baseline</p>
+                  <p class="scenario-guide-title">Surface match</p>
+                  <p class="scenario-guide-copy">Use “${escapeHtml(defaultQuery)}” as-is.</p>
+                </button>
+                <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-1" aria-pressed="false">
+                  <p class="scenario-guide-kicker">Challenge 1</p>
+                  <p class="scenario-guide-title">Hidden needs</p>
+                  <p class="scenario-guide-copy">Clarify what the customer means.</p>
+                </button>
+                <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-2" aria-pressed="false">
+                  <p class="scenario-guide-kicker">Challenge 2</p>
+                  <p class="scenario-guide-title">Missing data</p>
+                  <p class="scenario-guide-copy">Add facts or context.</p>
+                </button>
+                <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-3" aria-pressed="false">
+                  <p class="scenario-guide-kicker">Challenge 3</p>
+                  <p class="scenario-guide-title">Evaluation</p>
+                  <p class="scenario-guide-copy">Define a good answer.</p>
+                </button>
+              </div>
+            </section>
+            <section class="mt-8 border-t border-app-line pt-6">
+              <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Requirements Lens</p>
+              <h2 id="scenario-title" class="mt-4 font-display text-[2rem] leading-[0.95] text-app-primary">Baseline</h2>
+              <p id="scenario-description" class="mt-4 text-sm leading-7 text-app-text-soft">
+                Start with the request text alone and show the first plausible answer.
+              </p>
+              <p id="insights-label" class="mt-6 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Signals in play</p>
+              <ul id="scenario-insights" class="mt-4 grid gap-3 text-sm leading-6 text-app-text-soft"></ul>
+            </section>
           </aside>
         </section>
       </div>
