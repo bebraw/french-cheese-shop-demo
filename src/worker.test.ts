@@ -60,6 +60,20 @@ describe("worker", () => {
     expect(payload.results[0]?.name).toBe("Livarot");
   });
 
+  it("applies simulation context to challenge data", async () => {
+    const response = await handleRequest(
+      new Request(
+        "http://example.com/api/search?q=I%20want%20something%20like%20Brie%20but%20stronger&scenario=challenge-2&audience=with%20cider&season=winter&shopState=holiday-rush",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.ok).toBe(true);
+    expect(payload.insights).toContain("Simulation context: winter stock and holiday-rush demand.");
+    expect(payload.results.some((result: { reason: string }) => result.reason.includes("sold out"))).toBe(true);
+  });
+
   it("returns a not found page for unknown routes", async () => {
     const response = await handleRequest(new Request("http://example.com/missing"));
 

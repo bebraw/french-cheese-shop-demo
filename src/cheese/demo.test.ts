@@ -35,6 +35,19 @@ describe("searchDemoCatalog", () => {
     expect(response.insights).toContain("Context data: cider.");
   });
 
+  it("changes visible stock when simulation context is added", () => {
+    const response = searchDemoCatalog({
+      query: "I want something like Brie but stronger",
+      scenario: "challenge-2",
+      audienceInput: "with cider",
+      season: "winter",
+      shopState: "holiday-rush",
+    });
+
+    expect(response.insights).toContain("Simulation context: winter stock and holiday-rush demand.");
+    expect(response.results.some((result) => result.reason.includes("sold out"))).toBe(true);
+  });
+
   it("returns evaluation checks in challenge 3", () => {
     const response = searchDemoCatalog({
       query: "I want something like Brie but stronger",

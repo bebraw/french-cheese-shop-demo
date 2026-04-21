@@ -74,6 +74,11 @@ test("signals in play stays synced and cumulative through challenges", async ({ 
 test("challenge copy keeps hidden needs, data, and evaluation distinct", async ({ page }) => {
   await page.goto("/");
 
+  await expect(page.getByRole("button", { name: /World Context/ })).toBeVisible();
+  await page.getByRole("button", { name: /World Context/ }).click();
+  await expect(page.getByRole("button", { name: "Winter holiday" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Holiday rush" })).toBeVisible();
+
   await page.getByRole("button", { name: /Challenge 1/ }).click();
   await expect(page.locator("#insights-label")).toHaveText("Explicit requirements");
   await expect(page.locator("#scenario-description")).toContainText("customer really means");
@@ -93,6 +98,42 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.getByRole("button", { name: "Show why it fits" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Mark a backup" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Two finalists" })).toBeVisible();
+});
+
+test("simulation context stays visible and affects challenge 2 results", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: /World Context/ }).click();
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await page.getByRole("button", { name: /Challenge 2/ }).click();
+  await page.getByRole("button", { name: "With cider" }).click();
+  await page.getByRole("button", { name: "Winter holiday" }).click();
+  await page.getByRole("button", { name: "Holiday rush" }).click();
+
+  await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter stock and holiday-rush demand.");
+  await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
+  await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
+
+  const firstResult = page.locator("#search-results > li").first();
+  await firstResult.getByRole("button", { name: "More" }).click();
+  await expect(firstResult).toContainText("low stock");
+  await expect(firstResult).toContainText("Simulation stock: low stock");
+});
+
+test("world context can be set in baseline and carries into later challenges", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: /World Context/ }).click();
+  await page.getByRole("button", { name: "Winter holiday" }).click();
+  await page.getByRole("button", { name: "Holiday rush" }).click();
+
+  await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
+  await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
+  await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter stock and holiday-rush demand.");
+
+  await page.getByRole("button", { name: /Challenge 2/ }).click();
+  await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
+  await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
 });
 
 test("an expanded result stays open across evaluation updates", async ({ page }) => {

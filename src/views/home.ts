@@ -44,6 +44,36 @@ export function renderHomePage(): string {
                 </button>
               </div>
             </section>
+            <section class="mt-6 border-t border-app-line pt-5">
+              <button
+                id="context-toggle"
+                type="button"
+                class="flex w-full items-center justify-between gap-3 text-left"
+                aria-expanded="false"
+                aria-controls="context-panel"
+              >
+                <span>
+                  <span class="block text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">World Context</span>
+                  <span class="mt-2 block text-sm leading-6 text-app-text-soft">Optional simulation state shared by baseline and every challenge.</span>
+                </span>
+                <span id="context-toggle-label" class="shrink-0 rounded-full border border-app-line bg-white px-3 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-app-secondary">Show</span>
+              </button>
+              <div id="context-panel" class="mt-4" hidden>
+                <div>
+                  <p class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Season</p>
+                  <div id="season-controls" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Season options"></div>
+                </div>
+                <div class="mt-4">
+                  <p class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Shop state</p>
+                  <div id="shop-state-controls" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Shop state options"></div>
+                </div>
+              </div>
+              <div class="mt-4 border-t border-app-line pt-4">
+                <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Context in play</p>
+                <p id="context-summary-empty" class="mt-3 text-sm leading-6 text-app-text-soft">No world context applied.</p>
+                <ul id="context-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
+              </div>
+            </section>
           </aside>
           <div class="order-1 lg:order-2">
             <div class="sticky top-4 z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">

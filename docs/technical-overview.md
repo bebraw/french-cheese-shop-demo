@@ -18,8 +18,10 @@ This document keeps the implementation-facing repo summary in one place. Use it 
 - `GET /` serves the French cheese shop demo UI
 - `GET /styles.css` serves the generated Tailwind stylesheet
 - `GET /app.js` serves the browser tab and search logic
-- `GET /api/search?q=...&scenario=...&audience=...` serves live demo results as JSON
+- `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...` serves live demo results as JSON
 - `GET /api/health` serves a JSON health response for smoke tests and tooling
+
+The UI keeps `season` and `shopState` in a shared sidebar as optional world context that can affect baseline and every challenge.
 
 ## Source Layout
 

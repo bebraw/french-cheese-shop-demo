@@ -8,9 +8,10 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 ### Architecture
 
-- **Entry points:** `GET /`, `GET /api/search?q=...&scenario=...&audience=...`, and `GET /api/health`
+- **Entry points:** `GET /`, `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...`, and `GET /api/health`
 - **Data models:** `CheeseRecord` in `src/cheese/catalog.ts` is the committed product model. Required fields are `cheeseId`, `name`, `region`, `milkType`, `style`, `textures`, `pairings`, `servingContexts`, `intensity`, `priceEur`, `stock`, and `blurb`.
 - **Scenario contract:** `scenario` must accept `baseline`, `challenge-1`, `challenge-2`, and `challenge-3`.
+- **Simulation context contract:** `season` and `shopState` are shared world-context controls available from baseline through challenge 3.
 - **Dependencies:** The deployed Worker depends only on the committed repo assets and generated CSS. No remote AI, Vectorize, KV, or import-time credentials are part of the current runtime path.
 
 ### Anti-Patterns
@@ -31,12 +32,14 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific choices before falling back to a custom note.
 - [ ] `GET /` carries forward earlier challenge answers into later challenge searches so the teaching flow can layer requirements instead of replacing them.
 - [ ] Each challenge preset list teaches one distinct step in the story: hidden needs, concrete facts, then evaluation criteria.
+- [ ] `GET /` exposes simulation context controls in a shared sidebar so the presenter can change season and shop state explicitly from baseline through challenge 3.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
-- [ ] `GET /api/search?q=...&scenario=...&audience=...` returns ordered cheese recommendations from the committed catalog.
+- [ ] `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...` returns ordered cheese recommendations from the committed catalog.
 - [ ] Search results stay compact by default and can reveal more explanation on demand.
 - [ ] Expanded result rows stay open across incremental challenge updates when the same result remains visible.
 - [ ] The requirements lens stays synchronized with each active ranking signal, including explicit milk type and carry-forward audience cues from earlier challenges.
-- [ ] `baseline` ranks from the request wording alone.
+- [ ] Context controls produce visible availability changes in the results and requirements lens.
+- [ ] `baseline` ranks from the request wording alone unless the presenter enables shared world context.
 - [ ] `challenge-1` makes hidden requirements explicit in the ranking and insight output.
 - [ ] `challenge-2` uses extra product and context cues from the audience input.
 - [ ] `challenge-3` returns evaluation checks alongside the ranking.
@@ -50,6 +53,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - The runtime path must stay deterministic enough for rehearsal and live teaching.
 - The challenge controls must continue to share the same underlying customer request so the audience can compare behavior shifts.
 - Later challenges must preserve earlier explicit audience cues in both ranking and the requirements lens unless the presenter removes them.
+- Shared world context must preserve the selected season and shop state until the presenter changes them, including across baseline and every challenge.
 - Preset examples and lens labels should avoid challenge overlap unless the carry-forward behavior is the point being taught explicitly.
 - The challenge controls should stay visible in a fixed left sidebar on larger screens, and the requirements lens should stay visible in a fixed right sidebar.
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
@@ -76,6 +80,12 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - When: the presenter keeps or enters `I want something like Brie but stronger`
 - Then: the baseline tab returns a plausible but shallow recommendation based on the wording alone and the presenter can explain that step quickly
 
+**Scenario: Presenter adds shared world context before switching challenges**
+
+- Given: the presenter opens the world-context sidebar in baseline
+- When: the presenter selects a season or shop-state overlay such as `Winter holiday`
+- Then: the same context remains active in baseline and every later challenge until the presenter changes it
+
 **Scenario: Presenter expands one result**
 
 - Given: a result list is visible
@@ -97,8 +107,8 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 **Scenario: Audience adds data needs**
 
 - Given: the presenter is on challenge 2
-- When: the audience selects extra context such as `serve it with cider` or `it must be in stock`
-- Then: the ranking changes to use those product and context data cues
+- When: the audience selects extra context such as `serve it with cider`, `it must be in stock`, or `Winter holiday`
+- Then: the ranking changes to use those product, context, and simulation cues
 
 **Scenario: Presenter carries earlier requirements into later challenges**
 

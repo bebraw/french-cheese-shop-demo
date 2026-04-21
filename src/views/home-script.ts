@@ -8,6 +8,13 @@ const audienceLabel = document.getElementById("audience-label");
 const audienceSummaryLabelElement = document.getElementById("audience-summary-label");
 const audienceSummaryEmptyElement = document.getElementById("audience-summary-empty");
 const audienceSummaryChipsElement = document.getElementById("audience-summary-chips");
+const contextToggle = document.getElementById("context-toggle");
+const contextToggleLabel = document.getElementById("context-toggle-label");
+const contextPanel = document.getElementById("context-panel");
+const seasonControlsElement = document.getElementById("season-controls");
+const shopStateControlsElement = document.getElementById("shop-state-controls");
+const contextSummaryEmptyElement = document.getElementById("context-summary-empty");
+const contextSummaryChipsElement = document.getElementById("context-summary-chips");
 const statusElement = document.getElementById("search-status");
 const resultsElement = document.getElementById("search-results");
 const scenarioTitleElement = document.getElementById("scenario-title");
@@ -18,6 +25,8 @@ const scenarioButtons = Array.from(document.querySelectorAll("[data-scenario]"))
 const searchParamName = "q";
 const scenarioParamName = "scenario";
 const audienceParamName = "audience";
+const seasonParamName = "season";
+const shopStateParamName = "shopState";
 const minimumQueryLength = 2;
 const defaultQuery = "I want something like Brie, but stronger.";
 const challengeSequence = ["challenge-1", "challenge-2", "challenge-3"];
@@ -26,6 +35,17 @@ let activeController = null;
 let requestCounter = 0;
 let activeScenario = "baseline";
 const expandedResultIds = new Set();
+let contextPanelOpen = false;
+const seasonOptions = [
+  { id: "spring", label: "Spring menu" },
+  { id: "summer", label: "Summer picnic" },
+  { id: "autumn", label: "Autumn board" },
+  { id: "winter", label: "Winter holiday" },
+];
+const shopStateOptions = [
+  { id: "normal", label: "Normal service" },
+  { id: "holiday-rush", label: "Holiday rush" },
+];
 
 const scenarios = {
   baseline: {
@@ -94,6 +114,10 @@ const audienceState = {
   "challenge-2": { selectedPresetIds: [], customText: "" },
   "challenge-3": { selectedPresetIds: [], customText: "" },
 };
+const contextState = {
+  season: "",
+  shopState: "",
+};
 
 function setStatus(message) {
   statusElement.textContent = message;
@@ -123,15 +147,29 @@ function clearAudienceSummary() {
   }
 }
 
+function clearSeasonControls() {
+  while (seasonControlsElement.firstChild) {
+    seasonControlsElement.removeChild(seasonControlsElement.firstChild);
+  }
+}
+
+function clearShopStateControls() {
+  while (shopStateControlsElement.firstChild) {
+    shopStateControlsElement.removeChild(shopStateControlsElement.firstChild);
+  }
+}
+
+function clearContextSummary() {
+  while (contextSummaryChipsElement.firstChild) {
+    contextSummaryChipsElement.removeChild(contextSummaryChipsElement.firstChild);
+  }
+}
+
 function getAudienceState(scenario) {
   return audienceState[scenario];
 }
 
 function getScenarioTrail(scenario) {
-  if (scenario === "baseline") {
-    return [];
-  }
-
   const scenarioIndex = challengeSequence.indexOf(scenario);
   return scenarioIndex >= 0 ? challengeSequence.slice(0, scenarioIndex + 1) : [];
 }
@@ -177,10 +215,33 @@ function buildAudienceSummaryItems(scenario) {
   return buildAccumulatedAudienceParts(scenario, (preset) => preset.label);
 }
 
+function getContextSummaryItems(scenario) {
+  const items = [];
+  const season = seasonOptions.find((option) => option.id === contextState.season);
+  const shopState = shopStateOptions.find((option) => option.id === contextState.shopState);
+
+  if (season) {
+    items.push(season.label);
+  }
+  if (shopState) {
+    items.push(shopState.label);
+  }
+
+  return items;
+}
+
+function readContextQuery(scenario) {
+  return {
+    season: contextState.season,
+    shopState: contextState.shopState,
+  };
+}
+
 function syncUrlState(rawQuery, scenario) {
   const url = new URL(window.location.href);
   const query = rawQuery.trim();
   const audience = buildAudienceInput(scenario);
+  const context = readContextQuery(scenario);
 
   if (query) {
     url.searchParams.set(searchParamName, query);
@@ -198,6 +259,18 @@ function syncUrlState(rawQuery, scenario) {
     url.searchParams.set(audienceParamName, audience);
   } else {
     url.searchParams.delete(audienceParamName);
+  }
+
+  if (context.season) {
+    url.searchParams.set(seasonParamName, context.season);
+  } else {
+    url.searchParams.delete(seasonParamName);
+  }
+
+  if (context.shopState) {
+    url.searchParams.set(shopStateParamName, context.shopState);
+  } else {
+    url.searchParams.delete(shopStateParamName);
   }
 
   window.history.replaceState(window.history.state, "", url);
@@ -236,6 +309,37 @@ function renderAudienceSummary(scenario) {
   }
 }
 
+function renderContextSummary(scenario) {
+  clearContextSummary();
+
+  const summaryItems = getContextSummaryItems(scenario);
+  const hasItems = summaryItems.length > 0;
+  contextSummaryEmptyElement.textContent = hasItems ? "" : "No world context applied.";
+
+  for (const itemText of summaryItems) {
+    const item = document.createElement("li");
+    item.className = "audience-summary-chip";
+    item.textContent = itemText;
+    contextSummaryChipsElement.appendChild(item);
+  }
+}
+
+function renderToggleGroup(options, selectedId, container, onSelect) {
+  for (const option of options) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "audience-preset";
+    button.textContent = option.label;
+    const isActive = selectedId === option.id;
+    button.setAttribute("aria-pressed", String(isActive));
+    button.classList.toggle("audience-preset-active", isActive);
+    button.addEventListener("click", () => {
+      onSelect(isActive ? "" : option.id);
+    });
+    container.appendChild(button);
+  }
+}
+
 function renderAudiencePresets(scenario) {
   clearAudiencePresets();
 
@@ -265,6 +369,27 @@ function renderAudiencePresets(scenario) {
     });
     audiencePresetsElement.appendChild(button);
   }
+}
+
+function renderContextControls(scenario) {
+  clearSeasonControls();
+  clearShopStateControls();
+
+  renderToggleGroup(seasonOptions, contextState.season, seasonControlsElement, (nextSeason) => {
+    contextState.season = nextSeason;
+    renderContextControls(activeScenario);
+    renderContextSummary(activeScenario);
+    syncUrlState(queryInput.value, activeScenario);
+    scheduleSearch();
+  });
+
+  renderToggleGroup(shopStateOptions, contextState.shopState, shopStateControlsElement, (nextShopState) => {
+    contextState.shopState = nextShopState;
+    renderContextControls(activeScenario);
+    renderContextSummary(activeScenario);
+    syncUrlState(queryInput.value, activeScenario);
+    scheduleSearch();
+  });
 }
 
 function renderResults(results, scenario) {
@@ -403,6 +528,14 @@ function applyScenario(nextScenario) {
 
   renderAudiencePresets(nextScenario);
   renderAudienceSummary(nextScenario);
+  renderContextControls(nextScenario);
+  renderContextSummary(nextScenario);
+}
+
+function renderContextPanel() {
+  contextPanel.hidden = !contextPanelOpen;
+  contextToggle.setAttribute("aria-expanded", String(contextPanelOpen));
+  contextToggleLabel.textContent = contextPanelOpen ? "Hide" : "Show";
 }
 
 async function runSearch(rawQuery, rawAudience) {
@@ -446,7 +579,11 @@ async function runSearch(rawQuery, rawAudience) {
         "&scenario=" +
         encodeURIComponent(activeScenario) +
         "&audience=" +
-        encodeURIComponent(audience),
+        encodeURIComponent(audience) +
+        "&season=" +
+        encodeURIComponent(readContextQuery(activeScenario).season) +
+        "&shopState=" +
+        encodeURIComponent(readContextQuery(activeScenario).shopState),
       {
         headers: {
           accept: "application/json",
@@ -514,6 +651,11 @@ audienceCustomInput.addEventListener("input", () => {
   scheduleSearch();
 });
 
+contextToggle.addEventListener("click", () => {
+  contextPanelOpen = !contextPanelOpen;
+  renderContextPanel();
+});
+
 for (const button of scenarioButtons) {
   button.addEventListener("click", () => {
     applyScenario(button.dataset.scenario || "baseline");
@@ -526,16 +668,28 @@ const initialUrl = new URL(window.location.href);
 const initialScenario = scenarios[initialUrl.searchParams.get(scenarioParamName)] ? initialUrl.searchParams.get(scenarioParamName) : "baseline";
 const initialQuery = initialUrl.searchParams.get(searchParamName) || defaultQuery;
 const initialAudience = initialUrl.searchParams.get(audienceParamName) || "";
+const initialSeason = initialUrl.searchParams.get(seasonParamName) || "";
+const initialShopState = initialUrl.searchParams.get(shopStateParamName) || "";
 
 applyScenario(initialScenario);
 if (initialQuery) {
   queryInput.value = initialQuery;
 }
+if (seasonOptions.some((option) => option.id === initialSeason)) {
+  contextState.season = initialSeason;
+}
+if (shopStateOptions.some((option) => option.id === initialShopState)) {
+  contextState.shopState = initialShopState;
+}
+contextPanelOpen = Boolean(contextState.season || contextState.shopState);
 if (initialAudience && initialScenario !== "baseline") {
   getAudienceState(initialScenario).customText = initialAudience;
   audienceCustomInput.value = initialAudience;
   renderAudienceSummary(initialScenario);
 }
+renderContextPanel();
+renderContextControls(initialScenario);
+renderContextSummary(initialScenario);
 runSearch(initialQuery, initialAudience);
 `;
 }

@@ -1,4 +1,4 @@
-import { cheeseCatalog, type CheeseRecord } from "./catalog";
+import { cheeseCatalog, type CheeseRecord, type ShopState, type SimulationSeason } from "./catalog";
 
 export const MINIMUM_QUERY_LENGTH = 2;
 
@@ -8,6 +8,8 @@ export interface DemoSearchParams {
   query: string;
   scenario: DemoScenarioId;
   audienceInput?: string;
+  season?: SimulationSeason | "";
+  shopState?: ShopState | "";
 }
 
 export interface DemoResultCheck {
@@ -53,6 +55,8 @@ interface ParsedIntent {
   wantsShortlist: boolean;
   wantsBackup: boolean;
   wantsExplanation: boolean;
+  season: SimulationSeason | "";
+  shopState: ShopState | "";
   queryTokens: Set<string>;
   audienceTokens: Set<string>;
 }
@@ -80,9 +84,15 @@ const scenarioCopy: Record<DemoScenarioId, { teachingFocus: string; promptLabel:
   },
 };
 
-export function searchDemoCatalog({ query, scenario, audienceInput = "" }: DemoSearchParams): DemoSearchResponse {
+export function searchDemoCatalog({
+  query,
+  scenario,
+  audienceInput = "",
+  season = "",
+  shopState = "",
+}: DemoSearchParams): DemoSearchResponse {
   const normalizedAudienceInput = audienceInput.trim();
-  const intent = parseIntent(query, normalizedAudienceInput, scenario);
+  const intent = parseIntent(query, normalizedAudienceInput, scenario, season, shopState);
   const scored = cheeseCatalog
     .map((cheese) => scoreCheese(cheese, intent, scenario))
     .sort((left, right) => right.score - left.score || left.cheese.name.localeCompare(right.cheese.name));
@@ -90,18 +100,22 @@ export function searchDemoCatalog({ query, scenario, audienceInput = "" }: DemoS
   const visibleScored = scored.slice(0, visibleCount);
   const backupOptionName = intent.wantsBackup && visibleScored[1] ? visibleScored[1].cheese.name : null;
 
-  const visibleResults = visibleScored.map(({ cheese, score, matchedSignals }, index) => ({
-    cheeseId: cheese.cheeseId,
-    name: cheese.name,
-    meta: formatMeta(cheese),
-    blurb: cheese.blurb,
-    score,
-    reason: formatReason(cheese, matchedSignals, scenario, intent),
-    explanation: buildExplanation(cheese, matchedSignals, scenario, intent),
-    presentationTag: buildPresentationTag(index, scenario, intent),
-    matchedSignals,
-    checks: buildChecks(cheese, intent, scenario, index, backupOptionName),
-  }));
+  const visibleResults = visibleScored.map(({ cheese, score, matchedSignals }, index) => {
+    const effectiveStock = resolveEffectiveStock(cheese, intent);
+
+    return {
+      cheeseId: cheese.cheeseId,
+      name: cheese.name,
+      meta: formatMeta(cheese),
+      blurb: cheese.blurb,
+      score,
+      reason: formatReason(cheese, matchedSignals, scenario, intent, effectiveStock),
+      explanation: buildExplanation(cheese, matchedSignals, scenario, intent),
+      presentationTag: buildPresentationTag(index, scenario, intent),
+      matchedSignals,
+      checks: buildChecks(cheese, intent, scenario, index, backupOptionName, effectiveStock),
+    };
+  });
 
   return {
     ok: true,
@@ -141,6 +155,10 @@ function scoreCheese(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoS
       evaluationFit * 0.25;
   }
 
+  if (hasSimulationContext(intent)) {
+    score += scenario === "baseline" ? contextFit * 0.2 : scenario === "challenge-1" ? contextFit * 0.12 : 0;
+  }
+
   return {
     cheese,
     score: roundScore(score),
@@ -156,7 +174,13 @@ function scoreReferenceMention(cheese: CheeseRecord, referenceCheese: CheeseReco
   return cheese.cheeseId === referenceCheese.cheeseId ? 1 : 0;
 }
 
-function parseIntent(query: string, audienceInput: string, scenario: DemoScenarioId): ParsedIntent {
+function parseIntent(
+  query: string,
+  audienceInput: string,
+  scenario: DemoScenarioId,
+  season: SimulationSeason | "",
+  shopState: ShopState | "",
+): ParsedIntent {
   const normalizedQuery = normalizeText(query);
   const normalizedAudience = scenario === "baseline" ? "" : normalizeText(audienceInput);
   const combinedText = [normalizedQuery, normalizedAudience].filter(Boolean).join(" ");
@@ -191,6 +215,8 @@ function parseIntent(query: string, audienceInput: string, scenario: DemoScenari
       combinedText.includes("why") ||
       combinedText.includes("because") ||
       combinedText.includes("show why"),
+    season,
+    shopState,
     queryTokens,
     audienceTokens,
   };
@@ -413,6 +439,7 @@ function scoreAttributeFit(cheese: CheeseRecord, intent: ParsedIntent): number {
 
 function scoreContextFit(cheese: CheeseRecord, intent: ParsedIntent): number {
   const checks: number[] = [];
+  const effectiveStock = resolveEffectiveStock(cheese, intent);
 
   if (intent.desiredPairings.size > 0) {
     const matchedPairings = [...intent.desiredPairings].filter((pairing) => cheese.pairings.includes(pairing)).length;
@@ -423,13 +450,17 @@ function scoreContextFit(cheese: CheeseRecord, intent: ParsedIntent): number {
     checks.push(matchedContexts / intent.desiredContexts.size);
   }
   if (intent.requireInStock) {
-    checks.push(cheese.stock === "in" ? 1 : cheese.stock === "low" ? 0.45 : 0);
+    checks.push(scoreStockLevel(effectiveStock));
+  }
+  if (hasSimulationContext(intent)) {
+    checks.push(scoreStockLevel(effectiveStock));
   }
 
   return averageOrDefault(checks, 0.5);
 }
 
 function scoreEvaluationFit(cheese: CheeseRecord, intent: ParsedIntent): number {
+  const effectiveStock = resolveEffectiveStock(cheese, intent);
   const checks: DemoResultCheck[] = [
     {
       label: "Strength fits the request",
@@ -443,8 +474,8 @@ function scoreEvaluationFit(cheese: CheeseRecord, intent: ParsedIntent): number 
     },
     {
       label: "Operationally available",
-      passed: !intent.requireInStock || cheese.stock === "in",
-      note: cheese.stock === "in" ? "In stock today" : cheese.stock === "low" ? "Low stock" : "Sold out",
+      passed: !intent.requireInStock || effectiveStock === "in",
+      note: formatStockNote(effectiveStock),
     },
     {
       label: "Easy to explain to the audience",
@@ -461,6 +492,7 @@ function scoreEvaluationFit(cheese: CheeseRecord, intent: ParsedIntent): number 
 
 function buildMatchedSignals(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoScenarioId): string[] {
   const signals: string[] = [];
+  const effectiveStock = resolveEffectiveStock(cheese, intent);
 
   if (scenario !== "baseline" && intent.referenceCheese && cheese.cheeseId !== intent.referenceCheese.cheeseId) {
     signals.push(`Similar milk/style profile to ${intent.referenceCheese.name}`);
@@ -480,8 +512,11 @@ function buildMatchedSignals(cheese: CheeseRecord, intent: ParsedIntent, scenari
       signals.push(`Works with ${matchedPairings.join(", ")}`);
     }
   }
-  if (scenario !== "baseline" && intent.requireInStock && cheese.stock === "in") {
+  if (scenario !== "baseline" && intent.requireInStock && effectiveStock === "in") {
     signals.push("Currently in stock");
+  }
+  if (hasSimulationContext(intent)) {
+    signals.push(`Simulation stock: ${formatStockLabel(effectiveStock)}`);
   }
 
   return signals.length > 0 ? signals : ["Closest overall fit in the current scenario"];
@@ -493,6 +528,7 @@ function buildChecks(
   scenario: DemoScenarioId,
   rank: number,
   backupOptionName: string | null,
+  effectiveStock: CheeseRecord["stock"],
 ): DemoResultCheck[] {
   if (scenario !== "challenge-3") {
     return [];
@@ -514,8 +550,8 @@ function buildChecks(
 
   checks.push({
     label: "Operationally available",
-    passed: !intent.requireInStock || cheese.stock === "in",
-    note: cheese.stock === "in" ? "In stock today" : cheese.stock === "low" ? "Low stock" : "Sold out",
+    passed: !intent.requireInStock || effectiveStock === "in",
+    note: formatStockNote(effectiveStock),
   });
 
   checks.push({
@@ -564,6 +600,20 @@ function buildInsights(intent: ParsedIntent, scenario: DemoScenarioId, results: 
   }
   if ((scenario === "challenge-2" || scenario === "challenge-3") && intent.requireInStock) {
     insights.push("In-stock filtering is on.");
+  }
+  if (hasSimulationContext(intent)) {
+    const contextParts: string[] = [];
+    if (intent.season) {
+      contextParts.push(`${intent.season} stock`);
+    }
+    if (intent.shopState === "holiday-rush") {
+      contextParts.push("holiday-rush demand");
+    } else if (intent.shopState === "normal") {
+      contextParts.push("normal service");
+    }
+    if (contextParts.length > 0) {
+      insights.push(`Simulation context: ${contextParts.join(" and ")}.`);
+    }
   }
   if (scenario === "challenge-3") {
     const evaluationSignals: string[] = [];
@@ -631,11 +681,19 @@ function buildExplanation(cheese: CheeseRecord, matchedSignals: string[], scenar
   return `${leadSignal}. ${supportSignal}.`;
 }
 
-function formatReason(cheese: CheeseRecord, matchedSignals: string[], scenario: DemoScenarioId, intent: ParsedIntent): string {
-  const stockLabel = cheese.stock === "in" ? "in stock" : cheese.stock === "low" ? "low stock" : "sold out";
+function formatReason(
+  cheese: CheeseRecord,
+  matchedSignals: string[],
+  scenario: DemoScenarioId,
+  intent: ParsedIntent,
+  effectiveStock: CheeseRecord["stock"],
+): string {
+  const stockLabel = formatStockLabel(effectiveStock);
   const scenarioSuffix =
     scenario === "baseline"
-      ? "Surface match only."
+      ? hasSimulationContext(intent)
+        ? "Surface match with shared world context."
+        : "Surface match only."
       : scenario === "challenge-3"
         ? intent.wantsExplanation
           ? "Use the explanation panel to justify the choice."
@@ -659,6 +717,44 @@ function tokenize(value: string): Set<string> {
       .map((token) => token.trim())
       .filter((token) => token.length >= 2),
   );
+}
+
+function hasSimulationContext(intent: ParsedIntent): boolean {
+  return Boolean(intent.season || intent.shopState);
+}
+
+function resolveEffectiveStock(cheese: CheeseRecord, intent: ParsedIntent): CheeseRecord["stock"] {
+  let stock = cheese.stock;
+
+  if (intent.season && cheese.seasonalStock?.[intent.season]) {
+    stock = pickLowerStock(stock, cheese.seasonalStock[intent.season] || stock);
+  }
+
+  if (intent.shopState === "holiday-rush" && cheese.holidayRushStock) {
+    stock = pickLowerStock(stock, cheese.holidayRushStock);
+  }
+
+  return stock;
+}
+
+function pickLowerStock(left: CheeseRecord["stock"], right: CheeseRecord["stock"]): CheeseRecord["stock"] {
+  return stockSeverity(left) <= stockSeverity(right) ? left : right;
+}
+
+function stockSeverity(stock: CheeseRecord["stock"]): number {
+  return stock === "out" ? 0 : stock === "low" ? 1 : 2;
+}
+
+function scoreStockLevel(stock: CheeseRecord["stock"]): number {
+  return stock === "in" ? 1 : stock === "low" ? 0.45 : 0;
+}
+
+function formatStockLabel(stock: CheeseRecord["stock"]): string {
+  return stock === "in" ? "in stock" : stock === "low" ? "low stock" : "sold out";
+}
+
+function formatStockNote(stock: CheeseRecord["stock"]): string {
+  return stock === "in" ? "In stock in this context" : stock === "low" ? "Low stock in this context" : "Sold out in this context";
 }
 
 function averageOrDefault(values: number[], defaultValue: number): number {

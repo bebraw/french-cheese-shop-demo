@@ -36,6 +36,17 @@ describe("createSearchResponse", () => {
     expect(payload.insights).toContain("Context data: cider.");
   });
 
+  it("accepts simulation context for later challenges", async () => {
+    const response = await createSearchResponse(
+      new Request("http://example.com/api/search?q=like%20Brie%20but%20stronger&scenario=challenge-2&season=winter&shopState=holiday-rush"),
+    );
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.ok).toBe(true);
+    expect(payload.insights).toContain("Simulation context: winter stock and holiday-rush demand.");
+  });
+
   it("falls back to baseline when the scenario parameter is unknown", async () => {
     const response = await createSearchResponse(new Request("http://example.com/api/search?q=brie&scenario=unknown"));
 
