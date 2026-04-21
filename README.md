@@ -1,8 +1,6 @@
-# supervisor-search
+# french-cheese-shop-demo
 
-`supervisor-search` is a Cloudflare Worker application for helping MSc students find a suitable thesis supervisor. A confidential HTML snapshot is parsed locally, embedded, and synced into Vectorize. The deployed app stays lightweight: it serves a basic-auth-protected search UI and a realtime search API that reranks Vectorize candidates in Worker code.
-
-The repository also includes a sanitized fixture at `src/supervisors/fixtures/sanitized-supervisor-snapshot.html` for parser and dry-run import testing. That fixture is anonymized and intentionally stripped down; it is not the confidential source snapshot used for production imports.
+This is the demo portion for [french-cheese-shop](https://github.com/bebraw/french-cheese-shop) presentation.
 
 The repo vendors ASDLC reference material in `.asdlc/` as local guidance instead of recreating it per project. Repo-specific truth lives in `ARCHITECTURE.md`, `specs/`, and `docs/adrs/`: generated code still needs to match those documents, and passing CI alone is not enough.
 
