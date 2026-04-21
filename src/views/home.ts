@@ -20,30 +20,8 @@ export function renderHomePage(): string {
           <div class="px-6 py-6 sm:px-8 sm:py-8">
             <h1 class="max-w-4xl font-display text-[clamp(1.9rem,4vw,3rem)] leading-[0.94] text-app-primary">${escapeHtml(appTitle)}</h1>
             <p class="mt-3 max-w-2xl text-base leading-7 text-app-text-soft sm:text-lg">
-              One vague request. Four ways to tighten it.
+              One request. Four lenses.
             </p>
-            <div class="mt-6 grid gap-3 sm:grid-cols-2" role="group" aria-label="Choose demo challenge">
-              <button type="button" class="scenario-guide-item scenario-guide-item-active text-left" data-scenario="baseline" aria-pressed="true">
-                <p class="scenario-guide-kicker">Baseline</p>
-                <p class="scenario-guide-title">Surface wording only</p>
-                <p class="scenario-guide-copy">Start with “${escapeHtml(defaultQuery)}” as written.</p>
-              </button>
-              <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-1" aria-pressed="false">
-                <p class="scenario-guide-kicker">Challenge 1</p>
-                <p class="scenario-guide-title">Hidden requirements</p>
-                <p class="scenario-guide-copy">Ask what “like Brie” and “stronger” really mean.</p>
-              </button>
-              <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-2" aria-pressed="false">
-                <p class="scenario-guide-kicker">Challenge 2</p>
-                <p class="scenario-guide-title">Missing data</p>
-                <p class="scenario-guide-copy">Add facts like stock, pairing, or style.</p>
-              </button>
-              <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-3" aria-pressed="false">
-                <p class="scenario-guide-kicker">Challenge 3</p>
-                <p class="scenario-guide-title">Evaluation</p>
-                <p class="scenario-guide-copy">Decide what counts as a good answer.</p>
-              </button>
-            </div>
           </div>
         </header>
         <section class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
@@ -77,15 +55,44 @@ export function renderHomePage(): string {
               </div>
             </div>
           </div>
-          <aside class="rounded-[2rem] border border-app-line bg-app-canvas px-5 py-5 shadow-[var(--shadow-panel)] sm:px-6 sm:py-6">
-            <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Requirements Lens</p>
-            <h2 id="scenario-title" class="mt-4 font-display text-[2rem] leading-[0.95] text-app-primary">Baseline</h2>
-            <p id="scenario-description" class="mt-4 text-sm leading-7 text-app-text-soft">
-              Start with the request text alone and show the first plausible answer.
-            </p>
-            <div class="mt-6 rounded-[1.5rem] border border-app-line bg-app-surface px-4 py-4">
-              <p id="insights-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Signals in play</p>
-              <ul id="scenario-insights" class="mt-4 grid gap-3 text-sm leading-6 text-app-text-soft"></ul>
+          <aside class="lg:sticky lg:top-6 lg:self-start">
+            <div class="space-y-6 rounded-[2rem] border border-app-line bg-app-canvas px-5 py-5 shadow-[var(--shadow-panel)] sm:px-6 sm:py-6">
+              <section>
+                <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Challenges</p>
+                <div class="mt-4 grid gap-3" role="group" aria-label="Choose demo challenge">
+                  <button type="button" class="scenario-guide-item scenario-guide-item-active text-left" data-scenario="baseline" aria-pressed="true">
+                    <p class="scenario-guide-kicker">Baseline</p>
+                    <p class="scenario-guide-title">Surface match</p>
+                    <p class="scenario-guide-copy">Use “${escapeHtml(defaultQuery)}” as-is.</p>
+                  </button>
+                  <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-1" aria-pressed="false">
+                    <p class="scenario-guide-kicker">Challenge 1</p>
+                    <p class="scenario-guide-title">Hidden needs</p>
+                    <p class="scenario-guide-copy">Clarify what the customer means.</p>
+                  </button>
+                  <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-2" aria-pressed="false">
+                    <p class="scenario-guide-kicker">Challenge 2</p>
+                    <p class="scenario-guide-title">Missing data</p>
+                    <p class="scenario-guide-copy">Add facts or context.</p>
+                  </button>
+                  <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-3" aria-pressed="false">
+                    <p class="scenario-guide-kicker">Challenge 3</p>
+                    <p class="scenario-guide-title">Evaluation</p>
+                    <p class="scenario-guide-copy">Define a good answer.</p>
+                  </button>
+                </div>
+              </section>
+              <section>
+                <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Requirements Lens</p>
+                <h2 id="scenario-title" class="mt-4 font-display text-[2rem] leading-[0.95] text-app-primary">Baseline</h2>
+                <p id="scenario-description" class="mt-4 text-sm leading-7 text-app-text-soft">
+                  Start with the request text alone and show the first plausible answer.
+                </p>
+                <div class="mt-6 rounded-[1.5rem] border border-app-line bg-app-surface px-4 py-4">
+                  <p id="insights-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Signals in play</p>
+                  <ul id="scenario-insights" class="mt-4 grid gap-3 text-sm leading-6 text-app-text-soft"></ul>
+                </div>
+              </section>
             </div>
           </aside>
         </section>

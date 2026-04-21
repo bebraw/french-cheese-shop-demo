@@ -27,7 +27,7 @@ let activeScenario = "baseline";
 const scenarios = {
   baseline: {
     title: "Baseline",
-    description: "Use only the request text and show the first plausible answer.",
+    description: "Use the request as-is.",
     audienceLabel: "",
     audiencePlaceholder: "",
     audiencePrompt: "",
@@ -35,11 +35,11 @@ const scenarios = {
     presets: [],
   },
   "challenge-1": {
-    title: "Challenge 1: Hidden Requirements",
-    description: "Turn fuzzy preferences into explicit requirements.",
-    audienceLabel: "Other hidden requirement",
-    audiencePlaceholder: "Add a custom hidden requirement if the audience says something else.",
-    audiencePrompt: "What did the audience clarify?",
+    title: "Challenge 1: Hidden Needs",
+    description: "Make implied preferences explicit.",
+    audienceLabel: "Other hidden need",
+    audiencePlaceholder: "Add another hidden need.",
+    audiencePrompt: "What changed?",
     audienceSummaryLabel: "Audience answer",
     presets: [
       { id: "creamy", label: "Keep it creamy", value: "keep it creamy" },
@@ -50,10 +50,10 @@ const scenarios = {
   },
   "challenge-2": {
     title: "Challenge 2: Data Requirements",
-    description: "Add the product facts or customer context the model needs.",
+    description: "Add facts or context.",
     audienceLabel: "Other missing data",
-    audiencePlaceholder: "Add another fact or context cue from the audience.",
-    audiencePrompt: "What extra data should the system use?",
+    audiencePlaceholder: "Add another fact or cue.",
+    audiencePrompt: "What data matters?",
     audienceSummaryLabel: "Audience answer",
     presets: [
       { id: "cider", label: "With cider", value: "with cider" },
@@ -64,11 +64,11 @@ const scenarios = {
     ],
   },
   "challenge-3": {
-    title: "Challenge 3: Evaluation Under Uncertainty",
-    description: "Make success criteria visible so the answer can be judged.",
+    title: "Challenge 3: Evaluation",
+    description: "Set visible success checks.",
     audienceLabel: "Other evaluation criterion",
-    audiencePlaceholder: "Add another way the audience wants to judge the answer.",
-    audiencePrompt: "How should the answer be judged?",
+    audiencePlaceholder: "Add another success check.",
+    audiencePrompt: "How do we judge it?",
     audienceSummaryLabel: "Evaluation criteria",
     presets: [
       { id: "explain", label: "Explain why", value: "explain why it fits" },
