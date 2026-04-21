@@ -4,13 +4,14 @@
 
 ### Context
 
-The template README is the first surface contributors see. It should identify the current starter app clearly near the top, explain how vendored ASDLC references relate to repo-specific docs, point contributors at the current runtime and verification commands, and do that without reintroducing heavyweight screenshot tooling.
+The template README is the first surface contributors see. It should identify the current starter app clearly near the top, explain how vendored ASDLC references relate to repo-specific docs, point contributors at the current runtime and verification commands, and give a concise presentation-ready summary without reintroducing heavyweight screenshot tooling.
 
 ### Architecture
 
 - **Primary document:** `README.md`
 - **Committed screenshot asset:** `docs/screenshots/home.png`
 - **Current workflow summary:** runtime, verification, source layout, and documentation contract notes in `README.md`
+- **Demo summary:** a short presentation flow in `README.md` that keeps the live demo easy to explain under time pressure
 - **Update model:** manual refresh when the starter UI changes materially
 - **Non-goal:** no screenshot-specific package scripts or screenshot-sync workflows
 
@@ -39,6 +40,7 @@ The template README is the first surface contributors see. It should identify th
 - `README.md` should let a new reader understand the current app and rendering model before they start exploring the source tree.
 - `README.md` should describe the current documentation contract accurately, including that specs and ADRs remain authoritative over generated code.
 - `README.md` should continue to describe the current starter source layout and verification flow accurately.
+- `README.md` should include a concise demo flow that matches the current app behavior.
 - `README.md` should describe the current runtime pin source accurately when the repo toolchain changes.
 - `README.md` should describe the supported host platform baseline accurately when local development constraints change.
 - `README.md` should point browser setup at the current pinned Playwright install script instead of an ad hoc command.
@@ -64,6 +66,12 @@ The template README is the first surface contributors see. It should identify th
 - Given: the current template baseline
 - When: the contributor reads the runtime, verification, and source layout sections
 - Then: the commands, ports, and file locations match the current repo behavior
+
+**Scenario: Presenter needs the short version**
+
+- Given: limited time for a live walkthrough
+- When: the presenter reads the quick demo section in `README.md`
+- Then: they can run the baseline-to-challenge story without explaining more than the current app supports
 
 **Scenario: Contributor evaluates generated changes**
 

@@ -9,7 +9,7 @@ describe("searchDemoCatalog", () => {
     });
 
     expect(response.results[0]?.name).toBe("Brie de Meaux");
-    expect(response.insights[0]).toContain("name matches");
+    expect(response.insights[0]).toBe("Only surface wording affects ranking.");
   });
 
   it("promotes a stronger creamy washed-rind option when hidden requirements are explicit", () => {
@@ -20,7 +20,7 @@ describe("searchDemoCatalog", () => {
     });
 
     expect(response.results[0]?.name).toBe("Epoisses de Bourgogne");
-    expect(response.insights).toContain("Texture cues made explicit: creamy.");
+    expect(response.insights).toContain("Explicit textures: creamy.");
   });
 
   it("uses extra catalog and context data in challenge 2", () => {
@@ -31,7 +31,7 @@ describe("searchDemoCatalog", () => {
     });
 
     expect(response.results[0]?.name).toBe("Livarot");
-    expect(response.insights).toContain("Pairing or context data in play: cider.");
+    expect(response.insights).toContain("Context data: cider.");
   });
 
   it("returns evaluation checks in challenge 3", () => {
@@ -42,7 +42,7 @@ describe("searchDemoCatalog", () => {
     });
 
     expect(response.results[0]?.checks).toHaveLength(4);
-    expect(response.insights.at(-1)).toContain("evaluation checklist");
+    expect(response.insights.at(-1)).toContain("current checks");
   });
 
   it("uses budget and serving context cues even without a strength target", () => {
@@ -53,6 +53,6 @@ describe("searchDemoCatalog", () => {
     });
 
     expect(response.results[0]?.name).toBe("Crottin de Chavignol");
-    expect(response.insights[0]).toContain("structured catalog facts");
+    expect(response.insights[0]).toBe("Ranking can use product facts and context.");
   });
 });

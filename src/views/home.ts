@@ -20,14 +20,14 @@ export function renderHomePage(): string {
             <p class="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-app-secondary">French Cheese Shop</p>
             <h1 class="mt-4 max-w-4xl font-display text-[clamp(2.9rem,8vw,5.6rem)] leading-[0.88] text-app-primary">${escapeHtml(appTitle)}</h1>
             <p class="mt-4 max-w-2xl text-base leading-7 text-app-text-soft sm:text-lg">
-              Live demo for AI in requirements engineering: start from a vague cheese request, then refine the behavior through hidden requirements, data needs, and evaluation criteria.
+              Start with one vague request. Then show how hidden requirements, missing data, and evaluation criteria change the answer.
             </p>
           </div>
           <aside class="bg-app-secondary px-6 py-8 text-app-cream sm:px-8 sm:py-10">
             <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Presentation Mode</p>
-            <h2 class="mt-4 font-display text-[2rem] leading-[0.95]">Baseline and challenge tabs</h2>
+            <h2 class="mt-4 font-display text-[2rem] leading-[0.95]">Four quick passes</h2>
             <p class="mt-4 max-w-sm text-sm leading-6 text-app-cream/84">
-              Use the same customer request in every tab and let the audience add the missing requirements that shift the recommendation.
+              Keep one customer request, switch tabs, and add only the missing detail that changes the ranking.
             </p>
             <div class="mt-6 rounded-[1.5rem] border border-white/12 bg-white/8 p-4">
               <p class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Starter prompt</p>
@@ -65,12 +65,12 @@ export function renderHomePage(): string {
           </div>
           <aside class="rounded-[2rem] border border-app-line bg-app-canvas px-5 py-5 shadow-[var(--shadow-panel)] sm:px-6 sm:py-6">
             <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Requirements Lens</p>
-            <h2 id="scenario-title" class="mt-4 font-display text-[2rem] leading-[0.95] text-app-primary">Baseline Search</h2>
+            <h2 id="scenario-title" class="mt-4 font-display text-[2rem] leading-[0.95] text-app-primary">Baseline</h2>
             <p id="scenario-description" class="mt-4 text-sm leading-7 text-app-text-soft">
-              Start with the customer wording alone and show how a reasonable but shallow result can still miss what the user really means.
+              Start with the request text alone.
             </p>
             <div class="mt-6 rounded-[1.5rem] border border-app-line bg-app-surface px-4 py-4">
-              <p id="insights-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">What the system sees</p>
+              <p id="insights-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Signals in play</p>
               <ul id="scenario-insights" class="mt-4 grid gap-3 text-sm leading-6 text-app-text-soft"></ul>
             </div>
           </aside>

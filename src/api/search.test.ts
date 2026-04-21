@@ -33,7 +33,7 @@ describe("createSearchResponse", () => {
     const payload = await response.json();
     expect(payload.ok).toBe(true);
     expect(payload.scenario).toBe("challenge-2");
-    expect(payload.insights).toContain("Pairing or context data in play: cider.");
+    expect(payload.insights).toContain("Context data: cider.");
   });
 
   it("falls back to baseline when the scenario parameter is unknown", async () => {

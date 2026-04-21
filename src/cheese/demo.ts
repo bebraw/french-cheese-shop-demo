@@ -57,24 +57,24 @@ interface ParsedIntent {
 
 const scenarioCopy: Record<DemoScenarioId, { teachingFocus: string; promptLabel: string; introInsight: string }> = {
   baseline: {
-    teachingFocus: "Baseline search uses only the surface wording of the request and the cheese catalog text.",
-    promptLabel: "What the baseline system sees",
-    introInsight: "Only direct wording and name matches affect the ranking here.",
+    teachingFocus: "Baseline search uses only the request wording.",
+    promptLabel: "Signals in play",
+    introInsight: "Only surface wording affects ranking.",
   },
   "challenge-1": {
-    teachingFocus: "Challenge 1 makes hidden requirements explicit so the demo can score similarity, strength, and fit separately.",
-    promptLabel: "Hidden requirements captured from the audience",
-    introInsight: "Audience notes are turned into explicit preference signals before ranking.",
+    teachingFocus: "Challenge 1 makes hidden requirements explicit.",
+    promptLabel: "Explicit requirements",
+    introInsight: "Audience notes become ranking signals.",
   },
   "challenge-2": {
-    teachingFocus: "Challenge 2 shows that behavior changes when the system can use product facts, customer context, and shop knowledge.",
-    promptLabel: "Extra data the audience wants the system to use",
-    introInsight: "This mode lets the ranking use structured catalog facts and context cues from the audience.",
+    teachingFocus: "Challenge 2 adds product and context data.",
+    promptLabel: "Extra data in play",
+    introInsight: "Ranking can use product facts and context.",
   },
   "challenge-3": {
-    teachingFocus: "Challenge 3 evaluates recommendation quality under uncertainty instead of assuming a single correct answer.",
-    promptLabel: "Evaluation criteria suggested by the audience",
-    introInsight: "This mode scores the shortlist against explicit evaluation checks, not only retrieval similarity.",
+    teachingFocus: "Challenge 3 turns success criteria into checks.",
+    promptLabel: "Evaluation checks",
+    introInsight: "Results are tested against explicit checks.",
   },
 };
 
@@ -485,26 +485,24 @@ function buildInsights(intent: ParsedIntent, scenario: DemoScenarioId, results: 
   const insights = [scenarioCopy[scenario].introInsight];
 
   if (intent.referenceCheese) {
-    insights.push(`Reference cheese detected: ${intent.referenceCheese.name}.`);
+    insights.push(`Reference cheese: ${intent.referenceCheese.name}.`);
   }
   if (intent.targetIntensity !== null) {
-    insights.push(`Requested strength target: ${intent.targetIntensity}/5.`);
+    insights.push(`Strength target: ${intent.targetIntensity}/5.`);
   }
   if (scenario !== "baseline" && intent.desiredTextures.size > 0) {
-    insights.push(`Texture cues made explicit: ${[...intent.desiredTextures].join(", ")}.`);
+    insights.push(`Explicit textures: ${[...intent.desiredTextures].join(", ")}.`);
   }
   if (scenario !== "baseline" && intent.desiredPairings.size > 0) {
-    insights.push(`Pairing or context data in play: ${[...intent.desiredPairings].join(", ")}.`);
+    insights.push(`Context data: ${[...intent.desiredPairings].join(", ")}.`);
   }
   if (scenario !== "baseline" && intent.requireInStock) {
-    insights.push("Stock availability now affects the shortlist.");
+    insights.push("In-stock filtering is on.");
   }
   if (scenario === "challenge-3" && results.length > 0) {
     const failedChecks = results[0].checks.filter((check) => !check.passed).map((check) => check.label.toLowerCase());
     insights.push(
-      failedChecks.length > 0
-        ? `Top result still needs scrutiny against the current evaluation checklist: ${failedChecks.join(", ")}.`
-        : "Top result clears the current evaluation checklist.",
+      failedChecks.length > 0 ? `Top result still misses: ${failedChecks.join(", ")}.` : "Top result passes the current checks.",
     );
   }
 
@@ -519,10 +517,10 @@ function formatReason(cheese: CheeseRecord, matchedSignals: string[], scenario: 
   const stockLabel = cheese.stock === "in" ? "in stock" : cheese.stock === "low" ? "low stock" : "sold out";
   const scenarioSuffix =
     scenario === "baseline"
-      ? "The baseline ranking stops at surface similarity."
+      ? "Surface match only."
       : scenario === "challenge-3"
-        ? "This result is also checked against the evaluation criteria."
-        : "Explicit audience refinements now affect the ranking.";
+        ? "Also checked against the evaluation criteria."
+        : "Audience notes now affect the ranking.";
 
   return `${matchedSignals[0]}. ${cheese.name} is ${stockLabel}. ${scenarioSuffix}`;
 }

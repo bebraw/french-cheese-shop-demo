@@ -4,7 +4,7 @@
 
 ### Context
 
-French Cheese Shop Demo supports live teaching around AI in requirements engineering. The presenter starts from a vague customer request and uses audience input to refine the system behavior across three explicit challenge tabs.
+French Cheese Shop Demo supports a fast live teaching flow around AI in requirements engineering. The presenter starts from a vague customer request and uses audience input to refine the system behavior across three explicit challenge tabs.
 
 ### Architecture
 
@@ -40,6 +40,7 @@ French Cheese Shop Demo supports live teaching around AI in requirements enginee
 - The live demo must stay publicly accessible without basic auth.
 - The runtime path must stay deterministic enough for rehearsal and live teaching.
 - The scenario tabs must continue to share the same underlying customer request so the audience can compare behavior shifts.
+- The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
 - HTML responses must ship with restrictive browser security headers, and client-side code must load from same-origin script assets so the CSP can keep `script-src 'self'`.
 - The cheese catalog should stay small, committed, and easy to review.
 - Challenge behavior must stay explainable through returned insights and, for challenge 3, evaluation checks.
@@ -55,7 +56,7 @@ French Cheese Shop Demo supports live teaching around AI in requirements enginee
 
 - Given: the demo page is open
 - When: the presenter enters `I want something like Brie but stronger`
-- Then: the baseline tab returns a plausible but shallow recommendation based on the wording alone
+- Then: the baseline tab returns a plausible but shallow recommendation based on the wording alone and the presenter can explain that step quickly
 
 **Scenario: Audience adds hidden requirements**
 

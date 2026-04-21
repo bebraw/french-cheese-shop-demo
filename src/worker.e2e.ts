@@ -36,7 +36,7 @@ test("switching to challenge 2 uses audience data to change the top result", asy
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await page.getByRole("tab", { name: "Challenge 2" }).click();
-  await page.getByLabel("Extra data the system should use").fill("Prefers washed rind, serving with cider, and it must be in stock.");
+  await page.getByLabel("Add extra data").fill("Prefers washed rind, serving with cider, and it must be in stock.");
 
   await expect(page.locator("#search-status")).toHaveText("5 results");
   await expect(page.getByRole("heading", { level: 3, name: "Livarot" })).toBeVisible();

@@ -20,27 +20,27 @@ let activeScenario = "baseline";
 
 const scenarios = {
   baseline: {
-    title: "Baseline Search",
-    description: "Start with the customer wording alone and show how a reasonable but shallow result can still miss what the user really means.",
+    title: "Baseline",
+    description: "Use only the request text.",
     audienceLabel: "",
     audiencePlaceholder: "",
   },
   "challenge-1": {
     title: "Challenge 1: Hidden Requirements",
-    description: "Ask the audience what “like Brie” and “stronger” should mean, then make those requirements explicit.",
-    audienceLabel: "Hidden requirements from the audience",
+    description: "Make the missing preferences explicit.",
+    audienceLabel: "Add hidden requirements",
     audiencePlaceholder: "Try: Keep it creamy, cow's milk, and make it much stronger.",
   },
   "challenge-2": {
     title: "Challenge 2: Data Requirements",
-    description: "Let the audience add context or domain data and show how the ranking changes once the system can use it.",
-    audienceLabel: "Extra data the system should use",
+    description: "Add product facts or customer context.",
+    audienceLabel: "Add extra data",
     audiencePlaceholder: "Try: Wants it with cider, prefers washed rind, and it must be in stock.",
   },
   "challenge-3": {
     title: "Challenge 3: Evaluation Under Uncertainty",
-    description: "Turn the audience's success criteria into explicit checks so the class can discuss what counts as a good answer.",
-    audienceLabel: "Evaluation criteria from the audience",
+    description: "Turn success criteria into visible checks.",
+    audienceLabel: "Add evaluation criteria",
     audiencePlaceholder: "Try: Must be in stock, explain why it fits, and give a backup option.",
   },
 };
@@ -300,7 +300,7 @@ if (initialAudience) {
 if (initialQuery) {
   runSearch(initialQuery, initialAudience);
 } else {
-  renderInsights(["Choose a tab, enter the vague customer request, and use audience notes to change the ranking logic live."]);
+  renderInsights(["Enter a vague request. Then switch tabs to tighten the logic."]);
 }
 `;
 }
