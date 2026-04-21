@@ -13,6 +13,7 @@ const searchParamName = "q";
 const scenarioParamName = "scenario";
 const audienceParamName = "audience";
 const minimumQueryLength = 2;
+const defaultQuery = "I want something like Brie, but stronger.";
 let debounceHandle = null;
 let activeController = null;
 let requestCounter = 0;
@@ -287,7 +288,7 @@ for (const button of scenarioButtons) {
 
 const initialUrl = new URL(window.location.href);
 const initialScenario = scenarios[initialUrl.searchParams.get(scenarioParamName)] ? initialUrl.searchParams.get(scenarioParamName) : "baseline";
-const initialQuery = initialUrl.searchParams.get(searchParamName) || "";
+const initialQuery = initialUrl.searchParams.get(searchParamName) || defaultQuery;
 const initialAudience = initialUrl.searchParams.get(audienceParamName) || "";
 
 applyScenario(initialScenario);
@@ -297,10 +298,6 @@ if (initialQuery) {
 if (initialAudience) {
   audienceInput.value = initialAudience;
 }
-if (initialQuery) {
-  runSearch(initialQuery, initialAudience);
-} else {
-  renderInsights(["Enter a vague request. Then choose a challenge to tighten the logic."]);
-}
+runSearch(initialQuery, initialAudience);
 `;
 }

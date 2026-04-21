@@ -26,6 +26,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 - [ ] `GET /` renders a single French cheese shop page with clear controls for baseline, challenge 1, challenge 2, and challenge 3.
 - [ ] `GET /` keeps one shared customer-request input and a tab-specific audience refinement area.
+- [ ] `GET /` opens with the baseline prompt prefilled so the demo starts in a meaningful default state.
 - [ ] `GET /` keeps the baseline and challenge descriptions visible enough that the audience can tell the four passes apart before the presenter switches tabs.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...` returns ordered cheese recommendations from the committed catalog.
@@ -42,6 +43,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - The runtime path must stay deterministic enough for rehearsal and live teaching.
 - The challenge controls must continue to share the same underlying customer request so the audience can compare behavior shifts.
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
+- The default baseline prompt should stay visible in the main request input instead of being repeated in separate promo copy.
 - The baseline and challenge summaries should remain easy to scan from a distance instead of depending on long body copy or tab switching to become understandable.
 - HTML responses must ship with restrictive browser security headers, and client-side code must load from same-origin script assets so the CSP can keep `script-src 'self'`.
 - The cheese catalog should stay small, committed, and easy to review.
@@ -57,7 +59,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 **Scenario: Presenter runs the baseline search**
 
 - Given: the demo page is open
-- When: the presenter enters `I want something like Brie but stronger`
+- When: the presenter keeps or enters `I want something like Brie but stronger`
 - Then: the baseline tab returns a plausible but shallow recommendation based on the wording alone and the presenter can explain that step quickly
 
 **Scenario: Audience adds hidden requirements**

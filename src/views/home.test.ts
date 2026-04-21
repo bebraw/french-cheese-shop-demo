@@ -6,7 +6,7 @@ describe("renderHomePage", () => {
     const html = renderHomePage();
 
     expect(html).toContain("French Cheese Shop");
-    expect(html).toContain("Type the customer request");
+    expect(html).toContain('value="I want something like Brie, but stronger."');
     expect(html).toContain('aria-label="Choose demo challenge"');
     expect(html).toContain("Hidden requirements");
     expect(html).toContain("Missing data");

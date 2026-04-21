@@ -6,6 +6,8 @@ test("renders the cheese demo home page", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "French Cheese Shop" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Baseline/ })).toBeVisible();
   await expect(page.getByRole("searchbox", { name: "Customer request" })).toBeVisible();
+  await expect(page.getByRole("searchbox", { name: "Customer request" })).toHaveValue("I want something like Brie, but stronger.");
+  await expect(page.locator("#search-status")).toHaveText("5 results");
 });
 
 test("serves the health endpoint", async ({ request }) => {
