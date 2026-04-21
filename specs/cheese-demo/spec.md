@@ -30,6 +30,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` keeps the baseline and challenge descriptions visible enough that the audience can tell the four passes apart before the presenter switches tabs.
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific choices before falling back to a custom note.
 - [ ] `GET /` carries forward earlier challenge answers into later challenge searches so the teaching flow can layer requirements instead of replacing them.
+- [ ] Each challenge preset list teaches one distinct step in the story: hidden needs, concrete facts, then evaluation criteria.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...` returns ordered cheese recommendations from the committed catalog.
 - [ ] Search results stay compact by default and can reveal more explanation on demand.
@@ -47,6 +48,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - The runtime path must stay deterministic enough for rehearsal and live teaching.
 - The challenge controls must continue to share the same underlying customer request so the audience can compare behavior shifts.
 - Later challenges must preserve earlier explicit audience cues in both ranking and the requirements lens unless the presenter removes them.
+- Preset examples and lens labels should avoid challenge overlap unless the carry-forward behavior is the point being taught explicitly.
 - The challenge controls should stay visible in a fixed left sidebar on larger screens, and the requirements lens should stay visible in a fixed right sidebar.
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
 - The default baseline prompt should stay visible in the main request input instead of being repeated in separate promo copy.
@@ -97,5 +99,5 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 **Scenario: Audience defines success criteria**
 
 - Given: the presenter is on challenge 3
-- When: the audience selects criteria such as `must be in stock` or `explain why it fits`
+- When: the audience selects criteria such as `explain why it fits` or `give a backup option`
 - Then: the results include evaluation checks that make the quality judgment inspectable

@@ -71,6 +71,29 @@ test("signals in play stays synced and cumulative through challenges", async ({ 
   await expect(page.locator("#audience-summary-chips")).toContainText("With cider");
 });
 
+test("challenge copy keeps hidden needs, data, and evaluation distinct", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: /Challenge 1/ }).click();
+  await expect(page.locator("#insights-label")).toHaveText("Explicit requirements");
+  await expect(page.locator("#scenario-description")).toContainText("customer really means");
+  await expect(page.getByRole("button", { name: "Oozy center" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Washed rind" })).toHaveCount(0);
+
+  await page.getByRole("button", { name: /Challenge 2/ }).click();
+  await expect(page.locator("#insights-label")).toHaveText("Extra data in play");
+  await expect(page.locator("#scenario-description")).toContainText("facts and constraints");
+  await expect(page.getByRole("button", { name: "Washed rind" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "In stock" })).toBeVisible();
+
+  await page.getByRole("button", { name: /Challenge 3/ }).click();
+  await expect(page.locator("#insights-label")).toHaveText("Evaluation checks");
+  await expect(page.locator("#scenario-description")).toContainText("already gathered");
+  await expect(page.getByRole("button", { name: "In stock" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Explain why" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Backup option" })).toBeVisible();
+});
+
 test("expands a compact result row on demand", async ({ page }) => {
   await page.goto("/");
 

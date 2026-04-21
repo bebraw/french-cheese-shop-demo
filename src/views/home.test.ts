@@ -10,6 +10,8 @@ describe("renderHomePage", () => {
     expect(html).toContain('aria-label="Choose demo challenge"');
     expect(html).toContain("Hidden needs");
     expect(html).toContain("Missing data");
+    expect(html).toContain("Add facts and constraints.");
+    expect(html).toContain("Judge the answer against the gathered requirements.");
     expect(html).toContain("Audience answer");
     expect(html).toContain("Other audience note");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');

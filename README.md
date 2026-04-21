@@ -17,9 +17,9 @@ If time is short, run the demo like this:
 2. `Baseline`: show the plausible but shallow answer from surface wording alone.
 3. `Challenge 1`: add hidden requirements such as `keep it creamy` and `cow's milk`.
 4. `Challenge 2`: add missing data such as `serve it with cider` and `must be in stock`.
-5. `Challenge 3`: add evaluation criteria such as `explain why it fits` and `give a backup option`.
+5. `Challenge 3`: judge the gathered requirements with criteria such as `explain why it fits` and `give a backup option`.
 
-The point is not to explain every tab in depth. It is to show that the same request produces different behavior once requirements become explicit.
+The point is not to explain every tab in depth. It is to show a clean progression from vague wording, to clarified needs, to concrete facts, to visible evaluation checks.
 
 The repo vendors ASDLC reference material in `.asdlc/` as local guidance instead of recreating it per project. Repo-specific truth lives in `ARCHITECTURE.md`, `specs/`, and `docs/adrs/`: generated code still needs to match those documents, and passing CI alone is not enough.
 

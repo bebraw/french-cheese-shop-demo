@@ -12,6 +12,7 @@ const statusElement = document.getElementById("search-status");
 const resultsElement = document.getElementById("search-results");
 const scenarioTitleElement = document.getElementById("scenario-title");
 const scenarioDescriptionElement = document.getElementById("scenario-description");
+const insightsLabelElement = document.getElementById("insights-label");
 const scenarioInsightsElement = document.getElementById("scenario-insights");
 const scenarioButtons = Array.from(document.querySelectorAll("[data-scenario]"));
 const searchParamName = "q";
@@ -28,34 +29,40 @@ let activeScenario = "baseline";
 const scenarios = {
   baseline: {
     title: "Baseline",
-    description: "Use the request as-is.",
+    description: "Start with the request wording alone.",
+    insightLabel: "Signals in play",
     audienceLabel: "",
     audiencePlaceholder: "",
     audiencePrompt: "",
     audienceSummaryLabel: "",
+    audienceSummaryEmptyText: "",
     presets: [],
   },
   "challenge-1": {
     title: "Challenge 1: Hidden Needs",
-    description: "Make implied preferences explicit.",
+    description: "Clarify what the customer really means.",
+    insightLabel: "Explicit requirements",
     audienceLabel: "Other hidden need",
-    audiencePlaceholder: "Add another hidden need.",
-    audiencePrompt: "What changed?",
-    audienceSummaryLabel: "Audience answer",
+    audiencePlaceholder: "Add another hidden preference.",
+    audiencePrompt: "What hidden need became explicit?",
+    audienceSummaryLabel: "Clarified needs",
+    audienceSummaryEmptyText: "Select the newly clarified needs.",
     presets: [
       { id: "creamy", label: "Keep it creamy", value: "keep it creamy" },
       { id: "cow", label: "Cow's milk", value: "cow's milk" },
       { id: "stronger", label: "Much stronger", value: "much stronger" },
-      { id: "washed-rind", label: "Washed rind", value: "washed rind" },
+      { id: "oozy", label: "Oozy center", value: "oozy center" },
     ],
   },
   "challenge-2": {
     title: "Challenge 2: Data Requirements",
-    description: "Add facts or context.",
-    audienceLabel: "Other missing data",
-    audiencePlaceholder: "Add another fact or cue.",
-    audiencePrompt: "What data matters?",
-    audienceSummaryLabel: "Audience answer",
+    description: "Add facts and constraints the first pass did not know.",
+    insightLabel: "Extra data in play",
+    audienceLabel: "Other fact or constraint",
+    audiencePlaceholder: "Add another fact or constraint.",
+    audiencePrompt: "What new fact or constraint do we know?",
+    audienceSummaryLabel: "Known facts",
+    audienceSummaryEmptyText: "Select the extra facts that should influence ranking.",
     presets: [
       { id: "cider", label: "With cider", value: "with cider" },
       { id: "washed-rind", label: "Washed rind", value: "prefers washed rind" },
@@ -66,15 +73,16 @@ const scenarios = {
   },
   "challenge-3": {
     title: "Challenge 3: Evaluation",
-    description: "Set visible success checks.",
+    description: "Judge the answer against the requirements already gathered.",
+    insightLabel: "Evaluation checks",
     audienceLabel: "Other evaluation criterion",
-    audiencePlaceholder: "Add another success check.",
-    audiencePrompt: "How do we judge it?",
+    audiencePlaceholder: "Add another success criterion.",
+    audiencePrompt: "What should the answer prove?",
     audienceSummaryLabel: "Evaluation criteria",
+    audienceSummaryEmptyText: "Select the checks the final answer must satisfy.",
     presets: [
       { id: "explain", label: "Explain why", value: "explain why it fits" },
       { id: "backup", label: "Backup option", value: "give a backup option" },
-      { id: "stock", label: "In stock", value: "it must be in stock" },
       { id: "shortlist", label: "Shortlist", value: "give a shortlist" },
     ],
   },
@@ -214,9 +222,10 @@ function renderAudienceSummary(scenario) {
   }
 
   const summaryItems = buildAudienceSummaryItems(scenario);
+  const summaryEmptyText = scenarios[scenario].audienceSummaryEmptyText;
 
   const hasItems = summaryItems.length > 0;
-  audienceSummaryEmptyElement.textContent = hasItems ? "" : "Choose one or more answers below.";
+  audienceSummaryEmptyElement.textContent = hasItems ? "" : summaryEmptyText;
 
   for (const itemText of summaryItems) {
     const item = document.createElement("li");
@@ -350,6 +359,7 @@ function applyScenario(nextScenario) {
   const copy = scenarios[nextScenario];
   scenarioTitleElement.textContent = copy.title;
   scenarioDescriptionElement.textContent = copy.description;
+  insightsLabelElement.textContent = copy.insightLabel;
   audienceControls.classList.toggle("hidden", nextScenario === "baseline");
   audiencePromptElement.textContent = copy.audiencePrompt;
   audienceSummaryLabelElement.textContent = copy.audienceSummaryLabel;
@@ -441,6 +451,7 @@ async function runSearch(rawQuery, rawAudience) {
 
     renderResults(payload.results, payload.scenario);
     renderInsights(payload.insights || []);
+    insightsLabelElement.textContent = payload.promptLabel || scenarios[payload.scenario].insightLabel;
     setStatus(payload.results.length + (payload.results.length === 1 ? " result" : " results"));
   } catch (error) {
     if (error && typeof error === "object" && "name" in error && error.name === "AbortError") {

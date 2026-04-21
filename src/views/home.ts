@@ -30,17 +30,17 @@ export function renderHomePage(): string {
                 <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-1" aria-pressed="false">
                   <p class="scenario-guide-kicker">Challenge 1</p>
                   <p class="scenario-guide-title">Hidden needs</p>
-                  <p class="scenario-guide-copy">Clarify what the customer means.</p>
+                  <p class="scenario-guide-copy">Clarify implied preferences.</p>
                 </button>
                 <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-2" aria-pressed="false">
                   <p class="scenario-guide-kicker">Challenge 2</p>
                   <p class="scenario-guide-title">Missing data</p>
-                  <p class="scenario-guide-copy">Add facts or context.</p>
+                  <p class="scenario-guide-copy">Add facts and constraints.</p>
                 </button>
                 <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-3" aria-pressed="false">
                   <p class="scenario-guide-kicker">Challenge 3</p>
                   <p class="scenario-guide-title">Evaluation</p>
-                  <p class="scenario-guide-copy">Define a good answer.</p>
+                  <p class="scenario-guide-copy">Judge the answer against the gathered requirements.</p>
                 </button>
               </div>
             </section>
@@ -76,7 +76,7 @@ export function renderHomePage(): string {
               <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Requirements Lens</p>
               <h2 id="scenario-title" class="mt-4 font-display text-[2rem] leading-[0.95] text-app-primary">Baseline</h2>
               <p id="scenario-description" class="mt-4 text-sm leading-7 text-app-text-soft">
-                Start with the request text alone and show the first plausible answer.
+                Start with the request wording alone.
               </p>
               <p id="insights-label" class="mt-6 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Signals in play</p>
               <ul id="scenario-insights" class="mt-4 grid gap-3 text-sm leading-6 text-app-text-soft"></ul>
