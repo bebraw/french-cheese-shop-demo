@@ -55,9 +55,6 @@ test("expands a compact result row on demand", async ({ page }) => {
   const firstResult = page.locator("#search-results li").first();
 
   await expect(firstResult).toContainText("Brie de Meaux");
-  await expect(firstResult).toContainText("Hide");
-
-  await page.getByRole("button", { name: "Hide" }).first().click();
   await expect(firstResult).toContainText("More");
 
   await page.getByRole("button", { name: "More" }).first().click();

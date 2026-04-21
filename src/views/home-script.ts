@@ -241,7 +241,7 @@ function renderAudiencePresets(scenario) {
 function renderResults(results, scenario) {
   clearResults();
 
-  for (const [index, result] of results.entries()) {
+  for (const result of results) {
     const item = document.createElement("li");
     item.className = "rounded-[1.35rem] border border-app-line bg-app-canvas px-4 py-4 sm:px-5";
 
@@ -263,7 +263,7 @@ function renderResults(results, scenario) {
     expandButton.type = "button";
     expandButton.className =
       "shrink-0 rounded-full border border-app-line bg-white px-3 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-app-secondary transition hover:border-app-secondary/30 hover:text-app-secondary";
-    expandButton.textContent = index === 0 ? "Hide" : "More";
+    expandButton.textContent = "More";
 
     const blurb = document.createElement("p");
     blurb.className = "text-sm leading-6 text-app-text-soft";
@@ -284,7 +284,7 @@ function renderResults(results, scenario) {
 
     const details = document.createElement("div");
     details.className = "mt-4 grid gap-4";
-    details.hidden = index !== 0;
+    details.hidden = true;
 
     headingGroup.append(title);
     summaryRow.append(headingGroup, expandButton);
