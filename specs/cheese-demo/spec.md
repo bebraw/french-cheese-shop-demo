@@ -66,6 +66,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - HTML responses must ship with restrictive browser security headers, and client-side code must load from same-origin script assets so the CSP can keep `script-src 'self'`.
 - The cheese catalog should stay small, committed, and easy to review.
 - Challenge behavior must stay explainable through returned insights and, for challenge 3, evaluation checks.
+- Comparative follow-up requests such as `like Livarot, but stronger` should not keep the named reference cheese as the top result when the request explicitly asks for the next stronger or milder step away from it.
 - The `LLM backend` option must remain local and deterministic enough for rehearsal, even if it intentionally produces a different ranking style from the rules engine.
 - Challenge 3 should avoid abstract criteria that do not produce a visible change in the result set or result details.
 - Result rows should prioritize quick scanning and avoid showing every explanation block at full length by default.

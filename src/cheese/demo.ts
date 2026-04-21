@@ -147,8 +147,8 @@ export function searchDemoCatalog({
 }
 
 function scoreCheese(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoScenarioId, backend: SearchBackend) {
-  const referenceMention = scoreReferenceMention(cheese, intent.referenceCheese);
-  const referenceSimilarity = scoreReferenceSimilarity(cheese, intent.referenceCheese);
+  const referenceMention = scoreReferenceMention(cheese, intent.referenceCheese, intent.targetIntensity);
+  const referenceSimilarity = scoreReferenceSimilarity(cheese, intent.referenceCheese, intent.targetIntensity);
   const lexicalSimilarity = scoreLexicalSimilarity(cheese, intent.queryTokens);
   const targetIntensity = scoreTargetIntensity(cheese, intent.targetIntensity);
   const attributeFit = scoreAttributeFit(cheese, intent);
@@ -213,6 +213,10 @@ function scoreCheese(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoS
           : 0;
   }
 
+  if (shouldDownrankReferenceReuse(cheese, intent.referenceCheese, intent.targetIntensity)) {
+    score -= backend === "rules" ? 0.18 : 0.12;
+  }
+
   return {
     cheese,
     score: roundScore(score),
@@ -220,8 +224,12 @@ function scoreCheese(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoS
   };
 }
 
-function scoreReferenceMention(cheese: CheeseRecord, referenceCheese: CheeseRecord | null): number {
+function scoreReferenceMention(cheese: CheeseRecord, referenceCheese: CheeseRecord | null, targetIntensity: number | null): number {
   if (!referenceCheese) {
+    return 0;
+  }
+
+  if (shouldDownrankReferenceReuse(cheese, referenceCheese, targetIntensity)) {
     return 0;
   }
 
@@ -414,13 +422,13 @@ function parseBudget(text: string): number | null {
   return null;
 }
 
-function scoreReferenceSimilarity(cheese: CheeseRecord, referenceCheese: CheeseRecord | null): number {
+function scoreReferenceSimilarity(cheese: CheeseRecord, referenceCheese: CheeseRecord | null, targetIntensity: number | null): number {
   if (!referenceCheese) {
     return 0;
   }
 
   if (cheese.cheeseId === referenceCheese.cheeseId) {
-    return 1;
+    return shouldDownrankReferenceReuse(cheese, referenceCheese, targetIntensity) ? 0.25 : 1;
   }
 
   const sharedTextures = cheese.textures.filter((texture) => referenceCheese.textures.includes(texture)).length;
@@ -522,7 +530,7 @@ function scoreBridgeFit(cheese: CheeseRecord, referenceCheese: CheeseRecord | nu
   }
 
   if (cheese.cheeseId === referenceCheese.cheeseId) {
-    return 0.35;
+    return shouldDownrankReferenceReuse(cheese, referenceCheese, targetIntensity) ? 0.05 : 0.35;
   }
 
   const sharedTextures = cheese.textures.filter((texture) => referenceCheese.textures.includes(texture)).length;
@@ -538,6 +546,16 @@ function scoreBridgeFit(cheese: CheeseRecord, referenceCheese: CheeseRecord | nu
   return textureScore * 0.25 + milkScore * 0.25 + styleScore * 0.3 + intensityScore * 0.2;
 }
 
+function shouldDownrankReferenceReuse(cheese: CheeseRecord, referenceCheese: CheeseRecord | null, targetIntensity: number | null): boolean {
+  return Boolean(
+    referenceCheese &&
+    cheese.cheeseId === referenceCheese.cheeseId &&
+    targetIntensity !== null &&
+    targetIntensity !== referenceCheese.intensity &&
+    Math.abs(targetIntensity - referenceCheese.intensity) <= 1,
+  );
+}
+
 function scoreEvaluationFit(cheese: CheeseRecord, intent: ParsedIntent): number {
   const effectiveStock = resolveEffectiveStock(cheese, intent);
   const checks: DemoResultCheck[] = [
@@ -548,7 +566,7 @@ function scoreEvaluationFit(cheese: CheeseRecord, intent: ParsedIntent): number 
     },
     {
       label: "Enough similarity to the reference",
-      passed: !intent.referenceCheese || scoreReferenceSimilarity(cheese, intent.referenceCheese) >= 0.45,
+      passed: !intent.referenceCheese || scoreReferenceSimilarity(cheese, intent.referenceCheese, intent.targetIntensity) >= 0.45,
       note: intent.referenceCheese ? `Compared with ${intent.referenceCheese.name}` : "No reference cheese supplied",
     },
     {
@@ -629,7 +647,7 @@ function buildChecks(
 
   checks.push({
     label: "Enough similarity to the reference",
-    passed: !intent.referenceCheese || scoreReferenceSimilarity(cheese, intent.referenceCheese) >= 0.45,
+    passed: !intent.referenceCheese || scoreReferenceSimilarity(cheese, intent.referenceCheese, intent.targetIntensity) >= 0.45,
     note: intent.referenceCheese ? `Compared with ${intent.referenceCheese.name}` : "No reference cheese supplied",
   });
 

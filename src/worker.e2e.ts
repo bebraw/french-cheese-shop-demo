@@ -34,6 +34,15 @@ test("shows baseline results for a vague request", async ({ page }) => {
   await expect(page.getByRole("button", { name: "More" }).first()).toBeVisible();
 });
 
+test("a stronger follow-up to livarot does not keep livarot on top", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Livarot, but stronger.");
+
+  await expect(page.locator("#search-status")).toHaveText("5 results");
+  await expect(page.locator("#search-results > li h3").first()).not.toHaveText("Livarot");
+});
+
 test("switching to challenge 2 uses audience data to change the top result", async ({ page }) => {
   await page.goto("/");
 

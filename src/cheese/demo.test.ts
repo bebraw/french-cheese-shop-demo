@@ -55,6 +55,21 @@ describe("searchDemoCatalog", () => {
     expect(llmResponse.results[0]?.name).not.toBe(rulesResponse.results[0]?.name);
   });
 
+  it("does not return the same cheese for a next-step stronger request", () => {
+    const rulesResponse = searchDemoCatalog({
+      query: "I want something like Livarot, but stronger.",
+      scenario: "baseline",
+    });
+    const llmResponse = searchDemoCatalog({
+      query: "I want something like Livarot, but stronger.",
+      scenario: "baseline",
+      backend: "llm",
+    });
+
+    expect(rulesResponse.results[0]?.name).not.toBe("Livarot");
+    expect(llmResponse.results[0]?.name).not.toBe("Livarot");
+  });
+
   it("lets season change the shortlist in challenge 2", () => {
     const summerResponse = searchDemoCatalog({
       query: "I want something like Brie but stronger",
