@@ -88,10 +88,11 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
 
   await page.getByRole("button", { name: /Challenge 3/ }).click();
   await expect(page.locator("#insights-label")).toHaveText("Evaluation checks");
-  await expect(page.locator("#scenario-description")).toContainText("already gathered");
+  await expect(page.locator("#scenario-description")).toContainText("visibly prove");
   await expect(page.getByRole("button", { name: "In stock" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Explain why" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Backup option" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Show why it fits" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Mark a backup" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Two finalists" })).toBeVisible();
 });
 
 test("an expanded result stays open across evaluation updates", async ({ page }) => {
@@ -123,19 +124,38 @@ test("an expanded result stays open across evaluation updates", async ({ page })
 
   await expect(page.getByRole("heading", { level: 3, name: resultName })).toBeVisible();
 
-  const persistentResult = page
-    .locator("#search-results li")
-    .filter({ has: page.getByRole("heading", { level: 3, name: resultName }) });
+  const persistentResult = page.locator("#search-results li").filter({ has: page.getByRole("heading", { level: 3, name: resultName }) });
   const firstToggle = persistentResult.getByRole("button", { name: "More" });
 
   await firstToggle.click();
   await expect(persistentResult.getByRole("button", { name: "Hide" })).toBeVisible();
 
-  await page.getByRole("button", { name: "Explain why" }).click();
+  await page.getByRole("button", { name: "Show why it fits" }).click();
 
   await expect(page.locator("#search-status")).toHaveText("4 results");
   await expect(page.getByRole("heading", { level: 3, name: resultName })).toBeVisible();
   await expect(persistentResult.getByRole("button", { name: "Hide" })).toBeVisible();
+});
+
+test("challenge 3 options visibly change the results", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await page.getByRole("button", { name: /Challenge 3/ }).click();
+  await page.getByRole("button", { name: "Mark a backup" }).click();
+  await page.getByRole("button", { name: "Two finalists" }).click();
+  await page.getByRole("button", { name: "Show why it fits" }).click();
+
+  await expect(page.locator("#search-status")).toHaveText("2 results");
+  await expect(page.locator("#search-results > li")).toHaveCount(2);
+  await expect(page.locator("#search-results > li").first()).toContainText("Top pick");
+  await expect(page.locator("#search-results > li").nth(1)).toContainText("Backup choice");
+  await expect(page.locator("#scenario-insights")).toContainText("Showing two finalists");
+
+  const topResult = page.locator("#search-results > li").first();
+  await topResult.getByRole("button", { name: "More" }).click();
+  await expect(topResult).toContainText("Why it fits:");
+  await expect(topResult).toContainText("Backup choice is visible");
 });
 
 test("expands a compact result row on demand", async ({ page }) => {

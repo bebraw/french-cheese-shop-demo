@@ -74,17 +74,17 @@ const scenarios = {
   },
   "challenge-3": {
     title: "Challenge 3: Evaluation",
-    description: "Judge the answer against the requirements already gathered.",
+    description: "Choose what the results should visibly prove to the audience.",
     insightLabel: "Evaluation checks",
     audienceLabel: "Other evaluation criterion",
     audiencePlaceholder: "Add another success criterion.",
-    audiencePrompt: "What should the answer prove?",
+    audiencePrompt: "What should the results visibly show?",
     audienceSummaryLabel: "Evaluation criteria",
     audienceSummaryEmptyText: "Select the checks the final answer must satisfy.",
     presets: [
-      { id: "explain", label: "Explain why", value: "explain why it fits" },
-      { id: "backup", label: "Backup option", value: "give a backup option" },
-      { id: "shortlist", label: "Shortlist", value: "give a shortlist" },
+      { id: "explain", label: "Show why it fits", value: "show why it fits" },
+      { id: "backup", label: "Mark a backup", value: "mark a backup choice" },
+      { id: "shortlist", label: "Two finalists", value: "keep it to two finalists" },
     ],
   },
 };
@@ -288,6 +288,14 @@ function renderResults(results, scenario) {
     title.className = "font-display text-[1.45rem] leading-[0.94] text-app-primary sm:text-[1.7rem]";
     title.textContent = result.name;
 
+    let tag = null;
+    if (result.presentationTag) {
+      tag = document.createElement("p");
+      tag.className =
+        "mt-2 inline-flex rounded-full bg-app-primary/8 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-app-primary";
+      tag.textContent = result.presentationTag;
+    }
+
     const expandButton = document.createElement("button");
     expandButton.type = "button";
     expandButton.className =
@@ -301,6 +309,11 @@ function renderResults(results, scenario) {
     const reason = document.createElement("p");
     reason.className = "text-sm leading-6 text-app-text";
     reason.textContent = result.reason;
+
+    const explanation = document.createElement("p");
+    explanation.className = "text-sm leading-6 text-app-text";
+    explanation.hidden = !result.explanation;
+    explanation.textContent = result.explanation ? "Why it fits: " + result.explanation : "";
 
     const matchedSignals = document.createElement("ul");
     matchedSignals.className = "flex flex-wrap gap-2";
@@ -317,8 +330,11 @@ function renderResults(results, scenario) {
     details.hidden = !isExpanded;
 
     headingGroup.append(title);
+    if (tag) {
+      headingGroup.append(tag);
+    }
     summaryRow.append(headingGroup, expandButton);
-    details.append(blurb, reason, matchedSignals);
+    details.append(blurb, reason, explanation, matchedSignals);
     item.append(meta, summaryRow, details);
 
     if (scenario === "challenge-3" && Array.isArray(result.checks) && result.checks.length > 0) {

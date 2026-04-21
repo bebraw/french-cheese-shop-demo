@@ -23,6 +23,8 @@ export interface DemoSearchResult {
   blurb: string;
   score: number;
   reason: string;
+  explanation: string;
+  presentationTag: string;
   matchedSignals: string[];
   checks: DemoResultCheck[];
 }
@@ -84,16 +86,21 @@ export function searchDemoCatalog({ query, scenario, audienceInput = "" }: DemoS
   const scored = cheeseCatalog
     .map((cheese) => scoreCheese(cheese, intent, scenario))
     .sort((left, right) => right.score - left.score || left.cheese.name.localeCompare(right.cheese.name));
+  const visibleCount = scenario === "challenge-3" ? (intent.wantsShortlist ? 2 : 4) : 5;
+  const visibleScored = scored.slice(0, visibleCount);
+  const backupOptionName = intent.wantsBackup && visibleScored[1] ? visibleScored[1].cheese.name : null;
 
-  const visibleResults = scored.slice(0, scenario === "challenge-3" ? 4 : 5).map(({ cheese, score, matchedSignals, checks }) => ({
+  const visibleResults = visibleScored.map(({ cheese, score, matchedSignals }, index) => ({
     cheeseId: cheese.cheeseId,
     name: cheese.name,
     meta: formatMeta(cheese),
     blurb: cheese.blurb,
     score,
-    reason: formatReason(cheese, matchedSignals, scenario),
+    reason: formatReason(cheese, matchedSignals, scenario, intent),
+    explanation: buildExplanation(cheese, matchedSignals, scenario, intent),
+    presentationTag: buildPresentationTag(index, scenario, intent),
     matchedSignals,
-    checks,
+    checks: buildChecks(cheese, intent, scenario, index, backupOptionName),
   }));
 
   return {
@@ -138,7 +145,6 @@ function scoreCheese(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoS
     cheese,
     score: roundScore(score),
     matchedSignals: buildMatchedSignals(cheese, intent, scenario),
-    checks: buildChecks(cheese, intent, scenario),
   };
 }
 
@@ -170,9 +176,21 @@ function parseIntent(query: string, audienceInput: string, scenario: DemoScenari
     desiredContexts: collectFromMap(combinedText, contextKeywords),
     maxPrice: parseBudget(combinedText),
     requireInStock: combinedText.includes("in stock") || combinedText.includes("available") || combinedText.includes("sold out"),
-    wantsShortlist: combinedText.includes("shortlist") || combinedText.includes("options") || combinedText.includes("few choices"),
-    wantsBackup: combinedText.includes("backup") || combinedText.includes("second option") || combinedText.includes("alternative"),
-    wantsExplanation: combinedText.includes("explain") || combinedText.includes("why") || combinedText.includes("because"),
+    wantsShortlist:
+      combinedText.includes("shortlist") ||
+      combinedText.includes("options") ||
+      combinedText.includes("few choices") ||
+      combinedText.includes("two finalists"),
+    wantsBackup:
+      combinedText.includes("backup") ||
+      combinedText.includes("second option") ||
+      combinedText.includes("alternative") ||
+      combinedText.includes("fallback"),
+    wantsExplanation:
+      combinedText.includes("explain") ||
+      combinedText.includes("why") ||
+      combinedText.includes("because") ||
+      combinedText.includes("show why"),
     queryTokens,
     audienceTokens,
   };
@@ -412,7 +430,29 @@ function scoreContextFit(cheese: CheeseRecord, intent: ParsedIntent): number {
 }
 
 function scoreEvaluationFit(cheese: CheeseRecord, intent: ParsedIntent): number {
-  const checks = buildChecks(cheese, intent, "challenge-3");
+  const checks: DemoResultCheck[] = [
+    {
+      label: "Strength fits the request",
+      passed: intent.targetIntensity === null || scoreTargetIntensity(cheese, intent.targetIntensity) >= 0.75,
+      note: `Intensity ${cheese.intensity}/5`,
+    },
+    {
+      label: "Enough similarity to the reference",
+      passed: !intent.referenceCheese || scoreReferenceSimilarity(cheese, intent.referenceCheese) >= 0.45,
+      note: intent.referenceCheese ? `Compared with ${intent.referenceCheese.name}` : "No reference cheese supplied",
+    },
+    {
+      label: "Operationally available",
+      passed: !intent.requireInStock || cheese.stock === "in",
+      note: cheese.stock === "in" ? "In stock today" : cheese.stock === "low" ? "Low stock" : "Sold out",
+    },
+    {
+      label: "Easy to explain to the audience",
+      passed: intent.wantsExplanation ? cheese.blurb.length > 80 : true,
+      note: intent.wantsExplanation ? "Recommendation includes a comparison-friendly rationale" : "Explanation not requested",
+    },
+  ];
+
   return averageOrDefault(
     checks.map((check) => (check.passed ? 1 : 0)),
     0.5,
@@ -447,7 +487,13 @@ function buildMatchedSignals(cheese: CheeseRecord, intent: ParsedIntent, scenari
   return signals.length > 0 ? signals : ["Closest overall fit in the current scenario"];
 }
 
-function buildChecks(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoScenarioId): DemoResultCheck[] {
+function buildChecks(
+  cheese: CheeseRecord,
+  intent: ParsedIntent,
+  scenario: DemoScenarioId,
+  rank: number,
+  backupOptionName: string | null,
+): DemoResultCheck[] {
   if (scenario !== "challenge-3") {
     return [];
   }
@@ -477,6 +523,14 @@ function buildChecks(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoS
     passed: intent.wantsExplanation ? cheese.blurb.length > 80 : true,
     note: intent.wantsExplanation ? "Recommendation includes a comparison-friendly rationale" : "Explanation not requested",
   });
+
+  if (intent.wantsBackup && rank === 0) {
+    checks.push({
+      label: "Backup choice is visible",
+      passed: backupOptionName !== null,
+      note: backupOptionName ? `Backup choice: ${backupOptionName}` : "No backup choice is visible yet",
+    });
+  }
 
   return checks;
 }
@@ -527,6 +581,15 @@ function buildInsights(intent: ParsedIntent, scenario: DemoScenarioId, results: 
     if (evaluationSignals.length > 0) {
       insights.push(`Evaluation asks: ${evaluationSignals.join(", ")}.`);
     }
+    if (intent.wantsShortlist) {
+      insights.push("Showing two finalists instead of the full shortlist.");
+    }
+    if (intent.wantsBackup && results[1]) {
+      insights.push(`Backup choice is marked on ${results[1].name}.`);
+    }
+    if (intent.wantsExplanation) {
+      insights.push("Expanded cards include a direct why-it-fits explanation.");
+    }
   }
   if (scenario === "challenge-3" && results.length > 0) {
     const failedChecks = results[0].checks.filter((check) => !check.passed).map((check) => check.label.toLowerCase());
@@ -542,13 +605,41 @@ function formatMeta(cheese: CheeseRecord): string {
   return [cheese.region, cheese.milkType + "'s milk", cheese.style, `strength ${cheese.intensity}/5`, `EUR ${cheese.priceEur}`].join(" • ");
 }
 
-function formatReason(cheese: CheeseRecord, matchedSignals: string[], scenario: DemoScenarioId): string {
+function buildPresentationTag(rank: number, scenario: DemoScenarioId, intent: ParsedIntent): string {
+  if (scenario !== "challenge-3") {
+    return "";
+  }
+
+  if (rank === 0) {
+    return "Top pick";
+  }
+  if (intent.wantsBackup && rank === 1) {
+    return "Backup choice";
+  }
+
+  return "";
+}
+
+function buildExplanation(cheese: CheeseRecord, matchedSignals: string[], scenario: DemoScenarioId, intent: ParsedIntent): string {
+  if (scenario !== "challenge-3" || !intent.wantsExplanation) {
+    return "";
+  }
+
+  const leadSignal = matchedSignals[0] || "It is the closest overall fit in the current scenario";
+  const supportSignal = matchedSignals[1] || `its ${cheese.style} style keeps the comparison concrete for the audience`;
+
+  return `${leadSignal}. ${supportSignal}.`;
+}
+
+function formatReason(cheese: CheeseRecord, matchedSignals: string[], scenario: DemoScenarioId, intent: ParsedIntent): string {
   const stockLabel = cheese.stock === "in" ? "in stock" : cheese.stock === "low" ? "low stock" : "sold out";
   const scenarioSuffix =
     scenario === "baseline"
       ? "Surface match only."
       : scenario === "challenge-3"
-        ? "Also checked against the evaluation criteria."
+        ? intent.wantsExplanation
+          ? "Use the explanation panel to justify the choice."
+          : "Also checked against the evaluation criteria."
         : "Audience notes now affect the ranking.";
 
   return `${matchedSignals[0]}. ${cheese.name} is ${stockLabel}. ${scenarioSuffix}`;

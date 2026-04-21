@@ -40,6 +40,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `challenge-1` makes hidden requirements explicit in the ranking and insight output.
 - [ ] `challenge-2` uses extra product and context cues from the audience input.
 - [ ] `challenge-3` returns evaluation checks alongside the ranking.
+- [ ] Challenge 3 evaluation options produce visible result changes such as a two-finalist shortlist, a marked backup choice, or a direct why-it-fits explanation.
 - [ ] Spec and ADR updates land in the same change set as the implementation.
 - [ ] Automated tests cover Worker routing, scenario scoring, and browser tab flows.
 
@@ -58,6 +59,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - HTML responses must ship with restrictive browser security headers, and client-side code must load from same-origin script assets so the CSP can keep `script-src 'self'`.
 - The cheese catalog should stay small, committed, and easy to review.
 - Challenge behavior must stay explainable through returned insights and, for challenge 3, evaluation checks.
+- Challenge 3 should avoid abstract criteria that do not produce a visible change in the result set or result details.
 - Result rows should prioritize quick scanning and avoid showing every explanation block at full length by default.
 - Incremental audience refinements should not collapse an already expanded result row unless that result leaves the visible list.
 
@@ -107,5 +109,5 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 **Scenario: Audience defines success criteria**
 
 - Given: the presenter is on challenge 3
-- When: the audience selects criteria such as `explain why it fits` or `give a backup option`
-- Then: the results include evaluation checks that make the quality judgment inspectable
+- When: the audience selects criteria such as `show why it fits`, `mark a backup choice`, or `keep it to two finalists`
+- Then: the results include visible changes that make the quality judgment inspectable

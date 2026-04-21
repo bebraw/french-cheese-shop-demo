@@ -39,11 +39,26 @@ describe("searchDemoCatalog", () => {
     const response = searchDemoCatalog({
       query: "I want something like Brie but stronger",
       scenario: "challenge-3",
-      audienceInput: "It must be in stock, explain why it fits, and give me a backup option.",
+      audienceInput: "It must be in stock, show why it fits, and mark a backup choice.",
     });
 
-    expect(response.results[0]?.checks).toHaveLength(4);
+    expect(response.results[0]?.presentationTag).toBe("Top pick");
+    expect(response.results[0]?.explanation).toContain("Close to the requested strength");
+    expect(response.results[0]?.checks).toHaveLength(5);
+    expect(response.results[1]?.presentationTag).toBe("Backup choice");
+    expect(response.insights).toContain(`Backup choice is marked on ${response.results[1]?.name}.`);
     expect(response.insights.at(-1)).toContain("current checks");
+  });
+
+  it("makes shortlist requests visible in challenge 3 results", () => {
+    const response = searchDemoCatalog({
+      query: "I want something like Brie but stronger",
+      scenario: "challenge-3",
+      audienceInput: "keep it to two finalists",
+    });
+
+    expect(response.results).toHaveLength(2);
+    expect(response.insights).toContain("Showing two finalists instead of the full shortlist.");
   });
 
   it("uses budget and serving context cues even without a strength target", () => {

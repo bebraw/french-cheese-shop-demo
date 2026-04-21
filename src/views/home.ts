@@ -40,7 +40,7 @@ export function renderHomePage(): string {
                 <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-3" aria-pressed="false">
                   <p class="scenario-guide-kicker">Challenge 3</p>
                   <p class="scenario-guide-title">Evaluation</p>
-                  <p class="scenario-guide-copy">Judge the answer against the gathered requirements.</p>
+                  <p class="scenario-guide-copy">Make the results prove something concrete.</p>
                 </button>
               </div>
             </section>

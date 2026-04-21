@@ -17,7 +17,7 @@ If time is short, run the demo like this:
 2. `Baseline`: show the plausible but shallow answer from surface wording alone.
 3. `Challenge 1`: add hidden requirements such as `keep it creamy` and `cow's milk`.
 4. `Challenge 2`: add missing data such as `serve it with cider` and `must be in stock`.
-5. `Challenge 3`: judge the gathered requirements with criteria such as `explain why it fits` and `give a backup option`.
+5. `Challenge 3`: judge the gathered requirements with visible checks such as `show why it fits`, `mark a backup choice`, and `keep it to two finalists`.
 
 The point is not to explain every tab in depth. It is to show a clean progression from vague wording, to clarified needs, to concrete facts, to visible evaluation checks.
 
