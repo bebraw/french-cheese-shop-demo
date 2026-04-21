@@ -16,14 +16,7 @@ export function renderHomePage(): string {
   <body class="min-h-screen bg-app-canvas text-app-text antialiased">
     <main class="px-5 py-6 sm:px-8 sm:py-8 lg:px-12">
       <div class="mx-auto flex max-w-7xl flex-col gap-6">
-        <header class="overflow-hidden rounded-[2.1rem] border border-app-line bg-app-card shadow-[var(--shadow-panel)]">
-          <div class="px-6 py-6 sm:px-8 sm:py-8">
-            <h1 class="max-w-4xl font-display text-[clamp(1.9rem,4vw,3rem)] leading-[0.94] text-app-primary">${escapeHtml(appTitle)}</h1>
-            <p class="mt-3 max-w-2xl text-base leading-7 text-app-text-soft sm:text-lg">
-              One request. Four lenses.
-            </p>
-          </div>
-        </header>
+        <h1 class="font-display text-[clamp(1.35rem,2.8vw,2rem)] leading-none text-app-primary">${escapeHtml(appTitle)}</h1>
         <section class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
           <div class="rounded-[2rem] border border-app-line bg-app-panel px-5 py-5 shadow-[var(--shadow-panel)] sm:px-6 sm:py-6">
             <div class="sticky top-4 z-10 rounded-[1.6rem] border border-app-line bg-app-canvas/92 p-3 shadow-[var(--shadow-soft)] supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">
