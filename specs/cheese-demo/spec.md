@@ -31,6 +31,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific choices before falling back to a custom note.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...` returns ordered cheese recommendations from the committed catalog.
+- [ ] Search results stay compact by default and can reveal more explanation on demand.
 - [ ] `baseline` ranks from the request wording alone.
 - [ ] `challenge-1` makes hidden requirements explicit in the ranking and insight output.
 - [ ] `challenge-2` uses extra product and context cues from the audience input.
@@ -51,6 +52,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - HTML responses must ship with restrictive browser security headers, and client-side code must load from same-origin script assets so the CSP can keep `script-src 'self'`.
 - The cheese catalog should stay small, committed, and easy to review.
 - Challenge behavior must stay explainable through returned insights and, for challenge 3, evaluation checks.
+- Result rows should prioritize quick scanning and avoid showing every explanation block at full length by default.
 
 ### Verification
 
@@ -64,6 +66,12 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Given: the demo page is open
 - When: the presenter keeps or enters `I want something like Brie but stronger`
 - Then: the baseline tab returns a plausible but shallow recommendation based on the wording alone and the presenter can explain that step quickly
+
+**Scenario: Presenter expands one result**
+
+- Given: a result list is visible
+- When: the presenter opens one result row
+- Then: the supporting explanation and matched signals become visible without expanding every other result
 
 **Scenario: Audience adds hidden requirements**
 

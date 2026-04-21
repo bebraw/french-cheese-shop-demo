@@ -31,6 +31,7 @@ test("shows baseline results for a vague request", async ({ page }) => {
   await expect(page).toHaveURL(
     /[\?&]q=I\+want\+something\+like\+Brie\+but\+stronger|[\?&]q=I%20want%20something%20like%20Brie%20but%20stronger/,
   );
+  await expect(page.getByRole("button", { name: "More" }).first()).toBeVisible();
 });
 
 test("switching to challenge 2 uses audience data to change the top result", async ({ page }) => {
@@ -46,4 +47,20 @@ test("switching to challenge 2 uses audience data to change the top result", asy
   await expect(page.getByRole("heading", { level: 3, name: "Livarot" })).toBeVisible();
   await expect(page.locator("#scenario-insights")).toContainText("cider");
   await expect(page.locator("#audience-summary-chips")).toContainText("With cider");
+});
+
+test("expands a compact result row on demand", async ({ page }) => {
+  await page.goto("/");
+
+  const firstResult = page.locator("#search-results li").first();
+
+  await expect(firstResult).toContainText("Brie de Meaux");
+  await expect(firstResult).toContainText("Hide");
+
+  await page.getByRole("button", { name: "Hide" }).first().click();
+  await expect(firstResult).toContainText("More");
+
+  await page.getByRole("button", { name: "More" }).first().click();
+  await expect(firstResult).toContainText("Hide");
+  await expect(firstResult).toContainText("Surface match only.");
 });

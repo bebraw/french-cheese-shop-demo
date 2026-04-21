@@ -241,28 +241,40 @@ function renderAudiencePresets(scenario) {
 function renderResults(results, scenario) {
   clearResults();
 
-  for (const result of results) {
+  for (const [index, result] of results.entries()) {
     const item = document.createElement("li");
-    item.className = "rounded-[1.4rem] border border-app-line bg-app-canvas px-4 py-4 sm:px-5 sm:py-5";
+    item.className = "rounded-[1.35rem] border border-app-line bg-app-canvas px-4 py-4 sm:px-5";
 
     const meta = document.createElement("p");
     meta.className = "text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary";
     meta.textContent = result.meta;
 
+    const summaryRow = document.createElement("div");
+    summaryRow.className = "mt-3 flex items-start justify-between gap-4";
+
+    const headingGroup = document.createElement("div");
+    headingGroup.className = "min-w-0";
+
     const title = document.createElement("h3");
-    title.className = "mt-3 font-display text-[1.8rem] leading-[0.96] text-app-primary sm:text-[2.25rem]";
+    title.className = "font-display text-[1.45rem] leading-[0.94] text-app-primary sm:text-[1.7rem]";
     title.textContent = result.name;
 
+    const expandButton = document.createElement("button");
+    expandButton.type = "button";
+    expandButton.className =
+      "shrink-0 rounded-full border border-app-line bg-white px-3 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-app-secondary transition hover:border-app-secondary/30 hover:text-app-secondary";
+    expandButton.textContent = index === 0 ? "Hide" : "More";
+
     const blurb = document.createElement("p");
-    blurb.className = "mt-3 max-w-3xl text-base leading-7 text-app-text-soft";
+    blurb.className = "text-sm leading-6 text-app-text-soft";
     blurb.textContent = result.blurb;
 
     const reason = document.createElement("p");
-    reason.className = "mt-4 text-sm leading-6 text-app-text";
+    reason.className = "text-sm leading-6 text-app-text";
     reason.textContent = result.reason;
 
     const matchedSignals = document.createElement("ul");
-    matchedSignals.className = "mt-4 flex flex-wrap gap-2";
+    matchedSignals.className = "flex flex-wrap gap-2";
     for (const signal of result.matchedSignals) {
       const chip = document.createElement("li");
       chip.className = "rounded-full bg-app-secondary/8 px-3 py-1 text-xs font-semibold tracking-[0.12em] text-app-secondary uppercase";
@@ -270,11 +282,18 @@ function renderResults(results, scenario) {
       matchedSignals.appendChild(chip);
     }
 
-    item.append(meta, title, blurb, reason, matchedSignals);
+    const details = document.createElement("div");
+    details.className = "mt-4 grid gap-4";
+    details.hidden = index !== 0;
+
+    headingGroup.append(title);
+    summaryRow.append(headingGroup, expandButton);
+    details.append(blurb, reason, matchedSignals);
+    item.append(meta, summaryRow, details);
 
     if (scenario === "challenge-3" && Array.isArray(result.checks) && result.checks.length > 0) {
       const checksList = document.createElement("ul");
-      checksList.className = "mt-4 grid gap-2";
+      checksList.className = "grid gap-2";
 
       for (const check of result.checks) {
         const checkItem = document.createElement("li");
@@ -292,8 +311,16 @@ function renderResults(results, scenario) {
         checksList.appendChild(checkItem);
       }
 
-      item.appendChild(checksList);
+      details.appendChild(checksList);
     }
+
+    expandButton.setAttribute("aria-expanded", String(!details.hidden));
+    expandButton.addEventListener("click", () => {
+      const isOpen = !details.hidden;
+      details.hidden = isOpen;
+      expandButton.setAttribute("aria-expanded", String(!isOpen));
+      expandButton.textContent = isOpen ? "More" : "Hide";
+    });
 
     resultsElement.appendChild(item);
   }
