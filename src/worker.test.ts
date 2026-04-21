@@ -19,6 +19,7 @@ describe("worker", () => {
     const body = await response.text();
     expect(body).toContain("French Cheese Shop");
     expect(body).toContain("Challenge 1");
+    expect(body).toContain("Search Backend");
     expect(body).toContain("Type the customer request");
   });
 
@@ -72,6 +73,20 @@ describe("worker", () => {
     expect(payload.ok).toBe(true);
     expect(payload.insights).toContain("Simulation context: winter season and holiday-rush demand.");
     expect(payload.results.some((result: { reason: string }) => result.reason.includes("sold out"))).toBe(true);
+  });
+
+  it("supports the optional llm backend mode", async () => {
+    const response = await handleRequest(
+      new Request(
+        "http://example.com/api/search?q=I%20want%20something%20like%20Brie%20but%20stronger&scenario=challenge-2&audience=with%20cider&backend=llm",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.ok).toBe(true);
+    expect(payload.backend).toBe("llm");
+    expect(payload.insights).toContain("Backend mode: local LLM-style contrast.");
   });
 
   it("returns a not found page for unknown routes", async () => {

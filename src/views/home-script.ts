@@ -15,6 +15,11 @@ const seasonControlsElement = document.getElementById("season-controls");
 const shopStateControlsElement = document.getElementById("shop-state-controls");
 const contextSummaryEmptyElement = document.getElementById("context-summary-empty");
 const contextSummaryChipsElement = document.getElementById("context-summary-chips");
+const backendToggle = document.getElementById("backend-toggle");
+const backendToggleLabel = document.getElementById("backend-toggle-label");
+const backendPanel = document.getElementById("backend-panel");
+const backendControlsElement = document.getElementById("backend-controls");
+const backendSummaryChipsElement = document.getElementById("backend-summary-chips");
 const statusElement = document.getElementById("search-status");
 const resultsElement = document.getElementById("search-results");
 const scenarioTitleElement = document.getElementById("scenario-title");
@@ -27,6 +32,7 @@ const scenarioParamName = "scenario";
 const audienceParamName = "audience";
 const seasonParamName = "season";
 const shopStateParamName = "shopState";
+const backendParamName = "backend";
 const minimumQueryLength = 2;
 const defaultQuery = "I want something like Brie, but stronger.";
 const challengeSequence = ["challenge-1", "challenge-2", "challenge-3"];
@@ -36,6 +42,7 @@ let requestCounter = 0;
 let activeScenario = "baseline";
 const expandedResultIds = new Set();
 let contextPanelOpen = false;
+let backendPanelOpen = false;
 const seasonOptions = [
   { id: "spring", label: "Spring menu" },
   { id: "summer", label: "Summer picnic" },
@@ -45,6 +52,10 @@ const seasonOptions = [
 const shopStateOptions = [
   { id: "normal", label: "Normal service" },
   { id: "holiday-rush", label: "Holiday rush" },
+];
+const backendOptions = [
+  { id: "rules", label: "Deterministic rules" },
+  { id: "llm", label: "LLM backend" },
 ];
 
 const scenarios = {
@@ -118,6 +129,9 @@ const contextState = {
   season: "",
   shopState: "",
 };
+const backendState = {
+  mode: "rules",
+};
 
 function setStatus(message) {
   statusElement.textContent = message;
@@ -162,6 +176,18 @@ function clearShopStateControls() {
 function clearContextSummary() {
   while (contextSummaryChipsElement.firstChild) {
     contextSummaryChipsElement.removeChild(contextSummaryChipsElement.firstChild);
+  }
+}
+
+function clearBackendControls() {
+  while (backendControlsElement.firstChild) {
+    backendControlsElement.removeChild(backendControlsElement.firstChild);
+  }
+}
+
+function clearBackendSummary() {
+  while (backendSummaryChipsElement.firstChild) {
+    backendSummaryChipsElement.removeChild(backendSummaryChipsElement.firstChild);
   }
 }
 
@@ -237,6 +263,10 @@ function readContextQuery(scenario) {
   };
 }
 
+function readBackendQuery() {
+  return backendState.mode;
+}
+
 function syncUrlState(rawQuery, scenario) {
   const url = new URL(window.location.href);
   const query = rawQuery.trim();
@@ -271,6 +301,12 @@ function syncUrlState(rawQuery, scenario) {
     url.searchParams.set(shopStateParamName, context.shopState);
   } else {
     url.searchParams.delete(shopStateParamName);
+  }
+
+  if (readBackendQuery() !== "rules") {
+    url.searchParams.set(backendParamName, readBackendQuery());
+  } else {
+    url.searchParams.delete(backendParamName);
   }
 
   window.history.replaceState(window.history.state, "", url);
@@ -324,6 +360,23 @@ function renderContextSummary(scenario) {
   }
 }
 
+function renderBackendSummary() {
+  clearBackendSummary();
+
+  const selectedBackend = backendOptions.find((option) => option.id === backendState.mode) || backendOptions[0];
+  const backendChip = document.createElement("li");
+  backendChip.className = "audience-summary-chip";
+  backendChip.textContent = selectedBackend.label;
+  backendSummaryChipsElement.appendChild(backendChip);
+
+  if (selectedBackend.id === "llm") {
+    const detailChip = document.createElement("li");
+    detailChip.className = "audience-summary-chip";
+    detailChip.textContent = "Local contrast mode";
+    backendSummaryChipsElement.appendChild(detailChip);
+  }
+}
+
 function renderToggleGroup(options, selectedId, container, onSelect) {
   for (const option of options) {
     const button = document.createElement("button");
@@ -338,6 +391,17 @@ function renderToggleGroup(options, selectedId, container, onSelect) {
     });
     container.appendChild(button);
   }
+}
+
+function renderBackendControls() {
+  clearBackendControls();
+  renderToggleGroup(backendOptions, backendState.mode, backendControlsElement, (nextBackend) => {
+    backendState.mode = nextBackend || "rules";
+    renderBackendControls();
+    renderBackendSummary();
+    syncUrlState(queryInput.value, activeScenario);
+    scheduleSearch();
+  });
 }
 
 function renderAudiencePresets(scenario) {
@@ -390,6 +454,12 @@ function renderContextControls(scenario) {
     syncUrlState(queryInput.value, activeScenario);
     scheduleSearch();
   });
+}
+
+function renderBackendPanel() {
+  backendPanel.hidden = !backendPanelOpen;
+  backendToggle.setAttribute("aria-expanded", String(backendPanelOpen));
+  backendToggleLabel.textContent = backendPanelOpen ? "Hide" : "Show";
 }
 
 function renderResults(results, scenario) {
@@ -530,6 +600,8 @@ function applyScenario(nextScenario) {
   renderAudienceSummary(nextScenario);
   renderContextControls(nextScenario);
   renderContextSummary(nextScenario);
+  renderBackendControls();
+  renderBackendSummary();
 }
 
 function renderContextPanel() {
@@ -583,7 +655,9 @@ async function runSearch(rawQuery, rawAudience) {
         "&season=" +
         encodeURIComponent(readContextQuery(activeScenario).season) +
         "&shopState=" +
-        encodeURIComponent(readContextQuery(activeScenario).shopState),
+        encodeURIComponent(readContextQuery(activeScenario).shopState) +
+        "&backend=" +
+        encodeURIComponent(readBackendQuery()),
       {
         headers: {
           accept: "application/json",
@@ -656,6 +730,11 @@ contextToggle.addEventListener("click", () => {
   renderContextPanel();
 });
 
+backendToggle.addEventListener("click", () => {
+  backendPanelOpen = !backendPanelOpen;
+  renderBackendPanel();
+});
+
 for (const button of scenarioButtons) {
   button.addEventListener("click", () => {
     applyScenario(button.dataset.scenario || "baseline");
@@ -670,6 +749,7 @@ const initialQuery = initialUrl.searchParams.get(searchParamName) || defaultQuer
 const initialAudience = initialUrl.searchParams.get(audienceParamName) || "";
 const initialSeason = initialUrl.searchParams.get(seasonParamName) || "";
 const initialShopState = initialUrl.searchParams.get(shopStateParamName) || "";
+const initialBackend = initialUrl.searchParams.get(backendParamName) || "rules";
 
 applyScenario(initialScenario);
 if (initialQuery) {
@@ -681,7 +761,11 @@ if (seasonOptions.some((option) => option.id === initialSeason)) {
 if (shopStateOptions.some((option) => option.id === initialShopState)) {
   contextState.shopState = initialShopState;
 }
+if (backendOptions.some((option) => option.id === initialBackend)) {
+  backendState.mode = initialBackend;
+}
 contextPanelOpen = Boolean(contextState.season || contextState.shopState);
+backendPanelOpen = backendState.mode !== "rules";
 if (initialAudience && initialScenario !== "baseline") {
   getAudienceState(initialScenario).customText = initialAudience;
   audienceCustomInput.value = initialAudience;
@@ -690,6 +774,9 @@ if (initialAudience && initialScenario !== "baseline") {
 renderContextPanel();
 renderContextControls(initialScenario);
 renderContextSummary(initialScenario);
+renderBackendPanel();
+renderBackendControls();
+renderBackendSummary();
 runSearch(initialQuery, initialAudience);
 `;
 }

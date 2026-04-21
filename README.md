@@ -21,6 +21,8 @@ If time is short, run the demo like this:
 
 The point is not to explain every tab in depth. It is to show a clean progression from vague wording, to clarified needs, to concrete facts, to visible evaluation checks.
 
+If there is extra time, use the sidebar `Search Backend` toggle as a short coda. `Deterministic rules` shows the stable teaching path, while `LLM backend` offers a local contrast mode for discussing backend variance without adding a live remote dependency.
+
 The repo vendors ASDLC reference material in `.asdlc/` as local guidance instead of recreating it per project. Repo-specific truth lives in `ARCHITECTURE.md`, `specs/`, and `docs/adrs/`: generated code still needs to match those documents, and passing CI alone is not enough.
 
 Local development in this repo targets macOS. Other platforms may need script and tooling adjustments before the baseline workflow works as documented.

@@ -100,6 +100,28 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.getByRole("button", { name: "Two finalists" })).toBeVisible();
 });
 
+test("sidebar backend toggle enables the optional llm contrast mode", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await page.getByRole("button", { name: /Challenge 2/ }).click();
+  await page.getByRole("button", { name: "With cider" }).click();
+  await page.getByRole("button", { name: "Washed rind" }).click();
+  await page.getByRole("button", { name: "In stock" }).click();
+
+  await expect(page.locator("#search-results > li h3").first()).toHaveText("Livarot");
+
+  await page.getByRole("button", { name: /Search Backend/ }).click();
+  await expect(page.getByRole("button", { name: "Deterministic rules" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "LLM backend" })).toBeVisible();
+  await page.getByRole("button", { name: "LLM backend" }).click();
+
+  await expect(page.locator("#backend-summary-chips")).toContainText("LLM backend");
+  await expect(page.locator("#scenario-insights")).toContainText("Backend mode: local LLM-style contrast.");
+  await expect(page).toHaveURL(/[\?&]backend=llm/);
+  await expect(page.locator("#search-results > li h3").first()).not.toHaveText("Livarot");
+});
+
 test("season visibly changes challenge 2 recommendations", async ({ page }) => {
   await page.goto("/");
 

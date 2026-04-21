@@ -74,6 +74,32 @@ export function renderHomePage(): string {
                 <ul id="context-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
               </div>
             </section>
+            <section class="mt-6 border-t border-app-line pt-5">
+              <button
+                id="backend-toggle"
+                type="button"
+                class="flex w-full items-center justify-between gap-3 text-left"
+                aria-expanded="false"
+                aria-controls="backend-panel"
+              >
+                <span>
+                  <span class="block text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Search Backend</span>
+                  <span class="mt-2 block text-sm leading-6 text-app-text-soft">Optional coda for contrasting the stable rules engine with an LLM-style backend.</span>
+                </span>
+                <span id="backend-toggle-label" class="shrink-0 rounded-full border border-app-line bg-white px-3 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-app-secondary">Show</span>
+              </button>
+              <div id="backend-panel" class="mt-4" hidden>
+                <div>
+                  <p class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Mode</p>
+                  <div id="backend-controls" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Search backend options"></div>
+                  <p class="mt-3 text-xs leading-6 text-app-text-soft">The LLM backend option stays local and deterministic for rehearsal. It is a contrast mode, not a live remote call.</p>
+                </div>
+              </div>
+              <div class="mt-4 border-t border-app-line pt-4">
+                <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Backend in play</p>
+                <ul id="backend-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
+              </div>
+            </section>
           </aside>
           <div class="order-1 lg:order-2">
             <div class="sticky top-4 z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">

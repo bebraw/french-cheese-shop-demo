@@ -47,6 +47,19 @@ describe("createSearchResponse", () => {
     expect(payload.insights).toContain("Simulation context: winter season and holiday-rush demand.");
   });
 
+  it("accepts an optional backend comparison mode", async () => {
+    const response = await createSearchResponse(
+      new Request("http://example.com/api/search?q=like%20Brie%20but%20stronger&scenario=challenge-2&audience=with%20cider&backend=llm"),
+    );
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.ok).toBe(true);
+    expect(payload.backend).toBe("llm");
+    expect(payload.backendLabel).toBe("LLM backend");
+    expect(payload.insights).toContain("Backend mode: local LLM-style contrast.");
+  });
+
   it("falls back to baseline when the scenario parameter is unknown", async () => {
     const response = await createSearchResponse(new Request("http://example.com/api/search?q=brie&scenario=unknown"));
 

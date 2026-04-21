@@ -1,4 +1,4 @@
-import { MINIMUM_QUERY_LENGTH, searchDemoCatalog, type DemoScenarioId } from "../cheese/demo";
+import { MINIMUM_QUERY_LENGTH, searchDemoCatalog, type DemoScenarioId, type SearchBackend } from "../cheese/demo";
 import type { ShopState, SimulationSeason } from "../cheese/catalog";
 import { jsonResponse } from "../views/shared";
 
@@ -11,6 +11,7 @@ export async function createSearchResponse(request: Request): Promise<Response> 
   const audienceInput = url.searchParams.get("audience")?.trim() ?? "";
   const season = readSeason(url.searchParams.get("season"));
   const shopState = readShopState(url.searchParams.get("shopState"));
+  const backend = readBackend(url.searchParams.get("backend"));
 
   if (query.length < MINIMUM_QUERY_LENGTH) {
     return jsonResponse(
@@ -30,6 +31,7 @@ export async function createSearchResponse(request: Request): Promise<Response> 
       audienceInput,
       season,
       shopState,
+      backend,
     });
     return jsonResponse(response);
   } catch (error) {
@@ -67,4 +69,8 @@ function readScenario(rawScenario: string | null): DemoScenarioId {
   }
 
   return "baseline";
+}
+
+function readBackend(rawBackend: string | null): SearchBackend {
+  return rawBackend === "llm" ? "llm" : "rules";
 }

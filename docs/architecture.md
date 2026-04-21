@@ -62,12 +62,12 @@ Shared response headers and CSP come from `src/views/shared.ts`.
 
 ### 2. Search Request Path
 
-`GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...` flows through these modules:
+`GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...` flows through these modules:
 
 1. `src/api/search.ts` validates the query length and normalizes the scenario parameter.
 2. `src/cheese/demo.ts` parses the vague request plus any audience refinement text into explicit signals.
 3. `src/cheese/catalog.ts` provides the deterministic cheese records used for scoring.
-4. `src/cheese/demo.ts` scores the catalog differently for baseline, challenge 1, challenge 2, and challenge 3, while applying any shared world-context overlay from the sidebar. The season overlay changes suitability signals, while shop state changes effective stock pressure.
+4. `src/cheese/demo.ts` scores the catalog differently for baseline, challenge 1, challenge 2, and challenge 3, while applying any shared world-context overlay from the sidebar. The season overlay changes suitability signals, shop state changes effective stock pressure, and the optional backend toggle can switch between the default rules engine and a local LLM-style contrast mode.
 
 The current scenario shifts are:
 
@@ -88,7 +88,7 @@ The current scenario shifts are:
 `src/views/home-script.ts` handles:
 
 - tab switching
-- URL synchronization for `q`, `scenario`, and `audience`
+- URL synchronization for `q`, `scenario`, `audience`, world context, and backend mode
 - debounced same-origin fetches to `/api/search`
 - client-side rendering of result cards, insights, and evaluation checks
 

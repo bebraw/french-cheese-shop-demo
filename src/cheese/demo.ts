@@ -3,6 +3,7 @@ import { cheeseCatalog, type CheeseRecord, type ShopState, type SimulationSeason
 export const MINIMUM_QUERY_LENGTH = 2;
 
 export type DemoScenarioId = "baseline" | "challenge-1" | "challenge-2" | "challenge-3";
+export type SearchBackend = "rules" | "llm";
 
 export interface DemoSearchParams {
   query: string;
@@ -10,6 +11,7 @@ export interface DemoSearchParams {
   audienceInput?: string;
   season?: SimulationSeason | "";
   shopState?: ShopState | "";
+  backend?: SearchBackend;
 }
 
 export interface DemoResultCheck {
@@ -35,6 +37,8 @@ export interface DemoSearchResponse {
   ok: true;
   query: string;
   scenario: DemoScenarioId;
+  backend: SearchBackend;
+  backendLabel: string;
   teachingFocus: string;
   promptLabel: string;
   audienceInput: string;
@@ -84,17 +88,28 @@ const scenarioCopy: Record<DemoScenarioId, { teachingFocus: string; promptLabel:
   },
 };
 
+const backendCopy: Record<SearchBackend, { label: string; insight?: string }> = {
+  rules: {
+    label: "Deterministic rules",
+  },
+  llm: {
+    label: "LLM backend",
+    insight: "Backend mode: local LLM-style contrast.",
+  },
+};
+
 export function searchDemoCatalog({
   query,
   scenario,
   audienceInput = "",
   season = "",
   shopState = "",
+  backend = "rules",
 }: DemoSearchParams): DemoSearchResponse {
   const normalizedAudienceInput = audienceInput.trim();
   const intent = parseIntent(query, normalizedAudienceInput, scenario, season, shopState);
   const scored = cheeseCatalog
-    .map((cheese) => scoreCheese(cheese, intent, scenario))
+    .map((cheese) => scoreCheese(cheese, intent, scenario, backend))
     .sort((left, right) => right.score - left.score || left.cheese.name.localeCompare(right.cheese.name));
   const visibleCount = scenario === "challenge-3" ? (intent.wantsShortlist ? 2 : 4) : 5;
   const visibleScored = scored.slice(0, visibleCount);
@@ -109,7 +124,7 @@ export function searchDemoCatalog({
       meta: formatMeta(cheese),
       blurb: cheese.blurb,
       score,
-      reason: formatReason(cheese, matchedSignals, scenario, intent, effectiveStock),
+      reason: formatReason(cheese, matchedSignals, scenario, intent, effectiveStock, backend),
       explanation: buildExplanation(cheese, matchedSignals, scenario, intent),
       presentationTag: buildPresentationTag(index, scenario, intent),
       matchedSignals,
@@ -121,15 +136,17 @@ export function searchDemoCatalog({
     ok: true,
     query,
     scenario,
+    backend,
+    backendLabel: backendCopy[backend].label,
     teachingFocus: scenarioCopy[scenario].teachingFocus,
     promptLabel: scenarioCopy[scenario].promptLabel,
     audienceInput: normalizedAudienceInput,
-    insights: buildInsights(intent, scenario, visibleResults),
+    insights: buildInsights(intent, scenario, visibleResults, backend),
     results: visibleResults,
   };
 }
 
-function scoreCheese(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoScenarioId) {
+function scoreCheese(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoScenarioId, backend: SearchBackend) {
   const referenceMention = scoreReferenceMention(cheese, intent.referenceCheese);
   const referenceSimilarity = scoreReferenceSimilarity(cheese, intent.referenceCheese);
   const lexicalSimilarity = scoreLexicalSimilarity(cheese, intent.queryTokens);
@@ -137,15 +154,16 @@ function scoreCheese(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoS
   const attributeFit = scoreAttributeFit(cheese, intent);
   const contextFit = scoreContextFit(cheese, intent);
   const evaluationFit = scoreEvaluationFit(cheese, intent);
+  const bridgeFit = scoreBridgeFit(cheese, intent.referenceCheese, intent.targetIntensity);
 
   let score = 0;
-  if (scenario === "baseline") {
+  if (backend === "rules" && scenario === "baseline") {
     score = lexicalSimilarity * 0.55 + referenceMention * 0.25 + targetIntensity * 0.2;
-  } else if (scenario === "challenge-1") {
+  } else if (backend === "rules" && scenario === "challenge-1") {
     score = lexicalSimilarity * 0.1 + referenceSimilarity * 0.2 + targetIntensity * 0.35 + attributeFit * 0.35;
-  } else if (scenario === "challenge-2") {
+  } else if (backend === "rules" && scenario === "challenge-2") {
     score = lexicalSimilarity * 0.1 + referenceSimilarity * 0.2 + targetIntensity * 0.2 + attributeFit * 0.2 + contextFit * 0.3;
-  } else {
+  } else if (backend === "rules") {
     score =
       lexicalSimilarity * 0.1 +
       referenceSimilarity * 0.15 +
@@ -153,16 +171,52 @@ function scoreCheese(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoS
       attributeFit * 0.15 +
       contextFit * 0.2 +
       evaluationFit * 0.25;
+  } else if (scenario === "baseline") {
+    score = lexicalSimilarity * 0.18 + referenceMention * 0.06 + referenceSimilarity * 0.26 + targetIntensity * 0.14 + bridgeFit * 0.36;
+  } else if (scenario === "challenge-1") {
+    score =
+      lexicalSimilarity * 0.08 +
+      referenceSimilarity * 0.2 +
+      targetIntensity * 0.2 +
+      attributeFit * 0.16 +
+      contextFit * 0.06 +
+      bridgeFit * 0.3;
+  } else if (scenario === "challenge-2") {
+    score =
+      lexicalSimilarity * 0.06 +
+      referenceSimilarity * 0.18 +
+      targetIntensity * 0.14 +
+      attributeFit * 0.1 +
+      contextFit * 0.16 +
+      bridgeFit * 0.36;
+  } else {
+    score =
+      lexicalSimilarity * 0.06 +
+      referenceSimilarity * 0.14 +
+      targetIntensity * 0.12 +
+      attributeFit * 0.08 +
+      contextFit * 0.14 +
+      evaluationFit * 0.18 +
+      bridgeFit * 0.28;
   }
 
   if (hasSimulationContext(intent)) {
-    score += scenario === "baseline" ? contextFit * 0.2 : scenario === "challenge-1" ? contextFit * 0.12 : 0;
+    score +=
+      backend === "rules"
+        ? scenario === "baseline"
+          ? contextFit * 0.2
+          : scenario === "challenge-1"
+            ? contextFit * 0.12
+            : 0
+        : scenario === "baseline"
+          ? contextFit * 0.08
+          : 0;
   }
 
   return {
     cheese,
     score: roundScore(score),
-    matchedSignals: buildMatchedSignals(cheese, intent, scenario),
+    matchedSignals: buildMatchedSignals(cheese, intent, scenario, backend),
   };
 }
 
@@ -462,6 +516,28 @@ function scoreContextFit(cheese: CheeseRecord, intent: ParsedIntent): number {
   return averageOrDefault(checks, 0.5);
 }
 
+function scoreBridgeFit(cheese: CheeseRecord, referenceCheese: CheeseRecord | null, targetIntensity: number | null): number {
+  if (!referenceCheese) {
+    return 0.5;
+  }
+
+  if (cheese.cheeseId === referenceCheese.cheeseId) {
+    return 0.35;
+  }
+
+  const sharedTextures = cheese.textures.filter((texture) => referenceCheese.textures.includes(texture)).length;
+  const textureScore = sharedTextures / Math.max(cheese.textures.length, referenceCheese.textures.length);
+  const milkScore = cheese.milkType === referenceCheese.milkType ? 1 : 0;
+  const styleScore = cheese.style === referenceCheese.style ? 1 : 0.2;
+  const bridgeTarget =
+    targetIntensity !== null && targetIntensity > referenceCheese.intensity
+      ? Math.min(targetIntensity, referenceCheese.intensity + 1)
+      : referenceCheese.intensity;
+  const intensityScore = 1 - Math.min(Math.abs(cheese.intensity - bridgeTarget), 4) / 4;
+
+  return textureScore * 0.25 + milkScore * 0.25 + styleScore * 0.3 + intensityScore * 0.2;
+}
+
 function scoreEvaluationFit(cheese: CheeseRecord, intent: ParsedIntent): number {
   const effectiveStock = resolveEffectiveStock(cheese, intent);
   const checks: DemoResultCheck[] = [
@@ -493,10 +569,13 @@ function scoreEvaluationFit(cheese: CheeseRecord, intent: ParsedIntent): number 
   );
 }
 
-function buildMatchedSignals(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoScenarioId): string[] {
+function buildMatchedSignals(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoScenarioId, backend: SearchBackend): string[] {
   const signals: string[] = [];
   const effectiveStock = resolveEffectiveStock(cheese, intent);
 
+  if (backend === "llm" && intent.referenceCheese && scoreBridgeFit(cheese, intent.referenceCheese, intent.targetIntensity) >= 0.75) {
+    signals.push(`Analogy fit: familiar step from ${intent.referenceCheese.name}`);
+  }
   if (scenario !== "baseline" && intent.referenceCheese && cheese.cheeseId !== intent.referenceCheese.cheeseId) {
     signals.push(`Similar milk/style profile to ${intent.referenceCheese.name}`);
   }
@@ -577,8 +656,12 @@ function buildChecks(
   return checks;
 }
 
-function buildInsights(intent: ParsedIntent, scenario: DemoScenarioId, results: DemoSearchResult[]): string[] {
+function buildInsights(intent: ParsedIntent, scenario: DemoScenarioId, results: DemoSearchResult[], backend: SearchBackend): string[] {
   const insights = [scenarioCopy[scenario].introInsight];
+
+  if (backendCopy[backend].insight) {
+    insights.push(backendCopy[backend].insight);
+  }
 
   if (intent.referenceCheese) {
     insights.push(`Reference cheese: ${intent.referenceCheese.name}.`);
@@ -703,6 +786,7 @@ function formatReason(
   scenario: DemoScenarioId,
   intent: ParsedIntent,
   effectiveStock: CheeseRecord["stock"],
+  backend: SearchBackend,
 ): string {
   const stockLabel = formatStockLabel(effectiveStock);
   const scenarioSuffix =
@@ -715,8 +799,9 @@ function formatReason(
           ? "Use the explanation panel to justify the choice."
           : "Also checked against the evaluation criteria."
         : "Audience notes now affect the ranking.";
+  const backendSuffix = backend === "llm" ? " The backend leans on analogy over strict rule matching." : "";
 
-  return `${matchedSignals[0]}. ${cheese.name} is ${stockLabel}. ${scenarioSuffix}`;
+  return `${matchedSignals[0]}. ${cheese.name} is ${stockLabel}. ${scenarioSuffix}${backendSuffix}`;
 }
 
 function normalizeText(value: string): string {

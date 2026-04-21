@@ -16,6 +16,9 @@ describe("renderHomePage", () => {
     expect(html).toContain("Optional simulation state shared by baseline and every challenge.");
     expect(html).toContain("Season options");
     expect(html).toContain("Shop state options");
+    expect(html).toContain("Search Backend");
+    expect(html).toContain("Search backend options");
+    expect(html).toContain("LLM backend");
     expect(html).toContain("Audience answer");
     expect(html).toContain("Other audience note");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');

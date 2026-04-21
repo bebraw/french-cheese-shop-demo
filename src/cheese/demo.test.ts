@@ -35,6 +35,26 @@ describe("searchDemoCatalog", () => {
     expect(response.insights).toContain("Context data: cider.");
   });
 
+  it("offers an llm-style backend contrast mode", () => {
+    const rulesResponse = searchDemoCatalog({
+      query: "I want something like Brie but stronger",
+      scenario: "challenge-2",
+      audienceInput: "prefers washed rind. with cider. it must be in stock",
+    });
+    const llmResponse = searchDemoCatalog({
+      query: "I want something like Brie but stronger",
+      scenario: "challenge-2",
+      audienceInput: "prefers washed rind. with cider. it must be in stock",
+      backend: "llm",
+    });
+
+    expect(rulesResponse.results[0]?.name).toBe("Livarot");
+    expect(llmResponse.backend).toBe("llm");
+    expect(llmResponse.backendLabel).toBe("LLM backend");
+    expect(llmResponse.insights).toContain("Backend mode: local LLM-style contrast.");
+    expect(llmResponse.results[0]?.name).not.toBe(rulesResponse.results[0]?.name);
+  });
+
   it("lets season change the shortlist in challenge 2", () => {
     const summerResponse = searchDemoCatalog({
       query: "I want something like Brie but stronger",
