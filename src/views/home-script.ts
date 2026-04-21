@@ -25,6 +25,7 @@ let debounceHandle = null;
 let activeController = null;
 let requestCounter = 0;
 let activeScenario = "baseline";
+const expandedResultIds = new Set();
 
 const scenarios = {
   baseline: {
@@ -312,7 +313,8 @@ function renderResults(results, scenario) {
 
     const details = document.createElement("div");
     details.className = "mt-4 grid gap-4";
-    details.hidden = true;
+    const isExpanded = expandedResultIds.has(result.cheeseId);
+    details.hidden = !isExpanded;
 
     headingGroup.append(title);
     summaryRow.append(headingGroup, expandButton);
@@ -342,12 +344,19 @@ function renderResults(results, scenario) {
       details.appendChild(checksList);
     }
 
-    expandButton.setAttribute("aria-expanded", String(!details.hidden));
+    expandButton.setAttribute("aria-expanded", String(isExpanded));
+    expandButton.textContent = isExpanded ? "Hide" : "More";
     expandButton.addEventListener("click", () => {
       const isOpen = !details.hidden;
       details.hidden = isOpen;
       expandButton.setAttribute("aria-expanded", String(!isOpen));
       expandButton.textContent = isOpen ? "More" : "Hide";
+
+      if (isOpen) {
+        expandedResultIds.delete(result.cheeseId);
+      } else {
+        expandedResultIds.add(result.cheeseId);
+      }
     });
 
     resultsElement.appendChild(item);

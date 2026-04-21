@@ -34,6 +34,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...` returns ordered cheese recommendations from the committed catalog.
 - [ ] Search results stay compact by default and can reveal more explanation on demand.
+- [ ] Expanded result rows stay open across incremental challenge updates when the same result remains visible.
 - [ ] The requirements lens stays synchronized with each active ranking signal, including explicit milk type and carry-forward audience cues from earlier challenges.
 - [ ] `baseline` ranks from the request wording alone.
 - [ ] `challenge-1` makes hidden requirements explicit in the ranking and insight output.
@@ -58,6 +59,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - The cheese catalog should stay small, committed, and easy to review.
 - Challenge behavior must stay explainable through returned insights and, for challenge 3, evaluation checks.
 - Result rows should prioritize quick scanning and avoid showing every explanation block at full length by default.
+- Incremental audience refinements should not collapse an already expanded result row unless that result leaves the visible list.
 
 ### Verification
 
@@ -77,6 +79,12 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Given: a result list is visible
 - When: the presenter opens one result row
 - Then: the supporting explanation and matched signals become visible without expanding every other result
+
+**Scenario: Presenter refines a challenge while one result is open**
+
+- Given: a result row is expanded
+- When: the presenter adds or removes a challenge preset such as `explain why it fits`
+- Then: the same row stays expanded if that result remains in the visible results
 
 **Scenario: Audience adds hidden requirements**
 

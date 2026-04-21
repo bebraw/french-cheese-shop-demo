@@ -94,6 +94,50 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.getByRole("button", { name: "Backup option" })).toBeVisible();
 });
 
+test("an expanded result stays open across evaluation updates", async ({ page }) => {
+  await page.goto("/");
+
+  const persistentResultNames = await page.evaluate(async () => {
+    const makeRequest = async (audience = "") => {
+      const response = await fetch(
+        "/api/search?q=" +
+          encodeURIComponent("I want something like Brie but stronger") +
+          "&scenario=" +
+          encodeURIComponent("challenge-3") +
+          "&audience=" +
+          encodeURIComponent(audience),
+      );
+      return response.json();
+    };
+
+    const [baselinePayload, updatedPayload] = await Promise.all([makeRequest(), makeRequest("explain why it fits")]);
+
+    return baselinePayload.results
+      .map((result: { name: string }) => result.name)
+      .filter((name: string) => updatedPayload.results.some((result: { name: string }) => result.name === name));
+  });
+  const resultName = persistentResultNames[0];
+
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await page.getByRole("button", { name: /Challenge 3/ }).click();
+
+  await expect(page.getByRole("heading", { level: 3, name: resultName })).toBeVisible();
+
+  const persistentResult = page
+    .locator("#search-results li")
+    .filter({ has: page.getByRole("heading", { level: 3, name: resultName }) });
+  const firstToggle = persistentResult.getByRole("button", { name: "More" });
+
+  await firstToggle.click();
+  await expect(persistentResult.getByRole("button", { name: "Hide" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Explain why" }).click();
+
+  await expect(page.locator("#search-status")).toHaveText("4 results");
+  await expect(page.getByRole("heading", { level: 3, name: resultName })).toBeVisible();
+  await expect(persistentResult.getByRole("button", { name: "Hide" })).toBeVisible();
+});
+
 test("expands a compact result row on demand", async ({ page }) => {
   await page.goto("/");
 
