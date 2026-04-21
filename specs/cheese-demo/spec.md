@@ -25,9 +25,10 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 ### Definition of Done
 
 - [ ] `GET /` renders a single French cheese shop page with clear controls for baseline, challenge 1, challenge 2, and challenge 3.
-- [ ] `GET /` keeps one shared customer-request input and a tab-specific audience refinement area.
+- [ ] `GET /` keeps one shared customer-request input and a challenge-specific audience answer area.
 - [ ] `GET /` opens with the baseline prompt prefilled so the demo starts in a meaningful default state.
 - [ ] `GET /` keeps the baseline and challenge descriptions visible enough that the audience can tell the four passes apart before the presenter switches tabs.
+- [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific choices before falling back to a custom note.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...` returns ordered cheese recommendations from the committed catalog.
 - [ ] `baseline` ranks from the request wording alone.
@@ -45,6 +46,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
 - The default baseline prompt should stay visible in the main request input instead of being repeated in separate promo copy.
 - The baseline and challenge summaries should remain easy to scan from a distance instead of depending on long body copy or tab switching to become understandable.
+- The audience capture flow should make the type of answer visible in the UI instead of relying on an abstract blank text box.
 - HTML responses must ship with restrictive browser security headers, and client-side code must load from same-origin script assets so the CSP can keep `script-src 'self'`.
 - The cheese catalog should stay small, committed, and easy to review.
 - Challenge behavior must stay explainable through returned insights and, for challenge 3, evaluation checks.
@@ -65,17 +67,17 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 **Scenario: Audience adds hidden requirements**
 
 - Given: the presenter is on challenge 1
-- When: the audience adds cues such as `keep it creamy` or `cow's milk`
+- When: the audience selects cues such as `keep it creamy` or `cow's milk`
 - Then: the ranking and insight panel change to reflect those explicit requirements
 
 **Scenario: Audience adds data needs**
 
 - Given: the presenter is on challenge 2
-- When: the audience adds extra context such as `serve it with cider` or `it must be in stock`
+- When: the audience selects extra context such as `serve it with cider` or `it must be in stock`
 - Then: the ranking changes to use those product and context data cues
 
 **Scenario: Audience defines success criteria**
 
 - Given: the presenter is on challenge 3
-- When: the audience adds criteria such as `must be in stock` or `explain why it fits`
+- When: the audience selects criteria such as `must be in stock` or `explain why it fits`
 - Then: the results include evaluation checks that make the quality judgment inspectable

@@ -54,10 +54,19 @@ export function renderHomePage(): string {
                 <input id="customer-query" name="q" type="search" autocomplete="off" spellcheck="false" value="${escapeHtml(defaultQuery)}" placeholder="Type the customer request" class="w-full rounded-[1.35rem] bg-app-surface px-5 py-4 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
               </label>
               <div id="audience-controls" class="mt-4 hidden">
-                <label class="block" for="audience-input">
-                  <span id="audience-label" class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience refinements</span>
-                  <textarea id="audience-input" rows="3" placeholder="" class="w-full resize-y rounded-[1.35rem] bg-app-surface px-5 py-4 text-base leading-7 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28"></textarea>
-                </label>
+                <div class="rounded-[1.35rem] border border-app-line bg-white/72 px-4 py-4">
+                  <p id="audience-prompt" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
+                  <div id="audience-presets" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Audience answer options"></div>
+                  <label class="mt-4 block" for="audience-custom-input">
+                    <span id="audience-label" class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Other audience note</span>
+                    <input id="audience-custom-input" name="audience-note" type="text" autocomplete="off" spellcheck="false" placeholder="" class="w-full rounded-[1.15rem] bg-app-surface px-4 py-3 text-sm leading-6 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
+                  </label>
+                </div>
+                <div class="mt-4 rounded-[1.35rem] border border-app-line bg-app-surface px-4 py-4">
+                  <p id="audience-summary-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
+                  <p id="audience-summary-empty" class="mt-3 text-sm leading-6 text-app-text-soft">Choose one or more answers below.</p>
+                  <ul id="audience-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
+                </div>
               </div>
               <div id="search-status" class="mt-3 text-sm leading-6 text-app-text-soft"></div>
             </div>

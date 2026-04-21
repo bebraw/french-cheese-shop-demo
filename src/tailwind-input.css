@@ -73,4 +73,16 @@
   .scenario-guide-copy {
     @apply mt-2 text-sm leading-6 text-app-text-soft;
   }
+
+  .audience-preset {
+    @apply rounded-full border border-app-line bg-white px-3 py-2 text-xs font-semibold tracking-[0.08em] text-app-primary uppercase transition hover:border-app-secondary/30 hover:text-app-secondary;
+  }
+
+  .audience-preset-active {
+    @apply border-transparent bg-app-secondary text-white hover:text-white;
+  }
+
+  .audience-summary-chip {
+    @apply rounded-full bg-white px-3 py-2 text-xs font-semibold tracking-[0.08em] text-app-primary uppercase;
+  }
 }
