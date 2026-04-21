@@ -8,18 +8,14 @@ const audienceLabel = document.getElementById("audience-label");
 const audienceSummaryLabelElement = document.getElementById("audience-summary-label");
 const audienceSummaryEmptyElement = document.getElementById("audience-summary-empty");
 const audienceSummaryChipsElement = document.getElementById("audience-summary-chips");
-const contextToggle = document.getElementById("context-toggle");
-const contextToggleLabel = document.getElementById("context-toggle-label");
-const contextPanel = document.getElementById("context-panel");
+const contextDrawerToggle = document.getElementById("context-drawer-toggle");
+const contextDrawerIcon = document.getElementById("context-drawer-icon");
+const contextDrawerPanel = document.getElementById("context-drawer-panel");
 const seasonControlsElement = document.getElementById("season-controls");
 const shopStateControlsElement = document.getElementById("shop-state-controls");
 const contextSummaryEmptyElement = document.getElementById("context-summary-empty");
 const contextSummaryChipsElement = document.getElementById("context-summary-chips");
-const backendToggle = document.getElementById("backend-toggle");
-const backendToggleLabel = document.getElementById("backend-toggle-label");
-const backendPanel = document.getElementById("backend-panel");
 const backendControlsElement = document.getElementById("backend-controls");
-const backendSummaryChipsElement = document.getElementById("backend-summary-chips");
 const statusElement = document.getElementById("search-status");
 const resultsElement = document.getElementById("search-results");
 const scenarioTitleElement = document.getElementById("scenario-title");
@@ -33,6 +29,7 @@ const audienceParamName = "audience";
 const seasonParamName = "season";
 const shopStateParamName = "shopState";
 const backendParamName = "backend";
+const contextParamName = "context";
 const minimumQueryLength = 2;
 const defaultQuery = "I want something like Brie, but stronger.";
 const challengeSequence = ["challenge-1", "challenge-2", "challenge-3"];
@@ -41,8 +38,7 @@ let activeController = null;
 let requestCounter = 0;
 let activeScenario = "baseline";
 const expandedResultIds = new Set();
-let contextPanelOpen = false;
-let backendPanelOpen = false;
+let contextDrawerOpen = false;
 const seasonOptions = [
   { id: "spring", label: "Spring menu" },
   { id: "summer", label: "Summer picnic" },
@@ -185,12 +181,6 @@ function clearBackendControls() {
   }
 }
 
-function clearBackendSummary() {
-  while (backendSummaryChipsElement.firstChild) {
-    backendSummaryChipsElement.removeChild(backendSummaryChipsElement.firstChild);
-  }
-}
-
 function getAudienceState(scenario) {
   return audienceState[scenario];
 }
@@ -267,6 +257,10 @@ function readBackendQuery() {
   return backendState.mode;
 }
 
+function readContextDrawerQuery() {
+  return contextDrawerOpen ? "open" : "";
+}
+
 function syncUrlState(rawQuery, scenario) {
   const url = new URL(window.location.href);
   const query = rawQuery.trim();
@@ -307,6 +301,12 @@ function syncUrlState(rawQuery, scenario) {
     url.searchParams.set(backendParamName, readBackendQuery());
   } else {
     url.searchParams.delete(backendParamName);
+  }
+
+  if (readContextDrawerQuery() === "open") {
+    url.searchParams.set(contextParamName, "open");
+  } else {
+    url.searchParams.delete(contextParamName);
   }
 
   window.history.replaceState(window.history.state, "", url);
@@ -360,23 +360,6 @@ function renderContextSummary(scenario) {
   }
 }
 
-function renderBackendSummary() {
-  clearBackendSummary();
-
-  const selectedBackend = backendOptions.find((option) => option.id === backendState.mode) || backendOptions[0];
-  const backendChip = document.createElement("li");
-  backendChip.className = "audience-summary-chip";
-  backendChip.textContent = selectedBackend.label;
-  backendSummaryChipsElement.appendChild(backendChip);
-
-  if (selectedBackend.id === "llm") {
-    const detailChip = document.createElement("li");
-    detailChip.className = "audience-summary-chip";
-    detailChip.textContent = "Local contrast mode";
-    backendSummaryChipsElement.appendChild(detailChip);
-  }
-}
-
 function renderToggleGroup(options, selectedId, container, onSelect) {
   for (const option of options) {
     const button = document.createElement("button");
@@ -398,7 +381,6 @@ function renderBackendControls() {
   renderToggleGroup(backendOptions, backendState.mode, backendControlsElement, (nextBackend) => {
     backendState.mode = nextBackend || "rules";
     renderBackendControls();
-    renderBackendSummary();
     syncUrlState(queryInput.value, activeScenario);
     scheduleSearch();
   });
@@ -454,12 +436,6 @@ function renderContextControls(scenario) {
     syncUrlState(queryInput.value, activeScenario);
     scheduleSearch();
   });
-}
-
-function renderBackendPanel() {
-  backendPanel.hidden = !backendPanelOpen;
-  backendToggle.setAttribute("aria-expanded", String(backendPanelOpen));
-  backendToggleLabel.textContent = backendPanelOpen ? "Hide" : "Show";
 }
 
 function renderResults(results, scenario) {
@@ -601,13 +577,12 @@ function applyScenario(nextScenario) {
   renderContextControls(nextScenario);
   renderContextSummary(nextScenario);
   renderBackendControls();
-  renderBackendSummary();
 }
 
 function renderContextPanel() {
-  contextPanel.hidden = !contextPanelOpen;
-  contextToggle.setAttribute("aria-expanded", String(contextPanelOpen));
-  contextToggleLabel.textContent = contextPanelOpen ? "Hide" : "Show";
+  contextDrawerPanel.hidden = !contextDrawerOpen;
+  contextDrawerToggle.setAttribute("aria-expanded", String(contextDrawerOpen));
+  contextDrawerIcon.textContent = contextDrawerOpen ? "◀" : "▶";
 }
 
 async function runSearch(rawQuery, rawAudience) {
@@ -725,14 +700,10 @@ audienceCustomInput.addEventListener("input", () => {
   scheduleSearch();
 });
 
-contextToggle.addEventListener("click", () => {
-  contextPanelOpen = !contextPanelOpen;
+contextDrawerToggle.addEventListener("click", () => {
+  contextDrawerOpen = !contextDrawerOpen;
   renderContextPanel();
-});
-
-backendToggle.addEventListener("click", () => {
-  backendPanelOpen = !backendPanelOpen;
-  renderBackendPanel();
+  syncUrlState(queryInput.value, activeScenario);
 });
 
 for (const button of scenarioButtons) {
@@ -750,6 +721,7 @@ const initialAudience = initialUrl.searchParams.get(audienceParamName) || "";
 const initialSeason = initialUrl.searchParams.get(seasonParamName) || "";
 const initialShopState = initialUrl.searchParams.get(shopStateParamName) || "";
 const initialBackend = initialUrl.searchParams.get(backendParamName) || "rules";
+const initialContext = initialUrl.searchParams.get(contextParamName) || "";
 
 applyScenario(initialScenario);
 if (initialQuery) {
@@ -764,8 +736,7 @@ if (shopStateOptions.some((option) => option.id === initialShopState)) {
 if (backendOptions.some((option) => option.id === initialBackend)) {
   backendState.mode = initialBackend;
 }
-contextPanelOpen = Boolean(contextState.season || contextState.shopState);
-backendPanelOpen = backendState.mode !== "rules";
+contextDrawerOpen = initialContext === "open";
 if (initialAudience && initialScenario !== "baseline") {
   getAudienceState(initialScenario).customText = initialAudience;
   audienceCustomInput.value = initialAudience;
@@ -774,9 +745,7 @@ if (initialAudience && initialScenario !== "baseline") {
 renderContextPanel();
 renderContextControls(initialScenario);
 renderContextSummary(initialScenario);
-renderBackendPanel();
 renderBackendControls();
-renderBackendSummary();
 runSearch(initialQuery, initialAudience);
 `;
 }

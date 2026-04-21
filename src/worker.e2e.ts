@@ -34,6 +34,23 @@ test("shows baseline results for a vague request", async ({ page }) => {
   await expect(page.getByRole("button", { name: "More" }).first()).toBeVisible();
 });
 
+test("context drawer stays closed by default and syncs its open state to the query", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("button", { name: "Winter holiday" })).toBeHidden();
+  await expect(page).not.toHaveURL(/[\?&]context=open/);
+
+  await page.getByRole("button", { name: /Context/ }).click();
+
+  await expect(page.getByRole("button", { name: "Winter holiday" })).toBeVisible();
+  await expect(page).toHaveURL(/[\?&]context=open/);
+
+  await page.getByRole("button", { name: /Context/ }).click();
+
+  await expect(page.getByRole("button", { name: "Winter holiday" })).toBeHidden();
+  await expect(page).not.toHaveURL(/[\?&]context=open/);
+});
+
 test("a stronger follow-up to livarot does not keep livarot on top", async ({ page }) => {
   await page.goto("/");
 
@@ -83,8 +100,8 @@ test("signals in play stays synced and cumulative through challenges", async ({ 
 test("challenge copy keeps hidden needs, data, and evaluation distinct", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("button", { name: /World Context/ })).toBeVisible();
-  await page.getByRole("button", { name: /World Context/ }).click();
+  await expect(page.getByRole("button", { name: /Context/ })).toBeVisible();
+  await page.getByRole("button", { name: /Context/ }).click();
   await expect(page.getByRole("button", { name: "Winter holiday" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Holiday rush" })).toBeVisible();
 
@@ -109,7 +126,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.getByRole("button", { name: "Two finalists" })).toBeVisible();
 });
 
-test("sidebar backend toggle enables the optional llm contrast mode", async ({ page }) => {
+test("context drawer enables the optional llm contrast mode", async ({ page }) => {
   await page.goto("/");
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
@@ -120,12 +137,12 @@ test("sidebar backend toggle enables the optional llm contrast mode", async ({ p
 
   await expect(page.locator("#search-results > li h3").first()).toHaveText("Livarot");
 
-  await page.getByRole("button", { name: /Search Backend/ }).click();
+  await page.getByRole("button", { name: /Context/ }).click();
   await expect(page.getByRole("button", { name: "Deterministic rules" })).toBeVisible();
   await expect(page.getByRole("button", { name: "LLM backend" })).toBeVisible();
   await page.getByRole("button", { name: "LLM backend" }).click();
 
-  await expect(page.locator("#backend-summary-chips")).toContainText("LLM backend");
+  await expect(page.getByRole("button", { name: "LLM backend" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#scenario-insights")).toContainText("Backend mode: local LLM-style contrast.");
   await expect(page).toHaveURL(/[\?&]backend=llm/);
   await expect(page.locator("#search-results > li h3").first()).not.toHaveText("Livarot");
@@ -134,7 +151,7 @@ test("sidebar backend toggle enables the optional llm contrast mode", async ({ p
 test("season visibly changes challenge 2 recommendations", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByRole("button", { name: /World Context/ }).click();
+  await page.getByRole("button", { name: /Context/ }).click();
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await page.getByRole("button", { name: /Challenge 2/ }).click();
   await page.getByRole("button", { name: "With cider" }).click();
@@ -162,7 +179,7 @@ test("season visibly changes challenge 2 recommendations", async ({ page }) => {
 test("shop demand still changes visible stock within world context", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByRole("button", { name: /World Context/ }).click();
+  await page.getByRole("button", { name: /Context/ }).click();
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await page.getByRole("button", { name: /Challenge 2/ }).click();
   await page.getByRole("button", { name: "With cider" }).click();
@@ -184,7 +201,7 @@ test("shop demand still changes visible stock within world context", async ({ pa
 test("world context can be set in baseline and carries into later challenges", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByRole("button", { name: /World Context/ }).click();
+  await page.getByRole("button", { name: /Context/ }).click();
   await page.getByRole("button", { name: "Winter holiday" }).click();
   await page.getByRole("button", { name: "Holiday rush" }).click();
 
@@ -195,6 +212,14 @@ test("world context can be set in baseline and carries into later challenges", a
   await page.getByRole("button", { name: /Challenge 2/ }).click();
   await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
   await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
+});
+
+test("context drawer can reopen from the query state", async ({ page }) => {
+  await page.goto("/?context=open&season=winter&backend=llm");
+
+  await expect(page.getByRole("button", { name: "Winter holiday" })).toBeVisible();
+  await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
+  await expect(page.getByRole("button", { name: "LLM backend" })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("an expanded result stays open across evaluation updates", async ({ page }) => {

@@ -19,6 +19,7 @@ describe("worker", () => {
     const body = await response.text();
     expect(body).toContain("French Cheese Shop");
     expect(body).toContain("Challenge 1");
+    expect(body).toContain("Context");
     expect(body).toContain("Search Backend");
     expect(body).toContain("Type the customer request");
   });

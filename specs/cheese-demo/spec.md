@@ -33,8 +33,9 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific choices before falling back to a custom note.
 - [ ] `GET /` carries forward earlier challenge answers into later challenge searches so the teaching flow can layer requirements instead of replacing them.
 - [ ] Each challenge preset list teaches one distinct step in the story: hidden needs, concrete facts, then evaluation criteria.
-- [ ] `GET /` exposes simulation context controls in a shared sidebar so the presenter can change season and shop state explicitly from baseline through challenge 3.
-- [ ] `GET /` exposes one optional backend toggle in the sidebar so the presenter can compare deterministic rules with an LLM-style backend without interrupting the main challenge flow.
+- [ ] `GET /` exposes simulation context controls inside a compact foldable `Context` container on the right so the presenter can change season and shop state explicitly from baseline through challenge 3.
+- [ ] `GET /` exposes one optional backend toggle inside the same `Context` container so the presenter can compare deterministic rules with an LLM-style backend without interrupting the main challenge flow.
+- [ ] The `Context` container stays closed by default and only restores its open state from an explicit query flag.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...` returns ordered cheese recommendations from the committed catalog.
 - [ ] Search results stay compact by default and can reveal more explanation on demand.
@@ -58,7 +59,8 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Shared world context must preserve the selected season and shop state until the presenter changes them, including across baseline and every challenge.
 - The backend toggle must stay optional and shared across baseline plus all challenges, so the presenter can treat it as a short coda instead of a second primary lesson.
 - Preset examples and lens labels should avoid challenge overlap unless the carry-forward behavior is the point being taught explicitly.
-- The challenge controls should stay visible in a fixed left sidebar on larger screens, and the requirements lens should stay visible in a fixed right sidebar.
+- The challenge controls should stay visible in a fixed left sidebar on larger screens, and the requirements lens plus the foldable `Context` container should stay visible on the right.
+- URL-synced state should include whether the `Context` container is explicitly open, without forcing it open just because season or backend selections exist.
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
 - The default baseline prompt should stay visible in the main request input instead of being repeated in separate promo copy.
 - The baseline and challenge summaries should remain easy to scan from a distance instead of depending on long body copy or tab switching to become understandable.
@@ -88,14 +90,14 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 **Scenario: Presenter adds shared world context before switching challenges**
 
-- Given: the presenter opens the world-context sidebar in baseline
+- Given: the presenter opens the `Context` container in baseline
 - When: the presenter selects a season or shop-state overlay such as `Winter holiday`
 - Then: the same context remains active in baseline and every later challenge until the presenter changes it
 
 **Scenario: Presenter optionally compares backend styles**
 
 - Given: the presenter wants a short coda after the main requirements flow
-- When: the presenter opens the backend sidebar section and switches from `Deterministic rules` to `LLM backend`
+- When: the presenter opens the `Context` container and switches from `Deterministic rules` to `LLM backend`
 - Then: the ranking and insights visibly change, while the app remains local and deterministic enough to rehearse
 
 **Scenario: Presenter expands one result**

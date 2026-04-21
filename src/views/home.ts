@@ -44,62 +44,6 @@ export function renderHomePage(): string {
                 </button>
               </div>
             </section>
-            <section class="mt-6 border-t border-app-line pt-5">
-              <button
-                id="context-toggle"
-                type="button"
-                class="flex w-full items-center justify-between gap-3 text-left"
-                aria-expanded="false"
-                aria-controls="context-panel"
-              >
-                <span>
-                  <span class="block text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">World Context</span>
-                  <span class="mt-2 block text-sm leading-6 text-app-text-soft">Optional simulation state shared by baseline and every challenge.</span>
-                </span>
-                <span id="context-toggle-label" class="shrink-0 rounded-full border border-app-line bg-white px-3 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-app-secondary">Show</span>
-              </button>
-              <div id="context-panel" class="mt-4" hidden>
-                <div>
-                  <p class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Season</p>
-                  <div id="season-controls" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Season options"></div>
-                </div>
-                <div class="mt-4">
-                  <p class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Shop state</p>
-                  <div id="shop-state-controls" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Shop state options"></div>
-                </div>
-              </div>
-              <div class="mt-4 border-t border-app-line pt-4">
-                <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Context in play</p>
-                <p id="context-summary-empty" class="mt-3 text-sm leading-6 text-app-text-soft">No world context applied.</p>
-                <ul id="context-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
-              </div>
-            </section>
-            <section class="mt-6 border-t border-app-line pt-5">
-              <button
-                id="backend-toggle"
-                type="button"
-                class="flex w-full items-center justify-between gap-3 text-left"
-                aria-expanded="false"
-                aria-controls="backend-panel"
-              >
-                <span>
-                  <span class="block text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Search Backend</span>
-                  <span class="mt-2 block text-sm leading-6 text-app-text-soft">Optional coda for contrasting the stable rules engine with an LLM-style backend.</span>
-                </span>
-                <span id="backend-toggle-label" class="shrink-0 rounded-full border border-app-line bg-white px-3 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-app-secondary">Show</span>
-              </button>
-              <div id="backend-panel" class="mt-4" hidden>
-                <div>
-                  <p class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Mode</p>
-                  <div id="backend-controls" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Search backend options"></div>
-                  <p class="mt-3 text-xs leading-6 text-app-text-soft">The LLM backend option stays local and deterministic for rehearsal. It is a contrast mode, not a live remote call.</p>
-                </div>
-              </div>
-              <div class="mt-4 border-t border-app-line pt-4">
-                <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Backend in play</p>
-                <ul id="backend-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
-              </div>
-            </section>
           </aside>
           <div class="order-1 lg:order-2">
             <div class="sticky top-4 z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">
@@ -136,6 +80,54 @@ export function renderHomePage(): string {
               </p>
               <p id="insights-label" class="mt-6 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Signals in play</p>
               <ul id="scenario-insights" class="mt-4 grid gap-3 text-sm leading-6 text-app-text-soft"></ul>
+            </section>
+            <section class="relative mt-6 lg:mt-0">
+              <button
+                id="context-drawer-toggle"
+                type="button"
+                class="group flex items-center gap-3 rounded-[1.6rem] border border-app-line/85 bg-app-primary px-4 py-3 text-left text-app-canvas shadow-[0_10px_30px_rgba(13,29,46,0.14)] transition hover:border-app-secondary/30 lg:fixed lg:right-0 lg:top-32 lg:z-40 lg:flex-col lg:rounded-r-none lg:rounded-l-[2rem] lg:px-3 lg:py-5"
+                aria-expanded="false"
+                aria-controls="context-drawer-panel"
+              >
+                <span
+                  id="context-drawer-icon"
+                  class="text-xs font-semibold tracking-[0.2em] text-app-canvas transition lg:-mb-1 lg:text-sm"
+                  aria-hidden="true"
+                >▶</span>
+                <span class="text-[0.72rem] font-semibold uppercase tracking-[0.34em] text-app-canvas lg:[writing-mode:vertical-rl] lg:text-[0.92rem]">Context</span>
+              </button>
+              <div
+                id="context-drawer-panel"
+                class="mt-4 rounded-[1.6rem] border border-app-line bg-white/92 px-4 py-4 shadow-[0_16px_40px_rgba(13,29,46,0.08)] backdrop-blur-xl lg:fixed lg:right-[3.25rem] lg:top-24 lg:z-30 lg:mt-0 lg:max-h-[calc(100vh-7rem)] lg:w-[18.75rem] lg:overflow-y-auto"
+                hidden
+              >
+                <div>
+                  <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">World Context</p>
+                  <p class="mt-2 text-sm leading-6 text-app-text-soft">Optional simulation state shared by baseline and every challenge.</p>
+                  <div class="mt-4">
+                    <p class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Season</p>
+                    <div id="season-controls" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Season options"></div>
+                  </div>
+                  <div class="mt-4">
+                    <p class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Shop state</p>
+                    <div id="shop-state-controls" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Shop state options"></div>
+                  </div>
+                </div>
+                <div class="mt-5 border-t border-app-line pt-4">
+                  <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Context in play</p>
+                  <p id="context-summary-empty" class="mt-3 text-sm leading-6 text-app-text-soft">No world context applied.</p>
+                  <ul id="context-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
+                </div>
+                <div class="mt-5 border-t border-app-line pt-4">
+                  <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Search Backend</p>
+                  <p class="mt-2 text-sm leading-6 text-app-text-soft">Optional coda for contrasting the stable rules engine with an LLM-style backend.</p>
+                  <div class="mt-4">
+                    <p class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Mode</p>
+                    <div id="backend-controls" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Search backend options"></div>
+                    <p class="mt-3 text-xs leading-6 text-app-text-soft">The LLM backend option stays local and deterministic for rehearsal. It is a contrast mode, not a live remote call.</p>
+                  </div>
+                </div>
+              </div>
             </section>
           </aside>
         </section>

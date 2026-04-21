@@ -20,7 +20,7 @@ and weaken the current architecture decision to keep the presentation path local
 
 ## Decision
 
-Add one optional shared sidebar toggle for backend mode:
+Add one optional shared `Context` drawer control for backend mode:
 
 - `Deterministic rules` remains the default and the primary teaching path
 - `LLM backend` is implemented as a local LLM-style contrast mode inside the

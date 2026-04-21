@@ -21,9 +21,11 @@ This document keeps the implementation-facing repo summary in one place. Use it 
 - `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...` serves live demo results as JSON
 - `GET /api/health` serves a JSON health response for smoke tests and tooling
 
-The UI keeps `season` and `shopState` in a shared sidebar as optional world context that can affect baseline and every challenge. `season` changes recommendation suitability, while `shopState` adds operational stock pressure.
+The UI keeps `season` and `shopState` in a foldable right-side `Context` container as optional world context that can affect baseline and every challenge. `season` changes recommendation suitability, while `shopState` adds operational stock pressure.
 
-The same sidebar also exposes a shared `backend` toggle. `rules` is the default deterministic engine, while `llm` is a local contrast mode that changes ranking style without adding a live model dependency.
+The same `Context` container also exposes a shared `backend` toggle. `rules` is the default deterministic engine, while `llm` is a local contrast mode that changes ranking style without adding a live model dependency.
+
+The browser URL also tracks whether the `Context` container is explicitly open via `context=open`, while the default page load keeps the drawer closed.
 
 ## Source Layout
 
