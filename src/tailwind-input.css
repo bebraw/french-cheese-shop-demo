@@ -54,11 +54,23 @@
 }
 
 @layer components {
-  .demo-tab {
-    @apply rounded-full border border-app-line bg-white px-4 py-2 text-sm font-semibold tracking-[0.16em] text-app-primary uppercase transition hover:border-app-secondary/30 hover:text-app-secondary;
+  .scenario-guide-item {
+    @apply rounded-[1.25rem] border border-app-line bg-white/72 px-4 py-4 transition hover:border-app-secondary/30 hover:bg-white;
   }
 
-  .demo-tab-active {
-    @apply border-transparent bg-app-secondary text-white hover:text-white;
+  .scenario-guide-item-active {
+    @apply border-app-secondary/28 bg-app-secondary/[0.07] shadow-[var(--shadow-soft)];
+  }
+
+  .scenario-guide-kicker {
+    @apply text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-app-secondary;
+  }
+
+  .scenario-guide-title {
+    @apply mt-2 font-display text-[1.35rem] leading-[0.96] text-app-primary;
+  }
+
+  .scenario-guide-copy {
+    @apply mt-2 text-sm leading-6 text-app-text-soft;
   }
 }

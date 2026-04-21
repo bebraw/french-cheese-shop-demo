@@ -4,7 +4,7 @@
 
 ### Context
 
-French Cheese Shop Demo supports a fast live teaching flow around AI in requirements engineering. The presenter starts from a vague customer request and uses audience input to refine the system behavior across three explicit challenge tabs.
+French Cheese Shop Demo supports a fast live teaching flow around AI in requirements engineering. The presenter starts from a vague customer request and uses audience input to refine the system behavior across three explicit challenges.
 
 ### Architecture
 
@@ -24,8 +24,9 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 ### Definition of Done
 
-- [ ] `GET /` renders a single French cheese shop page with tabs for baseline, challenge 1, challenge 2, and challenge 3.
+- [ ] `GET /` renders a single French cheese shop page with clear controls for baseline, challenge 1, challenge 2, and challenge 3.
 - [ ] `GET /` keeps one shared customer-request input and a tab-specific audience refinement area.
+- [ ] `GET /` keeps the baseline and challenge descriptions visible enough that the audience can tell the four passes apart before the presenter switches tabs.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...` returns ordered cheese recommendations from the committed catalog.
 - [ ] `baseline` ranks from the request wording alone.
@@ -39,8 +40,9 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 - The live demo must stay publicly accessible without basic auth.
 - The runtime path must stay deterministic enough for rehearsal and live teaching.
-- The scenario tabs must continue to share the same underlying customer request so the audience can compare behavior shifts.
+- The challenge controls must continue to share the same underlying customer request so the audience can compare behavior shifts.
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
+- The baseline and challenge summaries should remain easy to scan from a distance instead of depending on long body copy or tab switching to become understandable.
 - HTML responses must ship with restrictive browser security headers, and client-side code must load from same-origin script assets so the CSP can keep `script-src 'self'`.
 - The cheese catalog should stay small, committed, and easy to review.
 - Challenge behavior must stay explainable through returned insights and, for challenge 3, evaluation checks.

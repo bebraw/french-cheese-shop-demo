@@ -8,7 +8,7 @@ const resultsElement = document.getElementById("search-results");
 const scenarioTitleElement = document.getElementById("scenario-title");
 const scenarioDescriptionElement = document.getElementById("scenario-description");
 const scenarioInsightsElement = document.getElementById("scenario-insights");
-const tabButtons = Array.from(document.querySelectorAll("[data-scenario]"));
+const scenarioButtons = Array.from(document.querySelectorAll("[data-scenario]"));
 const searchParamName = "q";
 const scenarioParamName = "scenario";
 const audienceParamName = "audience";
@@ -21,25 +21,25 @@ let activeScenario = "baseline";
 const scenarios = {
   baseline: {
     title: "Baseline",
-    description: "Use only the request text.",
+    description: "Use only the request text and show the first plausible answer.",
     audienceLabel: "",
     audiencePlaceholder: "",
   },
   "challenge-1": {
     title: "Challenge 1: Hidden Requirements",
-    description: "Make the missing preferences explicit.",
+    description: "Turn fuzzy preferences into explicit requirements.",
     audienceLabel: "Add hidden requirements",
     audiencePlaceholder: "Try: Keep it creamy, cow's milk, and make it much stronger.",
   },
   "challenge-2": {
     title: "Challenge 2: Data Requirements",
-    description: "Add product facts or customer context.",
+    description: "Add the product facts or customer context the model needs.",
     audienceLabel: "Add extra data",
     audiencePlaceholder: "Try: Wants it with cider, prefers washed rind, and it must be in stock.",
   },
   "challenge-3": {
     title: "Challenge 3: Evaluation Under Uncertainty",
-    description: "Turn success criteria into visible checks.",
+    description: "Make success criteria visible so the answer can be judged.",
     audienceLabel: "Add evaluation criteria",
     audiencePlaceholder: "Try: Must be in stock, explain why it fits, and give a backup option.",
   },
@@ -168,10 +168,10 @@ function applyScenario(nextScenario) {
   audienceInput.placeholder = copy.audiencePlaceholder;
   audienceControls.classList.toggle("hidden", nextScenario === "baseline");
 
-  for (const button of tabButtons) {
+  for (const button of scenarioButtons) {
     const isActive = button.dataset.scenario === nextScenario;
-    button.setAttribute("aria-selected", String(isActive));
-    button.classList.toggle("demo-tab-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+    button.classList.toggle("scenario-guide-item-active", isActive);
   }
 }
 
@@ -277,7 +277,7 @@ audienceInput.addEventListener("input", () => {
   scheduleSearch();
 });
 
-for (const button of tabButtons) {
+for (const button of scenarioButtons) {
   button.addEventListener("click", () => {
     applyScenario(button.dataset.scenario || "baseline");
     syncUrlState(queryInput.value, audienceInput.value, activeScenario);
@@ -300,7 +300,7 @@ if (initialAudience) {
 if (initialQuery) {
   runSearch(initialQuery, initialAudience);
 } else {
-  renderInsights(["Enter a vague request. Then switch tabs to tighten the logic."]);
+  renderInsights(["Enter a vague request. Then choose a challenge to tighten the logic."]);
 }
 `;
 }

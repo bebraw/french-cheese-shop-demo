@@ -20,14 +20,36 @@ export function renderHomePage(): string {
             <p class="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-app-secondary">French Cheese Shop</p>
             <h1 class="mt-4 max-w-4xl font-display text-[clamp(2.9rem,8vw,5.6rem)] leading-[0.88] text-app-primary">${escapeHtml(appTitle)}</h1>
             <p class="mt-4 max-w-2xl text-base leading-7 text-app-text-soft sm:text-lg">
-              Start with one vague request. Then show how hidden requirements, missing data, and evaluation criteria change the answer.
+              One vague request. Four ways to tighten it.
             </p>
+            <div class="mt-6 grid gap-3 sm:grid-cols-2" role="group" aria-label="Choose demo challenge">
+              <button type="button" class="scenario-guide-item scenario-guide-item-active text-left" data-scenario="baseline" aria-pressed="true">
+                <p class="scenario-guide-kicker">Baseline</p>
+                <p class="scenario-guide-title">Surface wording only</p>
+                <p class="scenario-guide-copy">Start with the request as written.</p>
+              </button>
+              <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-1" aria-pressed="false">
+                <p class="scenario-guide-kicker">Challenge 1</p>
+                <p class="scenario-guide-title">Hidden requirements</p>
+                <p class="scenario-guide-copy">Ask what “like Brie” and “stronger” really mean.</p>
+              </button>
+              <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-2" aria-pressed="false">
+                <p class="scenario-guide-kicker">Challenge 2</p>
+                <p class="scenario-guide-title">Missing data</p>
+                <p class="scenario-guide-copy">Add facts like stock, pairing, or style.</p>
+              </button>
+              <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-3" aria-pressed="false">
+                <p class="scenario-guide-kicker">Challenge 3</p>
+                <p class="scenario-guide-title">Evaluation</p>
+                <p class="scenario-guide-copy">Decide what counts as a good answer.</p>
+              </button>
+            </div>
           </div>
           <aside class="bg-app-secondary px-6 py-8 text-app-cream sm:px-8 sm:py-10">
             <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Presentation Mode</p>
             <h2 class="mt-4 font-display text-[2rem] leading-[0.95]">Four quick passes</h2>
             <p class="mt-4 max-w-sm text-sm leading-6 text-app-cream/84">
-              Keep one customer request, switch tabs, and add only the missing detail that changes the ranking.
+              Keep one customer request. Each challenge reveals a different kind of missing clarity.
             </p>
             <div class="mt-6 rounded-[1.5rem] border border-white/12 bg-white/8 p-4">
               <p class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Starter prompt</p>
@@ -38,13 +60,7 @@ export function renderHomePage(): string {
         <section class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
           <div class="rounded-[2rem] border border-app-line bg-app-panel px-5 py-5 shadow-[var(--shadow-panel)] sm:px-6 sm:py-6">
             <div class="sticky top-4 z-10 rounded-[1.6rem] border border-app-line bg-app-canvas/92 p-3 shadow-[var(--shadow-soft)] supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">
-              <div class="flex flex-wrap gap-2" id="scenario-tabs" role="tablist" aria-label="Demo scenarios">
-                <button type="button" id="tab-baseline" class="demo-tab demo-tab-active" data-scenario="baseline" role="tab" aria-selected="true" aria-controls="demo-panel">Baseline</button>
-                <button type="button" id="tab-challenge-1" class="demo-tab" data-scenario="challenge-1" role="tab" aria-selected="false" aria-controls="demo-panel">Challenge 1</button>
-                <button type="button" id="tab-challenge-2" class="demo-tab" data-scenario="challenge-2" role="tab" aria-selected="false" aria-controls="demo-panel">Challenge 2</button>
-                <button type="button" id="tab-challenge-3" class="demo-tab" data-scenario="challenge-3" role="tab" aria-selected="false" aria-controls="demo-panel">Challenge 3</button>
-              </div>
-              <label class="mt-4 block" for="customer-query">
+              <label class="block" for="customer-query">
                 <span class="sr-only">Customer request</span>
                 <input id="customer-query" name="q" type="search" autocomplete="off" spellcheck="false" placeholder="Type the customer request" class="w-full rounded-[1.35rem] bg-app-surface px-5 py-4 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
               </label>
@@ -56,7 +72,7 @@ export function renderHomePage(): string {
               </div>
               <div id="search-status" class="mt-3 text-sm leading-6 text-app-text-soft"></div>
             </div>
-            <div id="demo-panel" class="mt-6" role="tabpanel" aria-labelledby="tab-baseline">
+            <div id="demo-panel" class="mt-6">
               <div class="rounded-[1.6rem] border border-app-line bg-white px-5 py-5">
                 <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Search Results</p>
                 <ol id="search-results" class="mt-5 grid gap-4" aria-live="polite"></ol>
@@ -67,7 +83,7 @@ export function renderHomePage(): string {
             <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Requirements Lens</p>
             <h2 id="scenario-title" class="mt-4 font-display text-[2rem] leading-[0.95] text-app-primary">Baseline</h2>
             <p id="scenario-description" class="mt-4 text-sm leading-7 text-app-text-soft">
-              Start with the request text alone.
+              Start with the request text alone and show the first plausible answer.
             </p>
             <div class="mt-6 rounded-[1.5rem] border border-app-line bg-app-surface px-4 py-4">
               <p id="insights-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Signals in play</p>
