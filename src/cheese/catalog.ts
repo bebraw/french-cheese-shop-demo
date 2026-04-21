@@ -14,6 +14,7 @@ export interface CheeseRecord {
   intensity: number;
   priceEur: number;
   stock: "in" | "low" | "out";
+  bestSeasons?: SimulationSeason[];
   seasonalStock?: Partial<Record<SimulationSeason, "in" | "low" | "out">>;
   holidayRushStock?: "in" | "low" | "out";
   blurb: string;
@@ -33,6 +34,7 @@ export const cheeseCatalog: CheeseRecord[] = [
     intensity: 2,
     priceEur: 18,
     stock: "in",
+    bestSeasons: ["autumn", "winter"],
     seasonalStock: { summer: "low", winter: "in" },
     holidayRushStock: "low",
     blurb: "Classic bloomy-rind brie with a creamy center and a gentle mushroom note.",
@@ -50,6 +52,7 @@ export const cheeseCatalog: CheeseRecord[] = [
     intensity: 3,
     priceEur: 13,
     stock: "in",
+    bestSeasons: ["summer", "autumn"],
     seasonalStock: { summer: "in", winter: "in" },
     holidayRushStock: "low",
     blurb: "A softer Normandy cousin to brie with more earth, depth, and cellar character.",
@@ -67,6 +70,7 @@ export const cheeseCatalog: CheeseRecord[] = [
     intensity: 2,
     priceEur: 15,
     stock: "low",
+    bestSeasons: ["spring", "summer"],
     seasonalStock: { spring: "in", summer: "low", winter: "in" },
     blurb: "Pillowy and lactic, with a creamy paste and a lighter profile than camembert.",
   },
@@ -83,6 +87,7 @@ export const cheeseCatalog: CheeseRecord[] = [
     intensity: 5,
     priceEur: 22,
     stock: "in",
+    bestSeasons: ["autumn", "winter"],
     seasonalStock: { summer: "low", winter: "in" },
     holidayRushStock: "low",
     blurb: "Very ripe washed-rind cheese that keeps a creamy body while pushing aroma and depth hard.",
@@ -100,6 +105,7 @@ export const cheeseCatalog: CheeseRecord[] = [
     intensity: 4,
     priceEur: 16,
     stock: "in",
+    bestSeasons: ["autumn", "winter"],
     seasonalStock: { summer: "in", winter: "low" },
     holidayRushStock: "out",
     blurb: "A stronger Normandy washed rind that stays balanced and pairs especially well with cider.",
@@ -117,6 +123,7 @@ export const cheeseCatalog: CheeseRecord[] = [
     intensity: 4,
     priceEur: 15,
     stock: "low",
+    bestSeasons: ["autumn", "winter"],
     seasonalStock: { winter: "in", summer: "low" },
     holidayRushStock: "low",
     blurb: "A rustic washed rind with a pungent aroma and a fuller, savory finish.",
@@ -134,6 +141,7 @@ export const cheeseCatalog: CheeseRecord[] = [
     intensity: 4,
     priceEur: 14,
     stock: "in",
+    bestSeasons: ["autumn", "winter"],
     seasonalStock: { autumn: "in", winter: "in", summer: "low" },
     blurb: "Creamy blue cheese with a salty edge and a very different profile from brie.",
   },
@@ -150,6 +158,7 @@ export const cheeseCatalog: CheeseRecord[] = [
     intensity: 3,
     priceEur: 11,
     stock: "in",
+    bestSeasons: ["spring", "summer"],
     seasonalStock: { spring: "in", summer: "in", autumn: "low", winter: "out" },
     holidayRushStock: "low",
     blurb: "Goat's milk cheese that brings brightness and tang instead of creamy brie-like richness.",
@@ -167,6 +176,7 @@ export const cheeseCatalog: CheeseRecord[] = [
     intensity: 3,
     priceEur: 19,
     stock: "in",
+    bestSeasons: ["autumn", "winter"],
     seasonalStock: { autumn: "in", winter: "in", summer: "low" },
     holidayRushStock: "low",
     blurb: "Aged mountain cheese with nutty depth, but a very different texture from soft-ripened cheeses.",

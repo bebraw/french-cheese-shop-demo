@@ -44,7 +44,7 @@ describe("createSearchResponse", () => {
     expect(response.status).toBe(200);
     const payload = await response.json();
     expect(payload.ok).toBe(true);
-    expect(payload.insights).toContain("Simulation context: winter stock and holiday-rush demand.");
+    expect(payload.insights).toContain("Simulation context: winter season and holiday-rush demand.");
   });
 
   it("falls back to baseline when the scenario parameter is unknown", async () => {

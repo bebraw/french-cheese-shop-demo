@@ -67,7 +67,7 @@ Shared response headers and CSP come from `src/views/shared.ts`.
 1. `src/api/search.ts` validates the query length and normalizes the scenario parameter.
 2. `src/cheese/demo.ts` parses the vague request plus any audience refinement text into explicit signals.
 3. `src/cheese/catalog.ts` provides the deterministic cheese records used for scoring.
-4. `src/cheese/demo.ts` scores the catalog differently for baseline, challenge 1, challenge 2, and challenge 3, while applying any shared world-context overlay from the sidebar.
+4. `src/cheese/demo.ts` scores the catalog differently for baseline, challenge 1, challenge 2, and challenge 3, while applying any shared world-context overlay from the sidebar. The season overlay changes suitability signals, while shop state changes effective stock pressure.
 
 The current scenario shifts are:
 

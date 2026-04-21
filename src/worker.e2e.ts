@@ -100,7 +100,35 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.getByRole("button", { name: "Two finalists" })).toBeVisible();
 });
 
-test("simulation context stays visible and affects challenge 2 results", async ({ page }) => {
+test("season visibly changes challenge 2 recommendations", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: /World Context/ }).click();
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await page.getByRole("button", { name: /Challenge 2/ }).click();
+  await page.getByRole("button", { name: "With cider" }).click();
+  await page.getByRole("button", { name: "Summer picnic" }).click();
+
+  await expect(page.locator("#search-results > li h3").first()).toHaveText("Camembert de Normandie");
+  await expect(page.locator("#scenario-insights")).toContainText("Simulation context: summer season.");
+  await expect(page.locator("#scenario-insights")).toContainText("Seasonal leaders:");
+  await expect(page.locator("#scenario-insights")).toContainText("Camembert de Normandie");
+  await expect(page.locator("#context-summary-chips")).toContainText("Summer picnic");
+
+  const firstResult = page.locator("#search-results > li").first();
+  await firstResult.getByRole("button", { name: "More" }).click();
+  await expect(firstResult).toContainText("Seasonal fit: summer picnic");
+
+  await page.getByRole("button", { name: "Winter holiday" }).click();
+
+  await expect(page.locator("#search-results > li h3").first()).toHaveText("Livarot");
+  await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter season.");
+  await expect(page.locator("#scenario-insights")).toContainText("Seasonal leaders:");
+  await expect(page.locator("#scenario-insights")).toContainText("Livarot");
+  await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
+});
+
+test("shop demand still changes visible stock within world context", async ({ page }) => {
   await page.goto("/");
 
   await page.getByRole("button", { name: /World Context/ }).click();
@@ -110,14 +138,16 @@ test("simulation context stays visible and affects challenge 2 results", async (
   await page.getByRole("button", { name: "Winter holiday" }).click();
   await page.getByRole("button", { name: "Holiday rush" }).click();
 
-  await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter stock and holiday-rush demand.");
+  await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter season and holiday-rush demand.");
   await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
   await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
 
-  const firstResult = page.locator("#search-results > li").first();
-  await firstResult.getByRole("button", { name: "More" }).click();
-  await expect(firstResult).toContainText("low stock");
-  await expect(firstResult).toContainText("Simulation stock: low stock");
+  const livarotResult = page.locator("#search-results li").filter({
+    has: page.getByRole("heading", { level: 3, name: "Livarot" }),
+  });
+  await livarotResult.getByRole("button", { name: "More" }).click();
+  await expect(livarotResult).toContainText("sold out");
+  await expect(livarotResult).toContainText("Simulation stock: sold out");
 });
 
 test("world context can be set in baseline and carries into later challenges", async ({ page }) => {
@@ -129,7 +159,7 @@ test("world context can be set in baseline and carries into later challenges", a
 
   await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
   await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
-  await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter stock and holiday-rush demand.");
+  await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter season and holiday-rush demand.");
 
   await page.getByRole("button", { name: /Challenge 2/ }).click();
   await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");

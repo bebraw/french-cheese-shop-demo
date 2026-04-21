@@ -35,7 +35,31 @@ describe("searchDemoCatalog", () => {
     expect(response.insights).toContain("Context data: cider.");
   });
 
-  it("changes visible stock when simulation context is added", () => {
+  it("lets season change the shortlist in challenge 2", () => {
+    const summerResponse = searchDemoCatalog({
+      query: "I want something like Brie but stronger",
+      scenario: "challenge-2",
+      audienceInput: "with cider",
+      season: "summer",
+    });
+    const winterResponse = searchDemoCatalog({
+      query: "I want something like Brie but stronger",
+      scenario: "challenge-2",
+      audienceInput: "with cider",
+      season: "winter",
+    });
+
+    expect(summerResponse.results[0]?.name).toBe("Camembert de Normandie");
+    expect(winterResponse.results[0]?.name).toBe("Livarot");
+    expect(summerResponse.insights).toContain("Simulation context: summer season.");
+    expect(winterResponse.insights).toContain("Simulation context: winter season.");
+    expect(
+      summerResponse.insights.some((insight) => insight.startsWith("Seasonal leaders:") && insight.includes("Camembert de Normandie")),
+    ).toBe(true);
+    expect(winterResponse.insights.some((insight) => insight.startsWith("Seasonal leaders:") && insight.includes("Livarot"))).toBe(true);
+  });
+
+  it("changes visible stock when shop demand is added on top of the season", () => {
     const response = searchDemoCatalog({
       query: "I want something like Brie but stronger",
       scenario: "challenge-2",
@@ -44,7 +68,7 @@ describe("searchDemoCatalog", () => {
       shopState: "holiday-rush",
     });
 
-    expect(response.insights).toContain("Simulation context: winter stock and holiday-rush demand.");
+    expect(response.insights).toContain("Simulation context: winter season and holiday-rush demand.");
     expect(response.results.some((result) => result.reason.includes("sold out"))).toBe(true);
   });
 

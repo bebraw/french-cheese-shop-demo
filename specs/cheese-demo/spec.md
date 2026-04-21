@@ -38,7 +38,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] Search results stay compact by default and can reveal more explanation on demand.
 - [ ] Expanded result rows stay open across incremental challenge updates when the same result remains visible.
 - [ ] The requirements lens stays synchronized with each active ranking signal, including explicit milk type and carry-forward audience cues from earlier challenges.
-- [ ] Context controls produce visible availability changes in the results and requirements lens.
+- [ ] Context controls produce visible suitability and availability changes in the results and requirements lens.
 - [ ] `baseline` ranks from the request wording alone unless the presenter enables shared world context.
 - [ ] `challenge-1` makes hidden requirements explicit in the ranking and insight output.
 - [ ] `challenge-2` uses extra product and context cues from the audience input.
@@ -108,7 +108,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 - Given: the presenter is on challenge 2
 - When: the audience selects extra context such as `serve it with cider`, `it must be in stock`, or `Winter holiday`
-- Then: the ranking changes to use those product, context, and simulation cues
+- Then: the ranking changes to use those product, context, and simulation cues, including visible seasonal-fit differences instead of only stock overlays
 
 **Scenario: Presenter carries earlier requirements into later challenges**
 

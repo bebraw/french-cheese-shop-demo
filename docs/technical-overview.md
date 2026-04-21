@@ -21,7 +21,7 @@ This document keeps the implementation-facing repo summary in one place. Use it 
 - `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...` serves live demo results as JSON
 - `GET /api/health` serves a JSON health response for smoke tests and tooling
 
-The UI keeps `season` and `shopState` in a shared sidebar as optional world context that can affect baseline and every challenge.
+The UI keeps `season` and `shopState` in a shared sidebar as optional world context that can affect baseline and every challenge. `season` changes recommendation suitability, while `shopState` adds operational stock pressure.
 
 ## Source Layout
 

@@ -455,6 +455,9 @@ function scoreContextFit(cheese: CheeseRecord, intent: ParsedIntent): number {
   if (hasSimulationContext(intent)) {
     checks.push(scoreStockLevel(effectiveStock));
   }
+  if (intent.season) {
+    checks.push(scoreSeasonFit(cheese, intent.season));
+  }
 
   return averageOrDefault(checks, 0.5);
 }
@@ -517,6 +520,9 @@ function buildMatchedSignals(cheese: CheeseRecord, intent: ParsedIntent, scenari
   }
   if (hasSimulationContext(intent)) {
     signals.push(`Simulation stock: ${formatStockLabel(effectiveStock)}`);
+  }
+  if (intent.season && scoreSeasonFit(cheese, intent.season) >= 0.95) {
+    signals.push(`Seasonal fit: ${formatSeasonLabel(intent.season)}`);
   }
 
   return signals.length > 0 ? signals : ["Closest overall fit in the current scenario"];
@@ -604,7 +610,7 @@ function buildInsights(intent: ParsedIntent, scenario: DemoScenarioId, results: 
   if (hasSimulationContext(intent)) {
     const contextParts: string[] = [];
     if (intent.season) {
-      contextParts.push(`${intent.season} stock`);
+      contextParts.push(`${intent.season} season`);
     }
     if (intent.shopState === "holiday-rush") {
       contextParts.push("holiday-rush demand");
@@ -613,6 +619,16 @@ function buildInsights(intent: ParsedIntent, scenario: DemoScenarioId, results: 
     }
     if (contextParts.length > 0) {
       insights.push(`Simulation context: ${contextParts.join(" and ")}.`);
+    }
+    if (intent.season && results.length > 0) {
+      const seasonLabel = formatSeasonLabel(intent.season);
+      const seasonalLeaders = results
+        .filter((result) => result.matchedSignals.some((signal) => signal === `Seasonal fit: ${seasonLabel}`))
+        .map((result) => result.name);
+
+      if (seasonalLeaders.length > 0) {
+        insights.push(`Seasonal leaders: ${seasonalLeaders.join(", ")}.`);
+      }
     }
   }
   if (scenario === "challenge-3") {
@@ -737,6 +753,14 @@ function resolveEffectiveStock(cheese: CheeseRecord, intent: ParsedIntent): Chee
   return stock;
 }
 
+function scoreSeasonFit(cheese: CheeseRecord, season: SimulationSeason): number {
+  if (!cheese.bestSeasons || cheese.bestSeasons.length === 0) {
+    return 0.5;
+  }
+
+  return cheese.bestSeasons.includes(season) ? 1 : 0.2;
+}
+
 function pickLowerStock(left: CheeseRecord["stock"], right: CheeseRecord["stock"]): CheeseRecord["stock"] {
   return stockSeverity(left) <= stockSeverity(right) ? left : right;
 }
@@ -755,6 +779,16 @@ function formatStockLabel(stock: CheeseRecord["stock"]): string {
 
 function formatStockNote(stock: CheeseRecord["stock"]): string {
   return stock === "in" ? "In stock in this context" : stock === "low" ? "Low stock in this context" : "Sold out in this context";
+}
+
+function formatSeasonLabel(season: SimulationSeason): string {
+  return season === "spring"
+    ? "spring menu"
+    : season === "summer"
+      ? "summer picnic"
+      : season === "autumn"
+        ? "autumn board"
+        : "winter holiday";
 }
 
 function averageOrDefault(values: number[], defaultValue: number): number {
