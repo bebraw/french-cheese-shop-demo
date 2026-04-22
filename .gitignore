@@ -4,6 +4,7 @@ node_modules/
 .npm/
 .pnpm-store/
 .wrangler/
+Library/
 .dev.vars
 .env.agent-ci
 .env

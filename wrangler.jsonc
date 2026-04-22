@@ -4,6 +4,20 @@
   "main": "src/worker.ts",
   "compatibility_date": "2026-03-28",
   "preview_urls": true,
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "DEMO_ROOMS",
+        "class_name": "DemoRoomObject",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1-demo-room-object",
+      "new_sqlite_classes": ["DemoRoomObject"],
+    },
+  ],
   "build": {
     "command": "npm run build:css",
     "watch_dir": "src",

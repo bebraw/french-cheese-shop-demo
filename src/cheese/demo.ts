@@ -1,9 +1,7 @@
 import { cheeseCatalog, type CheeseRecord, type ShopState, type SimulationSeason } from "./catalog";
+import type { DemoScenarioId, SearchBackend } from "../demo-config";
 
 export const MINIMUM_QUERY_LENGTH = 2;
-
-export type DemoScenarioId = "baseline" | "challenge-1" | "challenge-2" | "challenge-3";
-export type SearchBackend = "rules" | "llm";
 
 export interface DemoSearchParams {
   query: string;

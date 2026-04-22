@@ -1,4 +1,5 @@
-import { MINIMUM_QUERY_LENGTH, searchDemoCatalog, type DemoScenarioId, type SearchBackend } from "../cheese/demo";
+import { MINIMUM_QUERY_LENGTH, searchDemoCatalog } from "../cheese/demo";
+import type { DemoScenarioId, SearchBackend } from "../demo-config";
 import type { ShopState, SimulationSeason } from "../cheese/catalog";
 import { jsonResponse } from "../views/shared";
 

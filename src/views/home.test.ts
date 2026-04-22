@@ -7,6 +7,11 @@ describe("renderHomePage", () => {
 
     expect(html).toContain("French Cheese Shop");
     expect(html).toContain('value="I want something like Brie, but stronger."');
+    expect(html).toContain("Shared Room");
+    expect(html).toContain('value="demo-room"');
+    expect(html).toContain("Join room");
+    expect(html).toContain("Copy link");
+    expect(html).toContain("Reset room");
     expect(html).toContain('aria-label="Choose demo challenge"');
     expect(html).toContain("Hidden needs");
     expect(html).toContain("Missing data");

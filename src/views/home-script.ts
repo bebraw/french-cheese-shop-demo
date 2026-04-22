@@ -1,3 +1,14 @@
+import { MINIMUM_QUERY_LENGTH } from "../cheese/demo";
+import {
+  DEFAULT_QUERY,
+  DEFAULT_ROOM_ID,
+  backendOptions,
+  challengeSequence,
+  scenarioCopy,
+  seasonOptions,
+  shopStateOptions,
+} from "../demo-config";
+
 export function renderHomeScript(): string {
   return `const queryInput = document.getElementById("customer-query");
 const audienceControls = document.getElementById("audience-controls");
@@ -23,166 +34,123 @@ const scenarioDescriptionElement = document.getElementById("scenario-description
 const insightsLabelElement = document.getElementById("insights-label");
 const scenarioInsightsElement = document.getElementById("scenario-insights");
 const scenarioButtons = Array.from(document.querySelectorAll("[data-scenario]"));
-const searchParamName = "q";
-const scenarioParamName = "scenario";
-const audienceParamName = "audience";
-const seasonParamName = "season";
-const shopStateParamName = "shopState";
-const backendParamName = "backend";
-const contextParamName = "context";
-const minimumQueryLength = 2;
-const defaultQuery = "I want something like Brie, but stronger.";
-const challengeSequence = ["challenge-1", "challenge-2", "challenge-3"];
-let debounceHandle = null;
-let activeController = null;
-let requestCounter = 0;
-let activeScenario = "baseline";
+const roomIdInput = document.getElementById("room-id-input");
+const roomJoinButton = document.getElementById("room-join-button");
+const roomCopyLinkButton = document.getElementById("room-copy-link-button");
+const roomResetButton = document.getElementById("room-reset-button");
+const roomConnectionStatusElement = document.getElementById("room-connection-status");
+const roomParticipantCountElement = document.getElementById("room-participant-count");
+const minimumQueryLength = ${JSON.stringify(MINIMUM_QUERY_LENGTH)};
+const defaultQuery = ${JSON.stringify(DEFAULT_QUERY)};
+const defaultRoomId = ${JSON.stringify(DEFAULT_ROOM_ID)};
+const challengeSequence = ${JSON.stringify(challengeSequence)};
+const scenarios = ${JSON.stringify(scenarioCopy)};
+const seasonOptions = ${JSON.stringify(seasonOptions)};
+const shopStateOptions = ${JSON.stringify(shopStateOptions)};
+const backendOptions = ${JSON.stringify(backendOptions)};
 const expandedResultIds = new Set();
+let activeRoomId = defaultRoomId;
+let activeScenario = "baseline";
+let activeSnapshot = null;
 let contextDrawerOpen = false;
-const seasonOptions = [
-  { id: "spring", label: "Spring menu" },
-  { id: "summer", label: "Summer picnic" },
-  { id: "autumn", label: "Autumn board" },
-  { id: "winter", label: "Winter holiday" },
-];
-const shopStateOptions = [
-  { id: "normal", label: "Normal service" },
-  { id: "holiday-rush", label: "Holiday rush" },
-];
-const backendOptions = [
-  { id: "rules", label: "Deterministic rules" },
-  { id: "llm", label: "LLM backend" },
-];
+let liveSocket = null;
+let reconnectHandle = null;
+let pollHandle = null;
+let querySyncHandle = null;
+let audienceSyncHandle = null;
+let pendingQueryDraft = null;
+let pendingAudienceDraft = null;
 
-const scenarios = {
-  baseline: {
-    title: "Baseline",
-    description: "Start with the request wording alone.",
-    insightLabel: "Signals in play",
-    audienceLabel: "",
-    audiencePlaceholder: "",
-    audiencePrompt: "",
-    audienceSummaryLabel: "",
-    audienceSummaryEmptyText: "",
-    presets: [],
-  },
-  "challenge-1": {
-    title: "Challenge 1: Hidden Needs",
-    description: "Clarify what the customer really means.",
-    insightLabel: "Explicit requirements",
-    audienceLabel: "Other hidden need",
-    audiencePlaceholder: "Add another hidden preference.",
-    audiencePrompt: "What hidden need became explicit?",
-    audienceSummaryLabel: "Clarified needs",
-    audienceSummaryEmptyText: "Select the newly clarified needs.",
-    presets: [
-      { id: "creamy", label: "Keep it creamy", value: "keep it creamy" },
-      { id: "cow", label: "Cow's milk", value: "cow's milk" },
-      { id: "stronger", label: "Much stronger", value: "much stronger" },
-      { id: "oozy", label: "Oozy center", value: "oozy center" },
-    ],
-  },
-  "challenge-2": {
-    title: "Challenge 2: Data Requirements",
-    description: "Add facts and constraints the first pass did not know.",
-    insightLabel: "Extra data in play",
-    audienceLabel: "Other fact or constraint",
-    audiencePlaceholder: "Add another fact or constraint.",
-    audiencePrompt: "What new fact or constraint do we know?",
-    audienceSummaryLabel: "Known facts",
-    audienceSummaryEmptyText: "Select the extra facts that should influence ranking.",
-    presets: [
-      { id: "cider", label: "With cider", value: "with cider" },
-      { id: "washed-rind", label: "Washed rind", value: "prefers washed rind" },
-      { id: "stock", label: "In stock", value: "it must be in stock" },
-      { id: "budget", label: "Budget", value: "under EUR 12" },
-      { id: "salad", label: "For salad", value: "for salad" },
-    ],
-  },
-  "challenge-3": {
-    title: "Challenge 3: Evaluation",
-    description: "Choose what the results should visibly prove to the audience.",
-    insightLabel: "Evaluation checks",
-    audienceLabel: "Other evaluation criterion",
-    audiencePlaceholder: "Add another success criterion.",
-    audiencePrompt: "What should the results visibly show?",
-    audienceSummaryLabel: "Evaluation criteria",
-    audienceSummaryEmptyText: "Select the checks the final answer must satisfy.",
-    presets: [
-      { id: "explain", label: "Show why it fits", value: "show why it fits" },
-      { id: "backup", label: "Mark a backup", value: "mark a backup choice" },
-      { id: "shortlist", label: "Two finalists", value: "keep it to two finalists" },
-    ],
-  },
-};
+function createFallbackSnapshot(roomId) {
+  return {
+    roomId,
+    participantCount: 1,
+    state: {
+      roomId,
+      version: 1,
+      query: defaultQuery,
+      activeScenario: "baseline",
+      audienceByChallenge: {
+        "challenge-1": { selectedPresetIds: [], customText: "" },
+        "challenge-2": { selectedPresetIds: [], customText: "" },
+        "challenge-3": { selectedPresetIds: [], customText: "" },
+      },
+      season: "",
+      shopState: "",
+      backend: "rules",
+      updatedAt: "",
+    },
+    search: null,
+  };
+}
 
-const audienceState = {
-  "challenge-1": { selectedPresetIds: [], customText: "" },
-  "challenge-2": { selectedPresetIds: [], customText: "" },
-  "challenge-3": { selectedPresetIds: [], customText: "" },
-};
-const contextState = {
-  season: "",
-  shopState: "",
-};
-const backendState = {
-  mode: "rules",
-};
+function getRoomState() {
+  return activeSnapshot ? activeSnapshot.state : createFallbackSnapshot(activeRoomId).state;
+}
+
+function getAudienceState(scenario) {
+  return getRoomState().audienceByChallenge[scenario];
+}
+
+function sanitizeRoomId(rawRoomId) {
+  const normalized = String(rawRoomId || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return normalized.length >= 3 ? normalized.slice(0, 32) : defaultRoomId;
+}
+
+function setConnectionStatus(message) {
+  roomConnectionStatusElement.textContent = message;
+}
+
+function setRoomParticipantCount(participantCount) {
+  roomParticipantCountElement.textContent = participantCount + " participant" + (participantCount === 1 ? "" : "s");
+}
 
 function setStatus(message) {
   statusElement.textContent = message;
 }
 
-function clearResults() {
-  while (resultsElement.firstChild) {
-    resultsElement.removeChild(resultsElement.firstChild);
+function clearChildren(container) {
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
   }
+}
+
+function clearResults() {
+  clearChildren(resultsElement);
 }
 
 function clearInsights() {
-  while (scenarioInsightsElement.firstChild) {
-    scenarioInsightsElement.removeChild(scenarioInsightsElement.firstChild);
-  }
-}
-
-function clearAudiencePresets() {
-  while (audiencePresetsElement.firstChild) {
-    audiencePresetsElement.removeChild(audiencePresetsElement.firstChild);
-  }
+  clearChildren(scenarioInsightsElement);
 }
 
 function clearAudienceSummary() {
-  while (audienceSummaryChipsElement.firstChild) {
-    audienceSummaryChipsElement.removeChild(audienceSummaryChipsElement.firstChild);
-  }
-}
-
-function clearSeasonControls() {
-  while (seasonControlsElement.firstChild) {
-    seasonControlsElement.removeChild(seasonControlsElement.firstChild);
-  }
-}
-
-function clearShopStateControls() {
-  while (shopStateControlsElement.firstChild) {
-    shopStateControlsElement.removeChild(shopStateControlsElement.firstChild);
-  }
+  clearChildren(audienceSummaryChipsElement);
 }
 
 function clearContextSummary() {
-  while (contextSummaryChipsElement.firstChild) {
-    contextSummaryChipsElement.removeChild(contextSummaryChipsElement.firstChild);
-  }
+  clearChildren(contextSummaryChipsElement);
+}
+
+function clearAudiencePresets() {
+  clearChildren(audiencePresetsElement);
+}
+
+function clearSeasonControls() {
+  clearChildren(seasonControlsElement);
+}
+
+function clearShopStateControls() {
+  clearChildren(shopStateControlsElement);
 }
 
 function clearBackendControls() {
-  while (backendControlsElement.firstChild) {
-    backendControlsElement.removeChild(backendControlsElement.firstChild);
-  }
-}
-
-function getAudienceState(scenario) {
-  return audienceState[scenario];
+  clearChildren(backendControlsElement);
 }
 
 function getScenarioTrail(scenario) {
@@ -190,27 +158,15 @@ function getScenarioTrail(scenario) {
   return scenarioIndex >= 0 ? challengeSequence.slice(0, scenarioIndex + 1) : [];
 }
 
-function getSelectedPresetValues(scenario) {
-  const copy = scenarios[scenario];
-  const state = getAudienceState(scenario);
-
-  if (!copy || !state) {
-    return [];
-  }
-
-  return copy.presets.filter((preset) => state.selectedPresetIds.includes(preset.id));
-}
-
 function buildAccumulatedAudienceParts(scenario, valueSelector) {
   const parts = [];
   const seen = new Set();
 
   for (const scenarioId of getScenarioTrail(scenario)) {
-    const state = getAudienceState(scenarioId);
-    const presetValues = getSelectedPresetValues(scenarioId).map((preset) => valueSelector(preset));
-    const customText = state.customText.trim();
+    const audienceState = getAudienceState(scenarioId);
+    const selectedPresets = scenarios[scenarioId].presets.filter((preset) => audienceState.selectedPresetIds.includes(preset.id));
 
-    for (const part of [...presetValues, customText]) {
+    for (const part of [...selectedPresets.map((preset) => valueSelector(preset)), audienceState.customText.trim()]) {
       if (!part || seen.has(part)) {
         continue;
       }
@@ -223,22 +179,20 @@ function buildAccumulatedAudienceParts(scenario, valueSelector) {
   return parts;
 }
 
-function buildAudienceInput(scenario) {
-  return buildAccumulatedAudienceParts(scenario, (preset) => preset.value).join(". ");
-}
-
 function buildAudienceSummaryItems(scenario) {
   return buildAccumulatedAudienceParts(scenario, (preset) => preset.label);
 }
 
-function getContextSummaryItems(scenario) {
+function buildContextSummaryItems() {
+  const state = getRoomState();
   const items = [];
-  const season = seasonOptions.find((option) => option.id === contextState.season);
-  const shopState = shopStateOptions.find((option) => option.id === contextState.shopState);
+  const season = seasonOptions.find((option) => option.id === state.season);
+  const shopState = shopStateOptions.find((option) => option.id === state.shopState);
 
   if (season) {
     items.push(season.label);
   }
+
   if (shopState) {
     items.push(shopState.label);
   }
@@ -246,74 +200,26 @@ function getContextSummaryItems(scenario) {
   return items;
 }
 
-function readContextQuery(scenario) {
-  return {
-    season: contextState.season,
-    shopState: contextState.shopState,
-  };
-}
-
-function readBackendQuery() {
-  return backendState.mode;
-}
-
-function readContextDrawerQuery() {
-  return contextDrawerOpen ? "open" : "";
-}
-
-function syncUrlState(rawQuery, scenario) {
+function updateUrlState() {
   const url = new URL(window.location.href);
-  const query = rawQuery.trim();
-  const audience = buildAudienceInput(scenario);
-  const context = readContextQuery(scenario);
+  url.searchParams.set("room", activeRoomId);
 
-  if (query) {
-    url.searchParams.set(searchParamName, query);
+  if (contextDrawerOpen) {
+    url.searchParams.set("context", "open");
   } else {
-    url.searchParams.delete(searchParamName);
+    url.searchParams.delete("context");
   }
 
-  if (scenario && scenario !== "baseline") {
-    url.searchParams.set(scenarioParamName, scenario);
-  } else {
-    url.searchParams.delete(scenarioParamName);
-  }
-
-  if (audience) {
-    url.searchParams.set(audienceParamName, audience);
-  } else {
-    url.searchParams.delete(audienceParamName);
-  }
-
-  if (context.season) {
-    url.searchParams.set(seasonParamName, context.season);
-  } else {
-    url.searchParams.delete(seasonParamName);
-  }
-
-  if (context.shopState) {
-    url.searchParams.set(shopStateParamName, context.shopState);
-  } else {
-    url.searchParams.delete(shopStateParamName);
-  }
-
-  if (readBackendQuery() !== "rules") {
-    url.searchParams.set(backendParamName, readBackendQuery());
-  } else {
-    url.searchParams.delete(backendParamName);
-  }
-
-  if (readContextDrawerQuery() === "open") {
-    url.searchParams.set(contextParamName, "open");
-  } else {
-    url.searchParams.delete(contextParamName);
+  for (const legacyParam of ["q", "scenario", "audience", "season", "shopState", "backend"]) {
+    url.searchParams.delete(legacyParam);
   }
 
   window.history.replaceState(window.history.state, "", url);
 }
 
-function renderInsights(insights) {
+function renderInsights(insights, promptLabel) {
   clearInsights();
+  insightsLabelElement.textContent = promptLabel || scenarios[activeScenario].insightLabel;
 
   for (const insight of insights) {
     const item = document.createElement("li");
@@ -332,10 +238,8 @@ function renderAudienceSummary(scenario) {
   }
 
   const summaryItems = buildAudienceSummaryItems(scenario);
-  const summaryEmptyText = scenarios[scenario].audienceSummaryEmptyText;
-
   const hasItems = summaryItems.length > 0;
-  audienceSummaryEmptyElement.textContent = hasItems ? "" : summaryEmptyText;
+  audienceSummaryEmptyElement.textContent = hasItems ? "" : scenarios[scenario].audienceSummaryEmptyText;
 
   for (const itemText of summaryItems) {
     const item = document.createElement("li");
@@ -345,10 +249,10 @@ function renderAudienceSummary(scenario) {
   }
 }
 
-function renderContextSummary(scenario) {
+function renderContextSummary() {
   clearContextSummary();
 
-  const summaryItems = getContextSummaryItems(scenario);
+  const summaryItems = buildContextSummaryItems();
   const hasItems = summaryItems.length > 0;
   contextSummaryEmptyElement.textContent = hasItems ? "" : "No world context applied.";
 
@@ -358,6 +262,29 @@ function renderContextSummary(scenario) {
     item.textContent = itemText;
     contextSummaryChipsElement.appendChild(item);
   }
+}
+
+function sendCommand(command) {
+  return fetch("/api/session?room=" + encodeURIComponent(activeRoomId), {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify(command),
+  })
+    .then(async (response) => {
+      const payload = await response.json();
+      if (!response.ok || !payload.ok || !payload.snapshot) {
+        throw new Error(payload.error || "Room update failed.");
+      }
+
+      applySnapshot(payload.snapshot);
+      return payload.snapshot;
+    })
+    .catch(() => {
+      setConnectionStatus("Connection issue. Retrying...");
+    });
 }
 
 function renderToggleGroup(options, selectedId, container, onSelect) {
@@ -378,11 +305,24 @@ function renderToggleGroup(options, selectedId, container, onSelect) {
 
 function renderBackendControls() {
   clearBackendControls();
-  renderToggleGroup(backendOptions, backendState.mode, backendControlsElement, (nextBackend) => {
-    backendState.mode = nextBackend || "rules";
-    renderBackendControls();
-    syncUrlState(queryInput.value, activeScenario);
-    scheduleSearch();
+
+  renderToggleGroup(backendOptions, getRoomState().backend, backendControlsElement, (nextBackend) => {
+    sendCommand({ type: "set-backend", backend: nextBackend || "rules" });
+  });
+}
+
+function renderContextControls() {
+  const state = getRoomState();
+
+  clearSeasonControls();
+  clearShopStateControls();
+
+  renderToggleGroup(seasonOptions, state.season, seasonControlsElement, (nextSeason) => {
+    sendCommand({ type: "set-season", season: nextSeason || "" });
+  });
+
+  renderToggleGroup(shopStateOptions, state.shopState, shopStateControlsElement, (nextShopState) => {
+    sendCommand({ type: "set-shop-state", shopState: nextShopState || "" });
   });
 }
 
@@ -393,49 +333,21 @@ function renderAudiencePresets(scenario) {
     return;
   }
 
-  const state = getAudienceState(scenario);
+  const audienceState = getAudienceState(scenario);
 
   for (const preset of scenarios[scenario].presets) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "audience-preset";
     button.textContent = preset.label;
-    const isActive = state.selectedPresetIds.includes(preset.id);
+    const isActive = audienceState.selectedPresetIds.includes(preset.id);
     button.setAttribute("aria-pressed", String(isActive));
     button.classList.toggle("audience-preset-active", isActive);
     button.addEventListener("click", () => {
-      const nextSelectedPresetIds = state.selectedPresetIds.includes(preset.id)
-        ? state.selectedPresetIds.filter((id) => id !== preset.id)
-        : [...state.selectedPresetIds, preset.id];
-      state.selectedPresetIds = nextSelectedPresetIds;
-      renderAudiencePresets(activeScenario);
-      renderAudienceSummary(activeScenario);
-      syncUrlState(queryInput.value, activeScenario);
-      scheduleSearch();
+      sendCommand({ type: "toggle-preset", scenario, presetId: preset.id });
     });
     audiencePresetsElement.appendChild(button);
   }
-}
-
-function renderContextControls(scenario) {
-  clearSeasonControls();
-  clearShopStateControls();
-
-  renderToggleGroup(seasonOptions, contextState.season, seasonControlsElement, (nextSeason) => {
-    contextState.season = nextSeason;
-    renderContextControls(activeScenario);
-    renderContextSummary(activeScenario);
-    syncUrlState(queryInput.value, activeScenario);
-    scheduleSearch();
-  });
-
-  renderToggleGroup(shopStateOptions, contextState.shopState, shopStateControlsElement, (nextShopState) => {
-    contextState.shopState = nextShopState;
-    renderContextControls(activeScenario);
-    renderContextSummary(activeScenario);
-    syncUrlState(queryInput.value, activeScenario);
-    scheduleSearch();
-  });
 }
 
 function renderResults(results, scenario) {
@@ -504,6 +416,7 @@ function renderResults(results, scenario) {
     if (tag) {
       headingGroup.append(tag);
     }
+
     summaryRow.append(headingGroup, expandButton);
     details.append(blurb, reason, explanation, matchedSignals);
     item.append(meta, summaryRow, details);
@@ -568,14 +481,15 @@ function applyScenario(nextScenario) {
     button.classList.toggle("scenario-guide-item-active", isActive);
   }
 
-  if (nextScenario !== "baseline") {
-    audienceCustomInput.value = getAudienceState(nextScenario).customText;
+  const nextCustomText = nextScenario === "baseline" ? "" : getAudienceState(nextScenario).customText;
+  if (document.activeElement !== audienceCustomInput || pendingAudienceDraft == null || pendingAudienceDraft.scenario !== nextScenario) {
+    audienceCustomInput.value = nextCustomText;
   }
 
   renderAudiencePresets(nextScenario);
   renderAudienceSummary(nextScenario);
-  renderContextControls(nextScenario);
-  renderContextSummary(nextScenario);
+  renderContextControls();
+  renderContextSummary();
   renderBackendControls();
 }
 
@@ -585,15 +499,12 @@ function renderContextPanel() {
   contextDrawerIcon.textContent = contextDrawerOpen ? "◀" : "▶";
 }
 
-async function runSearch(rawQuery, rawAudience) {
-  const query = rawQuery.trim();
-  const audience = rawAudience.trim();
+function renderSearchSnapshot(snapshot) {
+  const state = snapshot.state;
+  const search = snapshot.search;
+  const query = state.query.trim();
 
   if (!query) {
-    if (activeController) {
-      activeController.abort();
-      activeController = null;
-    }
     clearResults();
     clearInsights();
     setStatus("");
@@ -601,92 +512,211 @@ async function runSearch(rawQuery, rawAudience) {
   }
 
   if (query.length < minimumQueryLength) {
-    if (activeController) {
-      activeController.abort();
-      activeController = null;
-    }
     clearResults();
     clearInsights();
     setStatus("Type at least " + minimumQueryLength + " characters.");
     return;
   }
 
-  const currentRequest = ++requestCounter;
-  if (activeController) {
-    activeController.abort();
-  }
-  activeController = new AbortController();
-  const currentController = activeController;
-  setStatus("Searching...");
-
-  try {
-    const response = await fetch(
-      "/api/search?q=" +
-        encodeURIComponent(query) +
-        "&scenario=" +
-        encodeURIComponent(activeScenario) +
-        "&audience=" +
-        encodeURIComponent(audience) +
-        "&season=" +
-        encodeURIComponent(readContextQuery(activeScenario).season) +
-        "&shopState=" +
-        encodeURIComponent(readContextQuery(activeScenario).shopState) +
-        "&backend=" +
-        encodeURIComponent(readBackendQuery()),
-      {
-        headers: {
-          accept: "application/json",
-        },
-        signal: currentController.signal,
-      },
-    );
-    const payload = await response.json();
-
-    if (currentRequest !== requestCounter || currentController !== activeController) {
-      return;
-    }
-
-    if (!response.ok) {
-      clearResults();
-      clearInsights();
-      setStatus(payload.error || "Search failed.");
-      return;
-    }
-
-    if (!payload.results.length) {
-      clearResults();
-      clearInsights();
-      setStatus("No cheeses matched that combination.");
-      return;
-    }
-
-    renderResults(payload.results, payload.scenario);
-    renderInsights(payload.insights || []);
-    insightsLabelElement.textContent = payload.promptLabel || scenarios[payload.scenario].insightLabel;
-    setStatus(payload.results.length + (payload.results.length === 1 ? " result" : " results"));
-  } catch (error) {
-    if (error && typeof error === "object" && "name" in error && error.name === "AbortError") {
-      return;
-    }
-
+  if (!search) {
     clearResults();
     clearInsights();
-    setStatus("Search failed. Try again.");
-  } finally {
-    if (currentController === activeController) {
-      activeController = null;
+    setStatus("Search unavailable.");
+    return;
+  }
+
+  if (!search.results.length) {
+    clearResults();
+    clearInsights();
+    setStatus("No cheeses matched that combination.");
+    return;
+  }
+
+  renderResults(search.results, search.scenario);
+  renderInsights(search.insights || [], search.promptLabel);
+  setStatus(search.results.length + (search.results.length === 1 ? " result" : " results"));
+}
+
+function applySnapshot(snapshot) {
+  if (activeSnapshot && snapshot.state.version < activeSnapshot.state.version) {
+    return;
+  }
+
+  activeSnapshot = snapshot;
+  setRoomParticipantCount(snapshot.participantCount || 1);
+
+  if (pendingQueryDraft !== null && snapshot.state.query === pendingQueryDraft) {
+    pendingQueryDraft = null;
+  }
+
+  if (
+    pendingAudienceDraft &&
+    snapshot.state.audienceByChallenge[pendingAudienceDraft.scenario].customText === pendingAudienceDraft.value
+  ) {
+    pendingAudienceDraft = null;
+  }
+
+  if (document.activeElement !== queryInput || pendingQueryDraft === null) {
+    queryInput.value = snapshot.state.query;
+  }
+
+  roomIdInput.value = snapshot.roomId;
+  applyScenario(snapshot.state.activeScenario);
+  renderSearchSnapshot(snapshot);
+  updateUrlState();
+}
+
+function scheduleReconnect() {
+  window.clearTimeout(reconnectHandle);
+  reconnectHandle = window.setTimeout(() => {
+    openLiveSync();
+  }, 1200);
+}
+
+function stopPolling() {
+  window.clearInterval(pollHandle);
+  pollHandle = null;
+}
+
+function startPolling() {
+  if (pollHandle) {
+    return;
+  }
+
+  pollHandle = window.setInterval(async () => {
+    try {
+      const snapshot = await fetchSessionSnapshot(activeRoomId);
+      applySnapshot(snapshot);
+    } catch {}
+  }, 1800);
+}
+
+function closeLiveSync() {
+  window.clearTimeout(reconnectHandle);
+  reconnectHandle = null;
+
+  if (liveSocket) {
+    const socket = liveSocket;
+    liveSocket = null;
+    socket.close();
+  }
+
+  stopPolling();
+}
+
+function openLiveSync() {
+  stopPolling();
+
+  const liveUrl = new URL("/api/session/live", window.location.href);
+  liveUrl.searchParams.set("room", activeRoomId);
+  liveUrl.protocol = liveUrl.protocol === "https:" ? "wss:" : "ws:";
+
+  try {
+    liveSocket = new WebSocket(liveUrl.toString());
+  } catch {
+    setConnectionStatus("Polling fallback active");
+    startPolling();
+    return;
+  }
+
+  const socket = liveSocket;
+
+  socket.addEventListener("open", () => {
+    if (socket !== liveSocket) {
+      return;
     }
+
+    setConnectionStatus("Live sync connected");
+    stopPolling();
+  });
+
+  socket.addEventListener("message", (event) => {
+    if (socket !== liveSocket) {
+      return;
+    }
+
+    let payload = null;
+
+    try {
+      payload = JSON.parse(String(event.data || "{}"));
+    } catch {
+      return;
+    }
+
+    if (payload.type === "snapshot" && payload.snapshot) {
+      applySnapshot(payload.snapshot);
+    }
+  });
+
+  socket.addEventListener("close", () => {
+    if (socket !== liveSocket) {
+      return;
+    }
+
+    liveSocket = null;
+
+    setConnectionStatus("Reconnecting...");
+    startPolling();
+    scheduleReconnect();
+  });
+
+  socket.addEventListener("error", () => {
+    if (socket !== liveSocket) {
+      return;
+    }
+
+    setConnectionStatus("Reconnecting...");
+  });
+}
+
+async function fetchSessionSnapshot(roomId) {
+  const response = await fetch("/api/session?room=" + encodeURIComponent(roomId), {
+    headers: {
+      accept: "application/json",
+    },
+  });
+  const payload = await response.json();
+
+  if (!response.ok) {
+    throw new Error(payload.error || "Room fetch failed.");
+  }
+
+  return payload;
+}
+
+async function joinRoom(nextRoomId) {
+  const roomId = sanitizeRoomId(nextRoomId);
+  closeLiveSync();
+  activeRoomId = roomId;
+  roomIdInput.value = roomId;
+  updateUrlState();
+  setConnectionStatus("Connecting...");
+
+  try {
+    const snapshot = await fetchSessionSnapshot(roomId);
+    applySnapshot(snapshot);
+    openLiveSync();
+  } catch {
+    setConnectionStatus("Room unavailable");
+    startPolling();
   }
 }
 
-function scheduleSearch() {
-  window.clearTimeout(debounceHandle);
-  debounceHandle = window.setTimeout(() => runSearch(queryInput.value, buildAudienceInput(activeScenario)), 180);
+function flashCopyButton(message) {
+  const originalLabel = roomCopyLinkButton.textContent;
+  roomCopyLinkButton.textContent = message;
+  window.setTimeout(() => {
+    roomCopyLinkButton.textContent = originalLabel;
+  }, 1200);
 }
 
 queryInput.addEventListener("input", () => {
-  syncUrlState(queryInput.value, activeScenario);
-  scheduleSearch();
+  pendingQueryDraft = queryInput.value;
+  setStatus("Updating room...");
+  window.clearTimeout(querySyncHandle);
+  querySyncHandle = window.setTimeout(() => {
+    sendCommand({ type: "set-query", query: queryInput.value });
+  }, 180);
 });
 
 audienceCustomInput.addEventListener("input", () => {
@@ -694,58 +724,72 @@ audienceCustomInput.addEventListener("input", () => {
     return;
   }
 
-  getAudienceState(activeScenario).customText = audienceCustomInput.value;
+  pendingAudienceDraft = {
+    scenario: activeScenario,
+    value: audienceCustomInput.value,
+  };
   renderAudienceSummary(activeScenario);
-  syncUrlState(queryInput.value, activeScenario);
-  scheduleSearch();
+  setStatus("Updating room...");
+  window.clearTimeout(audienceSyncHandle);
+  audienceSyncHandle = window.setTimeout(() => {
+    sendCommand({ type: "set-custom-text", scenario: activeScenario, customText: audienceCustomInput.value });
+  }, 180);
 });
 
 contextDrawerToggle.addEventListener("click", () => {
   contextDrawerOpen = !contextDrawerOpen;
   renderContextPanel();
-  syncUrlState(queryInput.value, activeScenario);
+  updateUrlState();
 });
 
 for (const button of scenarioButtons) {
   button.addEventListener("click", () => {
-    applyScenario(button.dataset.scenario || "baseline");
-    syncUrlState(queryInput.value, activeScenario);
-    scheduleSearch();
+    sendCommand({ type: "set-scenario", scenario: button.dataset.scenario || "baseline" });
   });
 }
 
-const initialUrl = new URL(window.location.href);
-const initialScenario = scenarios[initialUrl.searchParams.get(scenarioParamName)] ? initialUrl.searchParams.get(scenarioParamName) : "baseline";
-const initialQuery = initialUrl.searchParams.get(searchParamName) || defaultQuery;
-const initialAudience = initialUrl.searchParams.get(audienceParamName) || "";
-const initialSeason = initialUrl.searchParams.get(seasonParamName) || "";
-const initialShopState = initialUrl.searchParams.get(shopStateParamName) || "";
-const initialBackend = initialUrl.searchParams.get(backendParamName) || "rules";
-const initialContext = initialUrl.searchParams.get(contextParamName) || "";
+roomJoinButton.addEventListener("click", () => {
+  void joinRoom(roomIdInput.value);
+});
 
-applyScenario(initialScenario);
-if (initialQuery) {
-  queryInput.value = initialQuery;
-}
-if (seasonOptions.some((option) => option.id === initialSeason)) {
-  contextState.season = initialSeason;
-}
-if (shopStateOptions.some((option) => option.id === initialShopState)) {
-  contextState.shopState = initialShopState;
-}
-if (backendOptions.some((option) => option.id === initialBackend)) {
-  backendState.mode = initialBackend;
-}
-contextDrawerOpen = initialContext === "open";
-if (initialAudience && initialScenario !== "baseline") {
-  getAudienceState(initialScenario).customText = initialAudience;
-  audienceCustomInput.value = initialAudience;
-  renderAudienceSummary(initialScenario);
-}
+roomIdInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    void joinRoom(roomIdInput.value);
+  }
+});
+
+roomCopyLinkButton.addEventListener("click", async () => {
+  const shareUrl = new URL(window.location.href);
+  shareUrl.searchParams.set("room", activeRoomId);
+  if (contextDrawerOpen) {
+    shareUrl.searchParams.set("context", "open");
+  } else {
+    shareUrl.searchParams.delete("context");
+  }
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(shareUrl.toString());
+      flashCopyButton("Copied");
+      return;
+    }
+  } catch {}
+
+  flashCopyButton("Copy manually");
+});
+
+roomResetButton.addEventListener("click", () => {
+  if (window.confirm("Reset the shared room for everyone connected to it?")) {
+    sendCommand({ type: "reset-room" });
+  }
+});
+
+const initialUrl = new URL(window.location.href);
+const initialRoomId = sanitizeRoomId(initialUrl.searchParams.get("room"));
+contextDrawerOpen = initialUrl.searchParams.get("context") === "open";
 renderContextPanel();
-renderContextControls(initialScenario);
-renderContextSummary(initialScenario);
-renderBackendControls();
-runSearch(initialQuery, initialAudience);
+setRoomParticipantCount(1);
+void joinRoom(initialRoomId);
 `;
 }

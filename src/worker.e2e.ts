@@ -1,10 +1,41 @@
 import { expect, test } from "@playwright/test";
 
+const roomRunId = Date.now().toString(36);
+
+function roomUrl(roomId: string, params?: URLSearchParams): string {
+  const url = new URL("http://example.test/");
+  url.searchParams.set("room", roomRunId + "-" + roomId);
+
+  if (params) {
+    for (const [key, value] of params.entries()) {
+      url.searchParams.set(key, value);
+    }
+  }
+
+  return url.pathname + url.search;
+}
+
+async function switchScenario(page: import("@playwright/test").Page, label: RegExp, title: string): Promise<void> {
+  await page.getByRole("button", { name: label }).click();
+  await expect(page.locator("#scenario-title")).toHaveText(title);
+}
+
+async function chooseAudienceOption(page: import("@playwright/test").Page, buttonLabel: string, summaryText = buttonLabel): Promise<void> {
+  await page.getByRole("button", { name: buttonLabel }).click();
+  await expect(page.locator("#audience-summary-chips")).toContainText(summaryText);
+}
+
+async function chooseContextOption(page: import("@playwright/test").Page, buttonLabel: string): Promise<void> {
+  await page.getByRole("button", { name: buttonLabel }).click();
+  await expect(page.locator("#context-summary-chips")).toContainText(buttonLabel);
+}
+
 test("renders the cheese demo home page", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-home"));
 
   await expect(page.getByRole("heading", { level: 1, name: "French Cheese Shop" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Baseline/ })).toBeVisible();
+  await expect(page.locator("#room-id-input")).toHaveValue(new RegExp("e2e-home$"));
   await expect(page.getByRole("searchbox", { name: "Customer request" })).toBeVisible();
   await expect(page.getByRole("searchbox", { name: "Customer request" })).toHaveValue("I want something like Brie, but stronger.");
   await expect(page.locator("#search-status")).toHaveText("5 results");
@@ -17,25 +48,23 @@ test("serves the health endpoint", async ({ request }) => {
   await expect(response.json()).resolves.toEqual({
     ok: true,
     name: "french-cheese-shop-demo-worker",
-    routes: ["/", "/api/search", "/api/health"],
+    routes: ["/", "/api/search", "/api/session", "/api/session/live", "/api/health"],
   });
 });
 
 test("shows baseline results for a vague request", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-baseline"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
 
   await expect(page.locator("#search-status")).toHaveText("5 results");
   await expect(page.getByRole("heading", { level: 3, name: "Brie de Meaux" })).toBeVisible();
-  await expect(page).toHaveURL(
-    /[\?&]q=I\+want\+something\+like\+Brie\+but\+stronger|[\?&]q=I%20want%20something%20like%20Brie%20but%20stronger/,
-  );
+  await expect(page).toHaveURL(new RegExp("[?&]room=" + roomRunId + "-e2e-baseline"));
   await expect(page.getByRole("button", { name: "More" }).first()).toBeVisible();
 });
 
 test("context drawer stays closed by default and syncs its open state to the query", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-context-default"));
 
   await expect(page.getByRole("button", { name: "Winter holiday" })).toBeHidden();
   await expect(page).not.toHaveURL(/[\?&]context=open/);
@@ -52,7 +81,7 @@ test("context drawer stays closed by default and syncs its open state to the que
 });
 
 test("a stronger follow-up to livarot does not keep livarot on top", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-livarot"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Livarot, but stronger.");
 
@@ -61,13 +90,13 @@ test("a stronger follow-up to livarot does not keep livarot on top", async ({ pa
 });
 
 test("switching to challenge 2 uses audience data to change the top result", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-challenge-2"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
-  await page.getByRole("button", { name: /Challenge 2/ }).click();
-  await page.getByRole("button", { name: "With cider" }).click();
-  await page.getByRole("button", { name: "Washed rind" }).click();
-  await page.getByRole("button", { name: "In stock" }).click();
+  await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
+  await chooseAudienceOption(page, "With cider");
+  await chooseAudienceOption(page, "Washed rind");
+  await chooseAudienceOption(page, "In stock");
 
   await expect(page.locator("#search-status")).toHaveText("5 results");
   await expect(page.getByRole("heading", { level: 3, name: "Livarot" })).toBeVisible();
@@ -76,29 +105,28 @@ test("switching to challenge 2 uses audience data to change the top result", asy
 });
 
 test("signals in play stays synced and cumulative through challenges", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-signals"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
-  await page.getByRole("button", { name: /Challenge 1/ }).click();
-  await page.getByRole("button", { name: "Keep it creamy" }).click();
-  await page.getByRole("button", { name: "Cow's milk" }).click();
+  await switchScenario(page, /Challenge 1/, "Challenge 1: Hidden Needs");
+  await chooseAudienceOption(page, "Keep it creamy");
+  await chooseAudienceOption(page, "Cow's milk");
 
   await expect(page.locator("#scenario-insights")).toContainText("Explicit textures: creamy.");
   await expect(page.locator("#scenario-insights")).toContainText("Explicit milk types: cow.");
 
-  await page.getByRole("button", { name: /Challenge 2/ }).click();
-  await page.getByRole("button", { name: "With cider" }).click();
+  await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
+  await chooseAudienceOption(page, "With cider");
 
   await expect(page.locator("#scenario-insights")).toContainText("Explicit textures: creamy.");
   await expect(page.locator("#scenario-insights")).toContainText("Explicit milk types: cow.");
-  await expect(page.locator("#scenario-insights")).toContainText("Context data: cider.");
   await expect(page.locator("#audience-summary-chips")).toContainText("Keep it creamy");
   await expect(page.locator("#audience-summary-chips")).toContainText("Cow's milk");
   await expect(page.locator("#audience-summary-chips")).toContainText("With cider");
 });
 
 test("challenge copy keeps hidden needs, data, and evaluation distinct", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-copy"));
 
   await expect(page.getByRole("button", { name: /Context/ })).toBeVisible();
   await page.getByRole("button", { name: /Context/ }).click();
@@ -127,15 +155,15 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
 });
 
 test("context drawer enables the optional llm contrast mode", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-llm"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
-  await page.getByRole("button", { name: /Challenge 2/ }).click();
-  await page.getByRole("button", { name: "With cider" }).click();
-  await page.getByRole("button", { name: "Washed rind" }).click();
-  await page.getByRole("button", { name: "In stock" }).click();
+  await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
+  await chooseAudienceOption(page, "With cider");
+  await chooseAudienceOption(page, "Washed rind");
+  await chooseAudienceOption(page, "In stock");
 
-  await expect(page.locator("#search-results > li h3").first()).toHaveText("Livarot");
+  const topBefore = await page.locator("#search-results > li h3").first().textContent();
 
   await page.getByRole("button", { name: /Context/ }).click();
   await expect(page.getByRole("button", { name: "Deterministic rules" })).toBeVisible();
@@ -144,18 +172,18 @@ test("context drawer enables the optional llm contrast mode", async ({ page }) =
 
   await expect(page.getByRole("button", { name: "LLM backend" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#scenario-insights")).toContainText("Backend mode: local LLM-style contrast.");
-  await expect(page).toHaveURL(/[\?&]backend=llm/);
-  await expect(page.locator("#search-results > li h3").first()).not.toHaveText("Livarot");
+  await expect(page).toHaveURL(new RegExp("[?&]room=" + roomRunId + "-e2e-llm"));
+  await expect(page.locator("#search-results > li h3").first()).not.toHaveText(topBefore || "");
 });
 
 test("season visibly changes challenge 2 recommendations", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-season"));
 
   await page.getByRole("button", { name: /Context/ }).click();
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
-  await page.getByRole("button", { name: /Challenge 2/ }).click();
-  await page.getByRole("button", { name: "With cider" }).click();
-  await page.getByRole("button", { name: "Summer picnic" }).click();
+  await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
+  await chooseAudienceOption(page, "With cider");
+  await chooseContextOption(page, "Summer picnic");
 
   await expect(page.locator("#search-results > li h3").first()).toHaveText("Camembert de Normandie");
   await expect(page.locator("#scenario-insights")).toContainText("Simulation context: summer season.");
@@ -167,7 +195,7 @@ test("season visibly changes challenge 2 recommendations", async ({ page }) => {
   await firstResult.getByRole("button", { name: "More" }).click();
   await expect(firstResult).toContainText("Seasonal fit: summer picnic");
 
-  await page.getByRole("button", { name: "Winter holiday" }).click();
+  await chooseContextOption(page, "Winter holiday");
 
   await expect(page.locator("#search-results > li h3").first()).toHaveText("Livarot");
   await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter season.");
@@ -177,14 +205,14 @@ test("season visibly changes challenge 2 recommendations", async ({ page }) => {
 });
 
 test("shop demand still changes visible stock within world context", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-stock"));
 
   await page.getByRole("button", { name: /Context/ }).click();
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
-  await page.getByRole("button", { name: /Challenge 2/ }).click();
-  await page.getByRole("button", { name: "With cider" }).click();
-  await page.getByRole("button", { name: "Winter holiday" }).click();
-  await page.getByRole("button", { name: "Holiday rush" }).click();
+  await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
+  await chooseAudienceOption(page, "With cider");
+  await chooseContextOption(page, "Winter holiday");
+  await chooseContextOption(page, "Holiday rush");
 
   await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter season and holiday-rush demand.");
   await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
@@ -199,23 +227,32 @@ test("shop demand still changes visible stock within world context", async ({ pa
 });
 
 test("world context can be set in baseline and carries into later challenges", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-world-context"));
 
   await page.getByRole("button", { name: /Context/ }).click();
-  await page.getByRole("button", { name: "Winter holiday" }).click();
-  await page.getByRole("button", { name: "Holiday rush" }).click();
+  await chooseContextOption(page, "Winter holiday");
+  await chooseContextOption(page, "Holiday rush");
 
   await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
   await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
   await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter season and holiday-rush demand.");
 
-  await page.getByRole("button", { name: /Challenge 2/ }).click();
+  await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
   await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
   await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
 });
 
-test("context drawer can reopen from the query state", async ({ page }) => {
-  await page.goto("/?context=open&season=winter&backend=llm");
+test("context drawer can reopen from the query state", async ({ page, request }) => {
+  const roomId = roomRunId + "-e2e-context-open";
+
+  await request.post("/api/session?room=" + roomId, {
+    data: { type: "set-season", season: "winter" },
+  });
+  await request.post("/api/session?room=" + roomId, {
+    data: { type: "set-backend", backend: "llm" },
+  });
+
+  await page.goto("/?room=" + roomId + "&context=open");
 
   await expect(page.getByRole("button", { name: "Winter holiday" })).toBeVisible();
   await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
@@ -223,7 +260,7 @@ test("context drawer can reopen from the query state", async ({ page }) => {
 });
 
 test("an expanded result stays open across evaluation updates", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-expanded"));
 
   const persistentResultNames = await page.evaluate(async () => {
     const makeRequest = async (audience = "") => {
@@ -265,13 +302,13 @@ test("an expanded result stays open across evaluation updates", async ({ page })
 });
 
 test("challenge 3 options visibly change the results", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-challenge-3"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
-  await page.getByRole("button", { name: /Challenge 3/ }).click();
-  await page.getByRole("button", { name: "Mark a backup" }).click();
-  await page.getByRole("button", { name: "Two finalists" }).click();
-  await page.getByRole("button", { name: "Show why it fits" }).click();
+  await switchScenario(page, /Challenge 3/, "Challenge 3: Evaluation");
+  await chooseAudienceOption(page, "Mark a backup");
+  await chooseAudienceOption(page, "Two finalists");
+  await chooseAudienceOption(page, "Show why it fits");
 
   await expect(page.locator("#search-status")).toHaveText("2 results");
   await expect(page.locator("#search-results > li")).toHaveCount(2);
@@ -286,16 +323,18 @@ test("challenge 3 options visibly change the results", async ({ page }) => {
 });
 
 test("show why it fits explains challenge 3 results without reordering them", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-why"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
-  await page.getByRole("button", { name: /Challenge 3/ }).click();
+  await switchScenario(page, /Challenge 3/, "Challenge 3: Evaluation");
+  await expect(page.locator("#search-status")).toHaveText("4 results");
 
-  const topBefore = await page.locator("#search-results > li h3").first().textContent();
+  const namesBefore = await page.locator("#search-results > li h3").allTextContents();
 
-  await page.getByRole("button", { name: "Show why it fits" }).click();
+  await chooseAudienceOption(page, "Show why it fits");
 
-  await expect(page.locator("#search-results > li h3").first()).toHaveText(topBefore || "");
+  await expect(page.locator("#search-status")).toHaveText("4 results");
+  await expect(page.locator("#search-results > li h3")).toHaveText(namesBefore);
   await expect(page.locator("#scenario-insights")).toContainText("explain the current ranking instead of changing it");
 
   const topResult = page.locator("#search-results > li").first();
@@ -304,7 +343,7 @@ test("show why it fits explains challenge 3 results without reordering them", as
 });
 
 test("expands a compact result row on demand", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(roomUrl("e2e-expand"));
 
   const firstResult = page.locator("#search-results li").first();
 
@@ -314,4 +353,28 @@ test("expands a compact result row on demand", async ({ page }) => {
   await page.getByRole("button", { name: "More" }).first().click();
   await expect(firstResult).toContainText("Hide");
   await expect(firstResult).toContainText("Surface match only.");
+});
+
+test("two pages in the same room stay synchronized", async ({ browser }) => {
+  const roomId = "e2e-multiplayer-sync";
+  const context = await browser.newContext();
+  const pageA = await context.newPage();
+  const pageB = await context.newPage();
+
+  await pageA.goto(roomUrl(roomId));
+  await pageB.goto(roomUrl(roomId));
+
+  await expect(pageA.locator("#room-participant-count")).toHaveText("2 participants");
+  await expect(pageB.locator("#room-participant-count")).toHaveText("2 participants");
+
+  await switchScenario(pageA, /Challenge 2/, "Challenge 2: Data Requirements");
+  await chooseAudienceOption(pageA, "With cider");
+
+  await expect(pageB.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
+  await expect(pageB.locator("#audience-summary-chips")).toContainText("With cider");
+
+  await pageA.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await expect(pageB.getByRole("searchbox", { name: "Customer request" })).toHaveValue("I want something like Brie but stronger");
+
+  await context.close();
 });

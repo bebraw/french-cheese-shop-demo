@@ -8,12 +8,13 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 ### Architecture
 
-- **Entry points:** `GET /`, `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...`, and `GET /api/health`
+- **Entry points:** `GET /`, `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...`, `GET /api/session?room=...`, `POST /api/session?room=...`, `GET /api/session/live?room=...`, and `GET /api/health`
 - **Data models:** `CheeseRecord` in `src/cheese/catalog.ts` is the committed product model. Required fields are `cheeseId`, `name`, `region`, `milkType`, `style`, `textures`, `pairings`, `servingContexts`, `intensity`, `priceEur`, `stock`, and `blurb`.
 - **Scenario contract:** `scenario` must accept `baseline`, `challenge-1`, `challenge-2`, and `challenge-3`.
 - **Simulation context contract:** `season` and `shopState` are shared world-context controls available from baseline through challenge 3.
 - **Backend contract:** `backend` must accept `rules` and `llm`, with `rules` as the default and `llm` implemented as a local contrast mode instead of a live remote model call.
-- **Dependencies:** The deployed Worker depends only on the committed repo assets and generated CSS. No remote AI, Vectorize, KV, or import-time credentials are part of the current runtime path.
+- **Multiplayer contract:** a room id selects one canonical shared demo session. Shared room state is coordinated server-side, while local-only UI state such as expanded result cards and the `Context` drawer open state stays per browser.
+- **Dependencies:** The deployed Worker depends only on the committed repo assets, generated CSS, and one Durable Object binding for room coordination. No remote AI, Vectorize, KV, or import-time credentials are part of the current runtime path.
 
 ### Anti-Patterns
 
@@ -36,8 +37,13 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` exposes simulation context controls inside a compact foldable `Context` container on the right so the presenter can change season and shop state explicitly from baseline through challenge 3.
 - [ ] `GET /` exposes one optional backend toggle inside the same `Context` container so the presenter can compare deterministic rules with an LLM-style backend without interrupting the main challenge flow.
 - [ ] The `Context` container stays closed by default and only restores its open state from an explicit query flag.
+- [ ] `GET /` exposes a shareable room id control so multiple browsers can join the same demo session intentionally.
+- [ ] `GET /` shows whether the room is live and how many participants are currently connected.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...` returns ordered cheese recommendations from the committed catalog.
+- [ ] `GET /api/session?room=...` returns the canonical shared room snapshot including the active scenario, accumulated challenge inputs, shared world context, backend mode, and derived search results for that room.
+- [ ] `POST /api/session?room=...` accepts room commands such as query changes, scenario changes, preset toggles, context changes, backend changes, and room reset.
+- [ ] `GET /api/session/live?room=...` streams room snapshots so multiple connected browsers converge on the same shared session state without manual refresh.
 - [ ] Search results stay compact by default and can reveal more explanation on demand.
 - [ ] Expanded result rows stay open across incremental challenge updates when the same result remains visible.
 - [ ] The requirements lens stays synchronized with each active ranking signal, including explicit milk type and carry-forward audience cues from earlier challenges.
@@ -93,6 +99,18 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Given: the presenter opens the `Context` container in baseline
 - When: the presenter selects a season or shop-state overlay such as `Winter holiday`
 - Then: the same context remains active in baseline and every later challenge until the presenter changes it
+
+**Scenario: Two browsers join the same demo room**
+
+- Given: two participants open the same `room` URL
+- When: one participant changes the active challenge or selects an audience preset
+- Then: the second participant sees the same shared challenge state and derived results without a page refresh
+
+**Scenario: Presenter shares a room link**
+
+- Given: the presenter is preparing the demo for a group
+- When: the presenter copies the current room link and opens it in another browser
+- Then: both browsers join the same shared room while keeping local-only UI details such as expanded result cards independent
 
 **Scenario: Presenter optionally compares backend styles**
 

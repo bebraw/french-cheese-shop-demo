@@ -19,18 +19,26 @@ This document keeps the implementation-facing repo summary in one place. Use it 
 - `GET /styles.css` serves the generated Tailwind stylesheet
 - `GET /app.js` serves the browser tab and search logic
 - `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...` serves live demo results as JSON
+- `GET /api/session?room=...` serves the canonical shared room snapshot
+- `POST /api/session?room=...` applies one shared room command
+- `GET /api/session/live?room=...` streams live room updates over WebSockets
 - `GET /api/health` serves a JSON health response for smoke tests and tooling
 
 The UI keeps `season` and `shopState` in a foldable right-side `Context` container as optional world context that can affect baseline and every challenge. `season` changes recommendation suitability, while `shopState` adds operational stock pressure.
 
 The same `Context` container also exposes a shared `backend` toggle. `rules` is the default deterministic engine, while `llm` is a local contrast mode that changes ranking style without adding a live model dependency.
 
-The browser URL also tracks whether the `Context` container is explicitly open via `context=open`, while the default page load keeps the drawer closed.
+The page now also exposes a shared `room` control so multiple browsers can join
+the same deterministic teaching session. The browser URL tracks the joined room
+and whether the `Context` container is explicitly open via `context=open`,
+while the default page load keeps the drawer closed.
 
 ## Source Layout
 
 - `src/worker.ts` is the Worker entry point and top-level router
-- `src/api/` holds API response modules such as search and health
+- `src/api/` holds API response modules such as search, session, and health
+- `src/demo-room*.ts` holds the shared multiplayer room state and Durable
+  Object coordination code
 - `src/cheese/` holds the deterministic cheese catalog and scenario scoring logic
 - `src/views/` holds HTML rendering modules and browser script output
 - Tests live next to the code they exercise under `src/`

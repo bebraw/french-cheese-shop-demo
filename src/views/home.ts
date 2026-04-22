@@ -1,7 +1,7 @@
+import { DEFAULT_QUERY, DEFAULT_ROOM_ID } from "../demo-config";
 import { escapeHtml } from "./shared";
 
 const appTitle = "French Cheese Shop";
-const defaultQuery = "I want something like Brie, but stronger.";
 
 export function renderHomePage(): string {
   return `<!doctype html>
@@ -25,7 +25,7 @@ export function renderHomePage(): string {
                 <button type="button" class="scenario-guide-item scenario-guide-item-active text-left" data-scenario="baseline" aria-pressed="true">
                   <p class="scenario-guide-kicker">Baseline</p>
                   <p class="scenario-guide-title">Surface match</p>
-                  <p class="scenario-guide-copy">Use “${escapeHtml(defaultQuery)}” as-is.</p>
+                  <p class="scenario-guide-copy">Use “${escapeHtml(DEFAULT_QUERY)}” as-is.</p>
                 </button>
                 <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-1" aria-pressed="false">
                   <p class="scenario-guide-kicker">Challenge 1</p>
@@ -47,9 +47,30 @@ export function renderHomePage(): string {
           </aside>
           <div class="order-1 lg:order-2">
             <div class="sticky top-4 z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">
+              <section class="rounded-[1.35rem] border border-app-line bg-white/92 px-4 py-4 shadow-[0_10px_30px_rgba(13,29,46,0.04)]">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Shared Room</p>
+                    <label class="mt-3 block" for="room-id-input">
+                      <span class="sr-only">Room id</span>
+                      <input id="room-id-input" name="room" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="${escapeHtml(DEFAULT_ROOM_ID)}" class="w-full rounded-[1.15rem] bg-app-surface px-4 py-3 text-sm leading-6 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
+                    </label>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                      <button id="room-join-button" type="button" class="audience-preset audience-preset-active">Join room</button>
+                      <button id="room-copy-link-button" type="button" class="audience-preset">Copy link</button>
+                      <button id="room-reset-button" type="button" class="audience-preset">Reset room</button>
+                    </div>
+                  </div>
+                  <div class="rounded-[1.15rem] border border-app-line bg-app-canvas px-4 py-3 sm:max-w-[14rem]">
+                    <p class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-app-secondary">Collaboration</p>
+                    <p id="room-connection-status" class="mt-2 text-sm leading-6 text-app-text-soft">Connecting...</p>
+                    <p id="room-participant-count" class="mt-1 text-sm leading-6 text-app-text-soft">1 participant</p>
+                  </div>
+                </div>
+              </section>
               <label class="block" for="customer-query">
                 <span class="sr-only">Customer request</span>
-                <input id="customer-query" name="q" type="search" autocomplete="off" spellcheck="false" value="${escapeHtml(defaultQuery)}" placeholder="Type the customer request" class="w-full rounded-[1.35rem] bg-app-surface px-5 py-4 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
+                <input id="customer-query" name="q" type="search" autocomplete="off" spellcheck="false" value="${escapeHtml(DEFAULT_QUERY)}" placeholder="Type the customer request" class="mt-4 w-full rounded-[1.35rem] bg-app-surface px-5 py-4 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
               </label>
               <div id="audience-controls" class="mt-4 hidden">
                 <p id="audience-prompt" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>

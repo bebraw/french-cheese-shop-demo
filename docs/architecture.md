@@ -12,7 +12,8 @@ It complements:
 
 The application has one runtime path:
 
-1. A Cloudflare Worker that serves the demo UI and a deterministic JSON search API.
+1. A Cloudflare Worker that serves the demo UI, deterministic JSON search API,
+   and room-session endpoints backed by one Durable Object per room.
 
 The Worker does not depend on remote AI services, private data imports, or runtime admin configuration. The ranking logic operates over a committed French cheese catalog so the live presentation stays predictable.
 
@@ -21,25 +22,38 @@ The Worker does not depend on remote AI services, private data imports, or runti
 ```mermaid
 flowchart TD
     user[Audience Browser]
+    collaborator[Collaborator Browser]
 
     subgraph Cloudflare
       worker[Cloudflare Worker\nsrc/worker.ts]
+      room[Durable Object Room\nDemoRoomObject]
     end
 
     subgraph WorkerCode[Worker Modules]
       api[Search API\nsrc/api/search.ts]
+      session[Session API\nsrc/api/session.ts]
       health[Health API\nsrc/api/health.ts]
       demo[Scenario Engine\nsrc/cheese/demo.ts]
+      roomstate[Room State\nsrc/demo-room.ts]
       catalog[Cheese Catalog\nsrc/cheese/catalog.ts]
       views[Views\nsrc/views/*]
     end
 
     user -->|GET /| worker
     user -->|GET /api/search| worker
+    user -->|GET/POST /api/session| worker
+    user -->|WS /api/session/live| worker
+    collaborator -->|GET /| worker
+    collaborator -->|GET/POST /api/session| worker
+    collaborator -->|WS /api/session/live| worker
     user -->|GET /api/health| worker
     worker --> views
     worker --> api
+    worker --> session
     worker --> health
+    session --> room
+    room --> roomstate
+    roomstate --> demo
     api --> demo
     demo --> catalog
 ```
@@ -87,10 +101,28 @@ The current scenario shifts are:
 
 `src/views/home-script.ts` handles:
 
-- tab switching
-- URL synchronization for `q`, `scenario`, `audience`, world context, backend mode, and explicit `Context` drawer open state
-- debounced same-origin fetches to `/api/search`
-- client-side rendering of result cards, insights, and evaluation checks
+- room join, copy-link, and room reset controls
+- local-only URL synchronization for `room` and explicit `Context` drawer open state
+- debounced shared room updates through `/api/session`
+- live room snapshot synchronization over `/api/session/live`
+- client-side rendering of result cards, insights, evaluation checks, and collaboration status
+
+### 4. Room Coordination Path
+
+`GET /api/session?room=...`, `POST /api/session?room=...`, and
+`GET /api/session/live?room=...` flow through these modules:
+
+1. `src/api/session.ts` resolves the requested room and forwards room traffic to
+   the configured Durable Object.
+2. `src/demo-room-object.ts` stores canonical room state, serializes command
+   application, and broadcasts snapshots to connected browsers.
+3. `src/demo-room.ts` defines the room state shape, validates commands, derives
+   accumulated audience inputs, and reuses `searchDemoCatalog()` to compute the
+   deterministic results embedded in each room snapshot.
+
+Shared room state includes the current query, active challenge, accumulated
+audience inputs, world context, backend mode, and room version. Local browser
+state such as expanded result cards remains outside the shared room model.
 
 ## Data Model
 
@@ -117,6 +149,7 @@ Defined through `wrangler.jsonc`:
 
 - Worker name
 - entry module
+- Durable Object binding and migration for room coordination
 - generated CSS build step
 
 No remote bindings or secret-backed runtime controls are required for the current demo.

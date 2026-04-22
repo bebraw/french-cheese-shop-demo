@@ -21,6 +21,7 @@ describe("worker", () => {
     expect(body).toContain("Challenge 1");
     expect(body).toContain("Context");
     expect(body).toContain("Search Backend");
+    expect(body).toContain("Shared Room");
     expect(body).toContain("Type the customer request");
   });
 
@@ -32,8 +33,46 @@ describe("worker", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       name: "french-cheese-shop-demo-worker",
-      routes: ["/", "/api/search", "/api/health"],
+      routes: ["/", "/api/search", "/api/session", "/api/session/live", "/api/health"],
     });
+  });
+
+  it("returns a collaborative room snapshot", async () => {
+    const response = await handleRequest(new Request("http://example.com/api/session?room=worker-test-room"));
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.roomId).toBe("worker-test-room");
+    expect(payload.state.activeScenario).toBe("baseline");
+    expect(payload.search?.results[0]?.name).toBe("Brie de Meaux");
+  });
+
+  it("updates room state through the session command endpoint", async () => {
+    await handleRequest(
+      new Request("http://example.com/api/session?room=worker-command-room", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ type: "set-scenario", scenario: "challenge-2" }),
+      }),
+    );
+
+    await handleRequest(
+      new Request("http://example.com/api/session?room=worker-command-room", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ type: "toggle-preset", scenario: "challenge-2", presetId: "cider" }),
+      }),
+    );
+
+    const response = await handleRequest(new Request("http://example.com/api/session?room=worker-command-room"));
+    const payload = await response.json();
+
+    expect(payload.state.activeScenario).toBe("challenge-2");
+    expect(payload.search?.insights).toContain("Context data: cider.");
   });
 
   it("returns baseline cheese matches for the search API", async () => {
@@ -122,7 +161,7 @@ describe("worker", () => {
     expect(response.headers.get("content-type")).toContain("application/javascript");
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     const body = await response.text();
-    expect(body).toContain('"/api/search?q=" +');
-    expect(body).toContain("applyScenario");
+    expect(body).toContain('"/api/session?room=" +');
+    expect(body).toContain("Live sync connected");
   });
 });
