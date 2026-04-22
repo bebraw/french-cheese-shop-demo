@@ -56,6 +56,17 @@ describe("worker", () => {
           "content-type": "application/json",
           "x-demo-presenter-token": "lecturer-token",
         },
+        body: JSON.stringify({ type: "set-query", query: "I want something like Brie but stronger" }),
+      }),
+    );
+
+    await handleRequest(
+      new Request("http://example.com/api/session?room=worker-command-room", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-demo-presenter-token": "lecturer-token",
+        },
         body: JSON.stringify({ type: "claim-presenter" }),
       }),
     );
@@ -102,6 +113,24 @@ describe("worker", () => {
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toMatchObject({
       ok: false,
+    });
+  });
+
+  it("rejects query changes from non-lecturer clients", async () => {
+    const response = await handleRequest(
+      new Request("http://example.com/api/session?room=worker-protected-query-room", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ type: "set-query", query: "Custom" }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringContaining("shared search query"),
     });
   });
 
@@ -194,5 +223,6 @@ describe("worker", () => {
     expect(body).toContain('"/api/session?room=" +');
     expect(body).toContain("Live sync connected");
     expect(body).toContain("Only the lecturer can change challenges.");
+    expect(body).toContain("Only the lecturer can change the shared search query.");
   });
 });

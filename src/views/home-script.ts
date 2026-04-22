@@ -103,7 +103,7 @@ function getAudienceState(scenario) {
 }
 
 function getRoomAccess() {
-  return activeSnapshot ? activeSnapshot.access : { presenterClaimed: false, canManageScenario: false };
+  return activeSnapshot ? activeSnapshot.access : { presenterClaimed: false, canManageQuery: false, canManageScenario: false };
 }
 
 function sanitizeRoomId(rawRoomId) {
@@ -325,11 +325,21 @@ function renderLecturerControls() {
   roomResetButton.setAttribute("aria-disabled", String(!access.canManageScenario));
   roomResetButton.classList.toggle("opacity-60", !access.canManageScenario);
 
-  roomLecturerStatusElement.textContent = access.canManageScenario
-    ? "This device controls challenge changes for the room."
+  queryInput.readOnly = !access.canManageQuery;
+  queryInput.setAttribute("aria-readonly", String(!access.canManageQuery));
+  queryInput.classList.toggle("cursor-not-allowed", !access.canManageQuery);
+  queryInput.classList.toggle("bg-app-canvas", !access.canManageQuery);
+  queryInput.title = access.canManageQuery
+    ? ""
     : access.presenterClaimed
-      ? "Challenge changes are locked to the lecturer device for this room."
-      : "Challenge changes are unlocked only after the lecturer claims control on this device.";
+      ? "Only the lecturer can change the shared search query for this room."
+      : "Claim lecturer controls on this device to change the shared search query.";
+
+  roomLecturerStatusElement.textContent = access.canManageScenario
+    ? "This device controls the shared search query and challenge changes for the room."
+    : access.presenterClaimed
+      ? "The shared search query and challenge changes are locked to the lecturer device for this room."
+      : "The shared search query and challenge changes stay unlocked only after the lecturer claims control on this device.";
 }
 
 function sendCommand(command) {
@@ -826,6 +836,12 @@ function flashCopyButton(message) {
 }
 
 queryInput.addEventListener("input", () => {
+  if (!getRoomAccess().canManageQuery) {
+    queryInput.value = getRoomState().query;
+    setStatus("Only the lecturer can change the shared search query.");
+    return;
+  }
+
   pendingQueryDraft = queryInput.value;
   setStatus("Updating room...");
   window.clearTimeout(querySyncHandle);

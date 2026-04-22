@@ -27,7 +27,7 @@ async function claimLecturer(page: import("@playwright/test").Page): Promise<voi
     await claimButton.click();
   }
 
-  await expect(page.locator("#room-lecturer-status")).toContainText("This device controls challenge changes");
+  await expect(page.locator("#room-lecturer-status")).toContainText("This device controls the shared search query and challenge changes");
 }
 
 async function chooseAudienceOption(page: import("@playwright/test").Page, buttonLabel: string, summaryText = buttonLabel): Promise<void> {
@@ -93,6 +93,7 @@ test("serves the health endpoint", async ({ request }) => {
 test("shows baseline results for a vague request", async ({ page }) => {
   await page.goto(roomUrl("e2e-baseline"));
 
+  await claimLecturer(page);
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
 
   await expect(page.locator("#search-status")).toHaveText("5 results");
@@ -121,6 +122,7 @@ test("context drawer stays closed by default and syncs its open state to the que
 test("a stronger follow-up to livarot does not keep livarot on top", async ({ page }) => {
   await page.goto(roomUrl("e2e-livarot"));
 
+  await claimLecturer(page);
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Livarot, but stronger.");
 
   await expect(page.locator("#search-status")).toHaveText("5 results");
@@ -130,8 +132,8 @@ test("a stronger follow-up to livarot does not keep livarot on top", async ({ pa
 test("switching to challenge 2 uses audience data to change the top result", async ({ page }) => {
   await page.goto(roomUrl("e2e-challenge-2"));
 
-  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await claimLecturer(page);
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
   await chooseAudienceOption(page, "With cider");
   await chooseAudienceOption(page, "Washed rind");
@@ -146,8 +148,8 @@ test("switching to challenge 2 uses audience data to change the top result", asy
 test("signals in play stays synced and cumulative through challenges", async ({ page }) => {
   await page.goto(roomUrl("e2e-signals"));
 
-  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await claimLecturer(page);
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 1/, "Challenge 1: Hidden Needs");
   await chooseAudienceOption(page, "Keep it creamy");
   await chooseAudienceOption(page, "Cow's milk");
@@ -198,8 +200,8 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
 test("context drawer enables the optional llm contrast mode", async ({ page }) => {
   await page.goto(roomUrl("e2e-llm"));
 
-  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await claimLecturer(page);
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
   await chooseAudienceOption(page, "With cider");
   await chooseAudienceOption(page, "Washed rind");
@@ -222,8 +224,8 @@ test("season visibly changes challenge 2 recommendations", async ({ page }) => {
   await page.goto(roomUrl("e2e-season"));
 
   await page.getByRole("button", { name: /Context/ }).click();
-  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await claimLecturer(page);
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
   await chooseAudienceOption(page, "With cider");
   await chooseContextOption(page, "Summer picnic");
@@ -251,8 +253,8 @@ test("shop demand still changes visible stock within world context", async ({ pa
   await page.goto(roomUrl("e2e-stock"));
 
   await page.getByRole("button", { name: /Context/ }).click();
-  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await claimLecturer(page);
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
   await chooseAudienceOption(page, "With cider");
   await chooseContextOption(page, "Winter holiday");
@@ -328,8 +330,8 @@ test("an expanded result stays open across evaluation updates", async ({ page })
   });
   const resultName = persistentResultNames[0];
 
-  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await claimLecturer(page);
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await page.getByRole("button", { name: /Challenge 3/ }).click();
 
   await expect(page.locator("#search-status")).toHaveText("4 results");
@@ -352,8 +354,8 @@ test("an expanded result stays open across evaluation updates", async ({ page })
 test("challenge 3 options visibly change the results", async ({ page }) => {
   await page.goto(roomUrl("e2e-challenge-3"));
 
-  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await claimLecturer(page);
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 3/, "Challenge 3: Evaluation");
   await chooseAudienceOption(page, "Mark a backup");
   await chooseAudienceOption(page, "Two finalists");
@@ -374,8 +376,8 @@ test("challenge 3 options visibly change the results", async ({ page }) => {
 test("show why it fits explains challenge 3 results without reordering them", async ({ page }) => {
   await page.goto(roomUrl("e2e-why"));
 
-  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await claimLecturer(page);
+  await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 3/, "Challenge 3: Evaluation");
   await expect(page.locator("#search-status")).toHaveText("4 results");
 
@@ -445,8 +447,28 @@ test("participants cannot change the active challenge after the lecturer claims 
   await expect(participantPage.getByRole("button", { name: /Challenge 3/ })).toHaveAttribute("aria-disabled", "true");
   await expect(participantPage.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
   await expect(participantPage.locator("#room-lecturer-status")).toContainText(
-    "Challenge changes are locked to the lecturer device for this room.",
+    "The shared search query and challenge changes are locked to the lecturer device for this room.",
   );
+
+  await context.close();
+});
+
+test("participants cannot change the shared query after the lecturer claims it", async ({ browser }) => {
+  const roomId = "e2e-lecturer-query-lock";
+  const context = await browser.newContext();
+  const lecturerPage = await context.newPage();
+  const participantPage = await context.newPage();
+
+  await lecturerPage.goto(roomUrl(roomId));
+  await participantPage.goto(roomUrl(roomId));
+
+  await claimLecturer(lecturerPage);
+  await lecturerPage.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Livarot, but stronger.");
+
+  await expect(participantPage.getByRole("searchbox", { name: "Customer request" })).toHaveValue(
+    "I want something like Livarot, but stronger.",
+  );
+  await expect(participantPage.getByRole("searchbox", { name: "Customer request" })).not.toBeEditable();
 
   await context.close();
 });

@@ -42,6 +42,7 @@ export interface DemoRoomRecord {
 
 export interface DemoRoomAccess {
   presenterClaimed: boolean;
+  canManageQuery: boolean;
   canManageScenario: boolean;
 }
 
@@ -212,9 +213,7 @@ export function applyRoomCommand(record: DemoRoomRecord, command: DemoRoomComman
   if (requiresPresenterControl(command) && (!record.presenterToken || record.presenterToken !== presenterToken)) {
     return {
       ok: false,
-      error: record.presenterToken
-        ? "Only the lecturer can change the active challenge for this room."
-        : "Lecturer controls must be claimed before the active challenge can change.",
+      error: presenterControlError(command, Boolean(record.presenterToken)),
       record,
     };
   }
@@ -388,6 +387,7 @@ export function buildRoomSnapshot(
     search,
     access: {
       presenterClaimed: Boolean(record.presenterToken),
+      canManageQuery: Boolean(record.presenterToken && presenterToken === record.presenterToken),
       canManageScenario: Boolean(record.presenterToken && presenterToken === record.presenterToken),
     },
   };
@@ -456,7 +456,23 @@ function bumpVersion(state: DemoRoomState): DemoRoomState {
 }
 
 function requiresPresenterControl(command: Exclude<DemoRoomCommand, { type: "claim-presenter" }>): boolean {
-  return command.type === "set-scenario" || command.type === "reset-room";
+  return command.type === "set-query" || command.type === "set-scenario" || command.type === "reset-room";
+}
+
+function presenterControlError(command: Exclude<DemoRoomCommand, { type: "claim-presenter" }>, presenterClaimed: boolean): string {
+  if (command.type === "set-query") {
+    return presenterClaimed
+      ? "Only the lecturer can change the shared search query for this room."
+      : "Lecturer controls must be claimed before the shared search query can change.";
+  }
+
+  if (command.type === "reset-room") {
+    return presenterClaimed ? "Only the lecturer can reset this room." : "Lecturer controls must be claimed before this room can reset.";
+  }
+
+  return presenterClaimed
+    ? "Only the lecturer can change the active challenge for this room."
+    : "Lecturer controls must be claimed before the active challenge can change.";
 }
 
 function asString(value: unknown): string {

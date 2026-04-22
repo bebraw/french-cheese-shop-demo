@@ -20,7 +20,7 @@ This document keeps the implementation-facing repo summary in one place. Use it 
 - `GET /app.js` serves the browser tab and search logic
 - `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...` serves live demo results as JSON
 - `GET /api/session?room=...` serves the canonical shared room snapshot plus lecturer access flags for the current client
-- `POST /api/session?room=...` applies one shared room command, with challenge switching and room reset reserved for the claimed lecturer device
+- `POST /api/session?room=...` applies one shared room command, with shared query changes, challenge switching, and room reset reserved for the claimed lecturer device
 - `GET /api/session/live?room=...` streams live room updates over WebSockets
 - `GET /api/health` serves a JSON health response for smoke tests and tooling
 
@@ -32,9 +32,9 @@ The page now also exposes a shared `room` control so multiple browsers can join
 the same deterministic teaching session. The browser URL tracks the joined room
 and whether the `Context` container is explicitly open via `context=open`,
 while the default page load keeps the drawer closed. Lecturer control is
-room-scoped rather than account-based: one device can claim challenge-management
-rights for the room, and the UI exposes separate lecturer and audience share
-links so participants do not receive that control by default.
+room-scoped rather than account-based: one device can claim shared-query and
+challenge-management rights for the room, and the UI exposes separate lecturer
+and audience share links so participants do not receive that control by default.
 
 ## Source Layout
 

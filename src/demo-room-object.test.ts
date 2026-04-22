@@ -73,6 +73,7 @@ describe("DemoRoomObject", () => {
     expect(payload.search.results[0]?.name).toBe("Brie de Meaux");
     expect(payload.access).toEqual({
       presenterClaimed: false,
+      canManageQuery: false,
       canManageScenario: false,
     });
   });
@@ -125,6 +126,26 @@ describe("DemoRoomObject", () => {
     await expect(response.json()).resolves.toMatchObject({
       ok: false,
       error: expect.stringContaining("Lecturer controls must be claimed"),
+    });
+  });
+
+  it("rejects query changes from non-lecturer clients", async () => {
+    const room = new DemoRoomObject(createStorage());
+
+    const response = await room.fetch(
+      new Request("http://example.com/internal/session?room=object-protected-query", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ type: "set-query", query: "Custom" }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringContaining("shared search query"),
     });
   });
 
