@@ -35,7 +35,18 @@ export interface DemoRoomState {
   updatedAt: string;
 }
 
+export interface DemoRoomRecord {
+  state: DemoRoomState;
+  presenterToken: string | null;
+}
+
+export interface DemoRoomAccess {
+  presenterClaimed: boolean;
+  canManageScenario: boolean;
+}
+
 export type DemoRoomCommand =
+  | { type: "claim-presenter" }
   | { type: "set-query"; query: string }
   | { type: "set-scenario"; scenario: DemoScenarioId }
   | { type: "toggle-preset"; scenario: DemoChallengeId; presetId: string }
@@ -50,6 +61,13 @@ export interface DemoRoomSnapshot {
   participantCount: number;
   state: DemoRoomState;
   search: DemoSearchResponse | null;
+  access: DemoRoomAccess;
+}
+
+export interface ApplyRoomCommandResult {
+  ok: boolean;
+  record: DemoRoomRecord;
+  error?: string;
 }
 
 const emptyAudienceState = (): DemoAudienceState => ({
@@ -75,6 +93,13 @@ export function createDefaultRoomState(roomId = DEFAULT_ROOM_ID): DemoRoomState 
   };
 }
 
+export function createDefaultRoomRecord(roomId = DEFAULT_ROOM_ID): DemoRoomRecord {
+  return {
+    state: createDefaultRoomState(roomId),
+    presenterToken: null,
+  };
+}
+
 export function normalizeRoomState(candidate: unknown, roomId = DEFAULT_ROOM_ID): DemoRoomState {
   if (!candidate || typeof candidate !== "object") {
     return createDefaultRoomState(roomId);
@@ -85,6 +110,10 @@ export function normalizeRoomState(candidate: unknown, roomId = DEFAULT_ROOM_ID)
 
   if (typeof raw.query === "string") {
     nextState.query = raw.query;
+  }
+
+  if (typeof raw.roomId === "string" && raw.roomId) {
+    nextState.roomId = sanitizeRoomId(raw.roomId);
   }
 
   if (isDemoScenarioId(raw.activeScenario)) {
@@ -133,7 +162,75 @@ export function normalizeRoomState(candidate: unknown, roomId = DEFAULT_ROOM_ID)
   return nextState;
 }
 
-export function applyRoomCommand(state: DemoRoomState, command: DemoRoomCommand): DemoRoomState {
+export function normalizeRoomRecord(candidate: unknown, roomId = DEFAULT_ROOM_ID): DemoRoomRecord {
+  if (!candidate || typeof candidate !== "object") {
+    return createDefaultRoomRecord(roomId);
+  }
+
+  const raw = candidate as Partial<DemoRoomRecord> & Partial<DemoRoomState>;
+
+  if ("state" in raw && raw.state && typeof raw.state === "object") {
+    return {
+      state: normalizeRoomState(raw.state, roomId),
+      presenterToken: typeof raw.presenterToken === "string" && raw.presenterToken ? raw.presenterToken : null,
+    };
+  }
+
+  return {
+    state: normalizeRoomState(candidate, roomId),
+    presenterToken: null,
+  };
+}
+
+export function applyRoomCommand(record: DemoRoomRecord, command: DemoRoomCommand, presenterToken: string | null): ApplyRoomCommandResult {
+  if (command.type === "claim-presenter") {
+    if (!presenterToken) {
+      return {
+        ok: false,
+        error: "Presenter token is required to claim lecturer controls.",
+        record,
+      };
+    }
+
+    if (record.presenterToken && record.presenterToken !== presenterToken) {
+      return {
+        ok: false,
+        error: "Lecturer controls are already claimed for this room.",
+        record,
+      };
+    }
+
+    return {
+      ok: true,
+      record: {
+        ...record,
+        presenterToken,
+      },
+    };
+  }
+
+  if (requiresPresenterControl(command) && (!record.presenterToken || record.presenterToken !== presenterToken)) {
+    return {
+      ok: false,
+      error: record.presenterToken
+        ? "Only the lecturer can change the active challenge for this room."
+        : "Lecturer controls must be claimed before the active challenge can change.",
+      record,
+    };
+  }
+
+  const nextState = applyRoomStateCommand(record.state, command);
+
+  return {
+    ok: true,
+    record: {
+      ...record,
+      state: nextState,
+    },
+  };
+}
+
+function applyRoomStateCommand(state: DemoRoomState, command: Exclude<DemoRoomCommand, { type: "claim-presenter" }>): DemoRoomState {
   if (command.type === "reset-room") {
     return bumpVersion(createDefaultRoomState(state.roomId));
   }
@@ -216,6 +313,10 @@ export function readRoomCommand(payload: unknown): DemoRoomCommand | null {
 
   const raw = payload as Record<string, unknown>;
 
+  if (raw.type === "claim-presenter") {
+    return { type: "claim-presenter" };
+  }
+
   if (raw.type === "set-query" && typeof raw.query === "string") {
     return { type: "set-query", query: raw.query };
   }
@@ -260,7 +361,12 @@ export function readRoomCommand(payload: unknown): DemoRoomCommand | null {
   return null;
 }
 
-export function buildRoomSnapshot(state: DemoRoomState, participantCount: number): DemoRoomSnapshot {
+export function buildRoomSnapshot(
+  record: DemoRoomRecord,
+  participantCount: number,
+  presenterToken: string | null = null,
+): DemoRoomSnapshot {
+  const state = record.state;
   const query = state.query.trim();
   const audienceInput = buildAudienceInput(state, state.activeScenario);
   const search =
@@ -280,6 +386,10 @@ export function buildRoomSnapshot(state: DemoRoomState, participantCount: number
     participantCount,
     state,
     search,
+    access: {
+      presenterClaimed: Boolean(record.presenterToken),
+      canManageScenario: Boolean(record.presenterToken && presenterToken === record.presenterToken),
+    },
   };
 }
 
@@ -343,6 +453,10 @@ function bumpVersion(state: DemoRoomState): DemoRoomState {
     version: state.version + 1,
     updatedAt: new Date().toISOString(),
   };
+}
+
+function requiresPresenterControl(command: Exclude<DemoRoomCommand, { type: "claim-presenter" }>): boolean {
+  return command.type === "set-scenario" || command.type === "reset-room";
 }
 
 function asString(value: unknown): string {

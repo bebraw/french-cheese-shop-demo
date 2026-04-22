@@ -20,6 +20,16 @@ async function switchScenario(page: import("@playwright/test").Page, label: RegE
   await expect(page.locator("#scenario-title")).toHaveText(title);
 }
 
+async function claimLecturer(page: import("@playwright/test").Page): Promise<void> {
+  const claimButton = page.getByRole("button", { name: "Claim lecturer controls" });
+
+  if (await claimButton.isVisible()) {
+    await claimButton.click();
+  }
+
+  await expect(page.locator("#room-lecturer-status")).toContainText("This device controls challenge changes");
+}
+
 async function chooseAudienceOption(page: import("@playwright/test").Page, buttonLabel: string, summaryText = buttonLabel): Promise<void> {
   await page.getByRole("button", { name: buttonLabel }).click();
   await expect(page.locator("#audience-summary-chips")).toContainText(summaryText);
@@ -110,6 +120,7 @@ test("switching to challenge 2 uses audience data to change the top result", asy
   await page.goto(roomUrl("e2e-challenge-2"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await claimLecturer(page);
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
   await chooseAudienceOption(page, "With cider");
   await chooseAudienceOption(page, "Washed rind");
@@ -125,6 +136,7 @@ test("signals in play stays synced and cumulative through challenges", async ({ 
   await page.goto(roomUrl("e2e-signals"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await claimLecturer(page);
   await switchScenario(page, /Challenge 1/, "Challenge 1: Hidden Needs");
   await chooseAudienceOption(page, "Keep it creamy");
   await chooseAudienceOption(page, "Cow's milk");
@@ -150,6 +162,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.getByRole("button", { name: "Winter holiday" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Holiday rush" })).toBeVisible();
 
+  await claimLecturer(page);
   await page.getByRole("button", { name: /Challenge 1/ }).click();
   await expect(page.locator("#insights-label")).toHaveText("Explicit requirements");
   await expect(page.locator("#scenario-description")).toContainText("customer really means");
@@ -175,6 +188,7 @@ test("context drawer enables the optional llm contrast mode", async ({ page }) =
   await page.goto(roomUrl("e2e-llm"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await claimLecturer(page);
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
   await chooseAudienceOption(page, "With cider");
   await chooseAudienceOption(page, "Washed rind");
@@ -198,6 +212,7 @@ test("season visibly changes challenge 2 recommendations", async ({ page }) => {
 
   await page.getByRole("button", { name: /Context/ }).click();
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await claimLecturer(page);
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
   await chooseAudienceOption(page, "With cider");
   await chooseContextOption(page, "Summer picnic");
@@ -209,7 +224,7 @@ test("season visibly changes challenge 2 recommendations", async ({ page }) => {
   await expect(page.locator("#context-summary-chips")).toContainText("Summer picnic");
 
   const firstResult = page.locator("#search-results > li").first();
-  await firstResult.getByRole("button", { name: "More" }).click();
+  await firstResult.getByRole("button", { name: "More" }).click({ force: true });
   await expect(firstResult).toContainText("Seasonal fit: summer picnic");
 
   await chooseContextOption(page, "Winter holiday");
@@ -226,6 +241,7 @@ test("shop demand still changes visible stock within world context", async ({ pa
 
   await page.getByRole("button", { name: /Context/ }).click();
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await claimLecturer(page);
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
   await chooseAudienceOption(page, "With cider");
   await chooseContextOption(page, "Winter holiday");
@@ -238,7 +254,7 @@ test("shop demand still changes visible stock within world context", async ({ pa
   const livarotResult = page.locator("#search-results li").filter({
     has: page.getByRole("heading", { level: 3, name: "Livarot" }),
   });
-  await livarotResult.getByRole("button", { name: "More" }).click();
+  await livarotResult.getByRole("button", { name: "More" }).click({ force: true });
   await expect(livarotResult).toContainText("sold out");
   await expect(livarotResult).toContainText("Simulation stock: sold out");
 });
@@ -254,6 +270,7 @@ test("world context can be set in baseline and carries into later challenges", a
   await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
   await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter season and holiday-rush demand.");
 
+  await claimLecturer(page);
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
   await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
   await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
@@ -301,6 +318,7 @@ test("an expanded result stays open across evaluation updates", async ({ page })
   const resultName = persistentResultNames[0];
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await claimLecturer(page);
   await page.getByRole("button", { name: /Challenge 3/ }).click();
 
   await expect(page.getByRole("heading", { level: 3, name: resultName })).toBeVisible();
@@ -308,7 +326,7 @@ test("an expanded result stays open across evaluation updates", async ({ page })
   const persistentResult = page.locator("#search-results li").filter({ has: page.getByRole("heading", { level: 3, name: resultName }) });
   const firstToggle = persistentResult.getByRole("button", { name: "More" });
 
-  await firstToggle.click();
+  await firstToggle.click({ force: true });
   await expect(persistentResult.getByRole("button", { name: "Hide" })).toBeVisible();
 
   await page.getByRole("button", { name: "Show why it fits" }).click();
@@ -322,6 +340,7 @@ test("challenge 3 options visibly change the results", async ({ page }) => {
   await page.goto(roomUrl("e2e-challenge-3"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await claimLecturer(page);
   await switchScenario(page, /Challenge 3/, "Challenge 3: Evaluation");
   await chooseAudienceOption(page, "Mark a backup");
   await chooseAudienceOption(page, "Two finalists");
@@ -334,7 +353,7 @@ test("challenge 3 options visibly change the results", async ({ page }) => {
   await expect(page.locator("#scenario-insights")).toContainText("Showing two finalists");
 
   const topResult = page.locator("#search-results > li").first();
-  await topResult.getByRole("button", { name: "More" }).click();
+  await topResult.getByRole("button", { name: "More" }).click({ force: true });
   await expect(topResult).toContainText("Why it fits:");
   await expect(topResult).toContainText("Backup choice is visible");
 });
@@ -343,6 +362,7 @@ test("show why it fits explains challenge 3 results without reordering them", as
   await page.goto(roomUrl("e2e-why"));
 
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
+  await claimLecturer(page);
   await switchScenario(page, /Challenge 3/, "Challenge 3: Evaluation");
   await expect(page.locator("#search-status")).toHaveText("4 results");
 
@@ -355,7 +375,7 @@ test("show why it fits explains challenge 3 results without reordering them", as
   await expect(page.locator("#scenario-insights")).toContainText("explain the current ranking instead of changing it");
 
   const topResult = page.locator("#search-results > li").first();
-  await topResult.getByRole("button", { name: "More" }).click();
+  await topResult.getByRole("button", { name: "More" }).click({ force: true });
   await expect(topResult).toContainText("This explanation follows the same ranking signals already in play");
 });
 
@@ -384,6 +404,7 @@ test("two pages in the same room stay synchronized", async ({ browser }) => {
   await expect(pageA.locator("#room-participant-count")).toHaveText("2 participants");
   await expect(pageB.locator("#room-participant-count")).toHaveText("2 participants");
 
+  await claimLecturer(pageA);
   await switchScenario(pageA, /Challenge 2/, "Challenge 2: Data Requirements");
   await chooseAudienceOption(pageA, "With cider");
 
@@ -392,6 +413,27 @@ test("two pages in the same room stay synchronized", async ({ browser }) => {
 
   await pageA.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await expect(pageB.getByRole("searchbox", { name: "Customer request" })).toHaveValue("I want something like Brie but stronger");
+
+  await context.close();
+});
+
+test("participants cannot change the active challenge after the lecturer claims it", async ({ browser }) => {
+  const roomId = "e2e-lecturer-lock";
+  const context = await browser.newContext();
+  const lecturerPage = await context.newPage();
+  const participantPage = await context.newPage();
+
+  await lecturerPage.goto(roomUrl(roomId));
+  await participantPage.goto(roomUrl(roomId));
+
+  await claimLecturer(lecturerPage);
+  await switchScenario(lecturerPage, /Challenge 2/, "Challenge 2: Data Requirements");
+
+  await expect(participantPage.getByRole("button", { name: /Challenge 3/ })).toHaveAttribute("aria-disabled", "true");
+  await expect(participantPage.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
+  await expect(participantPage.locator("#room-lecturer-status")).toContainText(
+    "Challenge changes are locked to the lecturer device for this room.",
+  );
 
   await context.close();
 });

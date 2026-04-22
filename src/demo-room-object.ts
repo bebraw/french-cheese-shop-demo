@@ -1,5 +1,5 @@
 import { jsonResponse } from "./views/shared";
-import { applyRoomCommand, buildRoomSnapshot, normalizeRoomState, readRoomCommand, type DemoRoomState } from "./demo-room";
+import { applyRoomCommand, buildRoomSnapshot, normalizeRoomRecord, readRoomCommand, type DemoRoomRecord } from "./demo-room";
 import { sanitizeRoomId } from "./demo-config";
 
 declare const WebSocketPair: {
@@ -15,9 +15,9 @@ export class DemoRoomObject {
     get(key: string): Promise<unknown>;
     put(key: string, value: unknown): Promise<void>;
   };
-  private readonly sockets = new Set<ServerWebSocket>();
+  private readonly sockets = new Map<ServerWebSocket, string | null>();
   private roomId = "";
-  private statePromise: Promise<DemoRoomState> | null = null;
+  private recordPromise: Promise<DemoRoomRecord> | null = null;
 
   constructor(durableState: { storage: DemoRoomObject["storage"] }) {
     this.storage = durableState.storage;
@@ -32,8 +32,8 @@ export class DemoRoomObject {
     }
 
     if (request.method === "GET") {
-      const state = await this.loadState(roomId);
-      return jsonResponse(buildRoomSnapshot(state, this.sockets.size));
+      const record = await this.loadRecord(roomId);
+      return jsonResponse(buildRoomSnapshot(record, this.sockets.size, readPresenterToken(request)));
     }
 
     if (request.method === "POST") {
@@ -50,11 +50,15 @@ export class DemoRoomObject {
         return jsonResponse({ ok: false, error: "Session command is invalid." }, { status: 400 });
       }
 
-      const nextState = applyRoomCommand(await this.loadState(roomId), command);
-      await this.persistState(nextState);
+      const result = applyRoomCommand(await this.loadRecord(roomId), command, readPresenterToken(request));
+      if (!result.ok) {
+        return jsonResponse({ ok: false, error: result.error }, { status: 403 });
+      }
+
+      await this.persistRecord(result.record);
       await this.broadcastSnapshot();
 
-      return jsonResponse({ ok: true, snapshot: buildRoomSnapshot(nextState, this.sockets.size) });
+      return jsonResponse({ ok: true, snapshot: buildRoomSnapshot(result.record, this.sockets.size, readPresenterToken(request)) });
     }
 
     return jsonResponse({ ok: false, error: "Method not allowed." }, { status: 405 });
@@ -65,14 +69,15 @@ export class DemoRoomObject {
       return jsonResponse({ ok: false, error: "Expected a WebSocket upgrade request." }, { status: 426 });
     }
 
-    await this.loadState(roomId);
+    await this.loadRecord(roomId);
 
     const pair = new WebSocketPair();
     const client = pair[0];
     const server = pair[1] as ServerWebSocket;
+    const presenterToken = readPresenterToken(request);
 
     server.accept();
-    this.sockets.add(server);
+    this.sockets.set(server, presenterToken);
 
     server.addEventListener("close", () => {
       this.sockets.delete(server);
@@ -93,33 +98,40 @@ export class DemoRoomObject {
     return createWebSocketResponse(client);
   }
 
-  private async loadState(roomId: string): Promise<DemoRoomState> {
+  private async loadRecord(roomId: string): Promise<DemoRoomRecord> {
     this.roomId = roomId;
 
-    if (!this.statePromise) {
-      this.statePromise = this.storage.get("room-state").then((storedState) => {
-        const normalizedState = normalizeRoomState(storedState, roomId);
-        void this.storage.put("room-state", normalizedState);
-        return normalizedState;
+    if (!this.recordPromise) {
+      this.recordPromise = this.storage.get("room-record").then((storedRecord) => {
+        const normalizedRecord = normalizeRoomRecord(storedRecord, roomId);
+        void this.storage.put("room-record", normalizedRecord);
+        return normalizedRecord;
       });
     }
 
-    return await this.statePromise;
+    return await this.recordPromise;
   }
 
-  private async persistState(nextState: DemoRoomState): Promise<void> {
-    this.statePromise = Promise.resolve(nextState);
-    await this.storage.put("room-state", nextState);
+  private async persistRecord(nextRecord: DemoRoomRecord): Promise<void> {
+    this.recordPromise = Promise.resolve(nextRecord);
+    await this.storage.put("room-record", nextRecord);
   }
 
   private sendSnapshot(socket: ServerWebSocket): void {
-    void this.loadState(this.roomId || sanitizeRoomId(null))
-      .then((state) => {
+    const presenterToken = this.sockets.get(socket) ?? null;
+
+    void this.loadRecord(this.roomId || sanitizeRoomId(null))
+      .then((record) => {
         if (!this.sockets.has(socket)) {
           return;
         }
 
-        socket.send(JSON.stringify({ type: "snapshot", snapshot: buildRoomSnapshot(state, this.sockets.size) }));
+        socket.send(
+          JSON.stringify({
+            type: "snapshot",
+            snapshot: buildRoomSnapshot(record, this.sockets.size, presenterToken),
+          }),
+        );
       })
       .catch(() => {
         this.sockets.delete(socket);
@@ -127,12 +139,16 @@ export class DemoRoomObject {
   }
 
   private async broadcastSnapshot(): Promise<void> {
-    const state = await this.loadState(this.roomId || sanitizeRoomId(null));
-    const message = JSON.stringify({ type: "snapshot", snapshot: buildRoomSnapshot(state, this.sockets.size) });
+    const record = await this.loadRecord(this.roomId || sanitizeRoomId(null));
 
-    for (const socket of [...this.sockets]) {
+    for (const [socket, presenterToken] of this.sockets.entries()) {
       try {
-        socket.send(message);
+        socket.send(
+          JSON.stringify({
+            type: "snapshot",
+            snapshot: buildRoomSnapshot(record, this.sockets.size, presenterToken),
+          }),
+        );
       } catch {
         this.sockets.delete(socket);
       }
@@ -146,4 +162,10 @@ function createWebSocketResponse(client: WebSocket): Response {
   } catch {
     return new Response(null, { status: 200 });
   }
+}
+
+function readPresenterToken(request: Request): string | null {
+  const url = new URL(request.url);
+  const token = request.headers.get("x-demo-presenter-token")?.trim() ?? url.searchParams.get("presenter")?.trim() ?? "";
+  return token ? token : null;
 }

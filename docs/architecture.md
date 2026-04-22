@@ -101,11 +101,11 @@ The current scenario shifts are:
 
 `src/views/home-script.ts` handles:
 
-- room join, copy-link, and room reset controls
+- room join, lecturer claim, audience-link sharing, and room reset controls
 - local-only URL synchronization for `room` and explicit `Context` drawer open state
 - debounced shared room updates through `/api/session`
 - live room snapshot synchronization over `/api/session/live`
-- client-side rendering of result cards, insights, evaluation checks, and collaboration status
+- client-side rendering of result cards, insights, evaluation checks, collaboration status, and lecturer-only challenge controls
 
 ### 4. Room Coordination Path
 
@@ -115,14 +115,17 @@ The current scenario shifts are:
 1. `src/api/session.ts` resolves the requested room and forwards room traffic to
    the configured Durable Object.
 2. `src/demo-room-object.ts` stores canonical room state, serializes command
-   application, and broadcasts snapshots to connected browsers.
+   application, and broadcasts per-client snapshots to connected browsers.
 3. `src/demo-room.ts` defines the room state shape, validates commands, derives
    accumulated audience inputs, and reuses `searchDemoCatalog()` to compute the
    deterministic results embedded in each room snapshot.
 
 Shared room state includes the current query, active challenge, accumulated
-audience inputs, world context, backend mode, and room version. Local browser
-state such as expanded result cards remains outside the shared room model.
+audience inputs, world context, backend mode, room version, and one claimed
+lecturer token for lecturer-only actions. Room snapshots also include access
+flags for the current client so the browser can distinguish between collaborative
+editing and lecturer-only controls. Local browser state such as expanded result
+cards remains outside the shared room model.
 
 ## Data Model
 

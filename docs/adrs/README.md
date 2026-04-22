@@ -36,6 +36,7 @@ Skip an ADR for small, reversible, or purely tactical choices.
 | [ADR-018](./ADR-018-replace-supervisor-search-with-a-deterministic-cheese-demo.md) | Accepted   | Replace the removed supervisor stack with a deterministic French cheese shop demo.           |
 | [ADR-019](./ADR-019-add-a-local-backend-contrast-mode.md)                          | Accepted   | Add an optional local backend contrast mode without reintroducing live model dependencies.   |
 | [ADR-020](./ADR-020-add-room-based-multiplayer-demo-sessions.md)                   | Accepted   | Add shared room sessions with Durable Object coordination and live browser synchronization.  |
+| [ADR-021](./ADR-021-gate-challenge-changes-with-a-room-scoped-lecturer-token.md)   | Accepted   | Restrict challenge switching and room reset to the room's claimed lecturer device.           |
 
 ## Creating A New ADR
 

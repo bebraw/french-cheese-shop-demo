@@ -38,6 +38,9 @@ const roomIdInput = document.getElementById("room-id-input");
 const roomPanelToggle = document.getElementById("room-panel-toggle");
 const roomPanelIcon = document.getElementById("room-panel-icon");
 const roomPanelBody = document.getElementById("room-panel-body");
+const roomLecturerStatusElement = document.getElementById("room-lecturer-status");
+const roomClaimLecturerButton = document.getElementById("room-claim-lecturer-button");
+const roomCopyAudienceLinkButton = document.getElementById("room-copy-audience-link-button");
 const roomJoinButton = document.getElementById("room-join-button");
 const roomCopyLinkButton = document.getElementById("room-copy-link-button");
 const roomResetButton = document.getElementById("room-reset-button");
@@ -57,6 +60,7 @@ let activeScenario = "baseline";
 let activeSnapshot = null;
 let contextDrawerOpen = false;
 let roomPanelOpen = true;
+let activePresenterToken = null;
 let liveSocket = null;
 let reconnectHandle = null;
 let pollHandle = null;
@@ -64,6 +68,7 @@ let querySyncHandle = null;
 let audienceSyncHandle = null;
 let pendingQueryDraft = null;
 let pendingAudienceDraft = null;
+const presenterStoragePrefix = "demo-presenter-token:";
 
 function createFallbackSnapshot(roomId) {
   return {
@@ -96,6 +101,10 @@ function getAudienceState(scenario) {
   return getRoomState().audienceByChallenge[scenario];
 }
 
+function getRoomAccess() {
+  return activeSnapshot ? activeSnapshot.access : { presenterClaimed: false, canManageScenario: false };
+}
+
 function sanitizeRoomId(rawRoomId) {
   const normalized = String(rawRoomId || "")
     .trim()
@@ -105,6 +114,41 @@ function sanitizeRoomId(rawRoomId) {
     .replace(/^-|-$/g, "");
 
   return normalized.length >= 3 ? normalized.slice(0, 32) : defaultRoomId;
+}
+
+function sanitizePresenterToken(rawToken) {
+  const normalized = String(rawToken || "").trim();
+  return normalized ? normalized.slice(0, 256) : "";
+}
+
+function getPresenterStorageKey(roomId) {
+  return presenterStoragePrefix + roomId;
+}
+
+function readStoredPresenterToken(roomId) {
+  try {
+    return sanitizePresenterToken(window.localStorage.getItem(getPresenterStorageKey(roomId)));
+  } catch {
+    return "";
+  }
+}
+
+function persistPresenterToken(roomId, presenterToken) {
+  try {
+    if (presenterToken) {
+      window.localStorage.setItem(getPresenterStorageKey(roomId), presenterToken);
+    } else {
+      window.localStorage.removeItem(getPresenterStorageKey(roomId));
+    }
+  } catch {}
+}
+
+function createPresenterToken() {
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return window.crypto.randomUUID();
+  }
+
+  return "lecturer-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
 function setConnectionStatus(message) {
@@ -214,7 +258,7 @@ function updateUrlState() {
     url.searchParams.delete("context");
   }
 
-  for (const legacyParam of ["q", "scenario", "audience", "season", "shopState", "backend"]) {
+  for (const legacyParam of ["q", "scenario", "audience", "season", "shopState", "backend", "presenter"]) {
     url.searchParams.delete(legacyParam);
   }
 
@@ -268,12 +312,32 @@ function renderContextSummary() {
   }
 }
 
+function renderLecturerControls() {
+  const access = getRoomAccess();
+
+  roomClaimLecturerButton.disabled = access.canManageScenario;
+  roomClaimLecturerButton.setAttribute("aria-disabled", String(access.canManageScenario));
+  roomClaimLecturerButton.classList.toggle("opacity-60", access.canManageScenario);
+  roomClaimLecturerButton.textContent = access.canManageScenario ? "Lecturer controls active" : "Claim lecturer controls";
+
+  roomResetButton.disabled = !access.canManageScenario;
+  roomResetButton.setAttribute("aria-disabled", String(!access.canManageScenario));
+  roomResetButton.classList.toggle("opacity-60", !access.canManageScenario);
+
+  roomLecturerStatusElement.textContent = access.canManageScenario
+    ? "This device controls challenge changes for the room."
+    : access.presenterClaimed
+      ? "Challenge changes are locked to the lecturer device for this room."
+      : "Challenge changes are unlocked only after the lecturer claims control on this device.";
+}
+
 function sendCommand(command) {
   return fetch("/api/session?room=" + encodeURIComponent(activeRoomId), {
     method: "POST",
     headers: {
       "content-type": "application/json",
       accept: "application/json",
+      ...(activePresenterToken ? { "x-demo-presenter-token": activePresenterToken } : {}),
     },
     body: JSON.stringify(command),
   })
@@ -286,8 +350,17 @@ function sendCommand(command) {
       applySnapshot(payload.snapshot);
       return payload.snapshot;
     })
-    .catch(() => {
+    .catch((error) => {
+      const message = error instanceof Error ? error.message.trim() : "";
+
+      if (message && !message.toLowerCase().includes("fetch")) {
+        setStatus(message);
+        renderLecturerControls();
+        return null;
+      }
+
       setConnectionStatus("Connection issue. Retrying...");
+      return null;
     });
 }
 
@@ -483,6 +556,8 @@ function applyScenario(nextScenario) {
     const isActive = button.dataset.scenario === nextScenario;
     button.setAttribute("aria-pressed", String(isActive));
     button.classList.toggle("scenario-guide-item-active", isActive);
+    button.setAttribute("aria-disabled", String(!getRoomAccess().canManageScenario));
+    button.classList.toggle("opacity-60", !getRoomAccess().canManageScenario);
   }
 
   const nextCustomText = nextScenario === "baseline" ? "" : getAudienceState(nextScenario).customText;
@@ -495,6 +570,7 @@ function applyScenario(nextScenario) {
   renderContextControls();
   renderContextSummary();
   renderBackendControls();
+  renderLecturerControls();
 }
 
 function renderContextPanel() {
@@ -619,6 +695,9 @@ function openLiveSync() {
 
   const liveUrl = new URL("/api/session/live", window.location.href);
   liveUrl.searchParams.set("room", activeRoomId);
+  if (activePresenterToken) {
+    liveUrl.searchParams.set("presenter", activePresenterToken);
+  }
   liveUrl.protocol = liveUrl.protocol === "https:" ? "wss:" : "ws:";
 
   try {
@@ -683,6 +762,7 @@ async function fetchSessionSnapshot(roomId) {
   const response = await fetch("/api/session?room=" + encodeURIComponent(roomId), {
     headers: {
       accept: "application/json",
+      ...(activePresenterToken ? { "x-demo-presenter-token": activePresenterToken } : {}),
     },
   });
   const payload = await response.json();
@@ -697,6 +777,7 @@ async function fetchSessionSnapshot(roomId) {
 async function joinRoom(nextRoomId) {
   const roomId = sanitizeRoomId(nextRoomId);
   closeLiveSync();
+  activePresenterToken = readStoredPresenterToken(roomId) || "";
   activeRoomId = roomId;
   roomIdInput.value = roomId;
   updateUrlState();
@@ -710,6 +791,22 @@ async function joinRoom(nextRoomId) {
     setConnectionStatus("Room unavailable");
     startPolling();
   }
+}
+
+async function claimLecturerControls() {
+  if (!activePresenterToken) {
+    activePresenterToken = createPresenterToken();
+  }
+
+  persistPresenterToken(activeRoomId, activePresenterToken);
+  updateUrlState();
+
+  const snapshot = await sendCommand({ type: "claim-presenter" });
+  if (!snapshot) {
+    return;
+  }
+
+  setStatus("Lecturer controls claimed for this room.");
 }
 
 function flashCopyButton(message) {
@@ -759,9 +856,18 @@ roomPanelToggle.addEventListener("click", () => {
 
 for (const button of scenarioButtons) {
   button.addEventListener("click", () => {
+    if (!getRoomAccess().canManageScenario) {
+      setStatus("Only the lecturer can change challenges.");
+      return;
+    }
+
     sendCommand({ type: "set-scenario", scenario: button.dataset.scenario || "baseline" });
   });
 }
+
+roomClaimLecturerButton.addEventListener("click", () => {
+  void claimLecturerControls();
+});
 
 roomJoinButton.addEventListener("click", () => {
   void joinRoom(roomIdInput.value);
@@ -777,6 +883,9 @@ roomIdInput.addEventListener("keydown", (event) => {
 roomCopyLinkButton.addEventListener("click", async () => {
   const shareUrl = new URL(window.location.href);
   shareUrl.searchParams.set("room", activeRoomId);
+  if (activePresenterToken) {
+    shareUrl.searchParams.set("presenter", activePresenterToken);
+  }
   if (contextDrawerOpen) {
     shareUrl.searchParams.set("context", "open");
   } else {
@@ -794,7 +903,41 @@ roomCopyLinkButton.addEventListener("click", async () => {
   flashCopyButton("Copy manually");
 });
 
+roomCopyAudienceLinkButton.addEventListener("click", async () => {
+  const shareUrl = new URL(window.location.href);
+  shareUrl.searchParams.set("room", activeRoomId);
+  shareUrl.searchParams.delete("presenter");
+  if (contextDrawerOpen) {
+    shareUrl.searchParams.set("context", "open");
+  } else {
+    shareUrl.searchParams.delete("context");
+  }
+
+  const originalLabel = roomCopyAudienceLinkButton.textContent;
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(shareUrl.toString());
+      roomCopyAudienceLinkButton.textContent = "Copied";
+      window.setTimeout(() => {
+        roomCopyAudienceLinkButton.textContent = originalLabel;
+      }, 1200);
+      return;
+    }
+  } catch {}
+
+  roomCopyAudienceLinkButton.textContent = "Copy manually";
+  window.setTimeout(() => {
+    roomCopyAudienceLinkButton.textContent = originalLabel;
+  }, 1200);
+});
+
 roomResetButton.addEventListener("click", () => {
+  if (!getRoomAccess().canManageScenario) {
+    setStatus("Only the lecturer can reset the room.");
+    return;
+  }
+
   if (window.confirm("Reset the shared room for everyone connected to it?")) {
     sendCommand({ type: "reset-room" });
   }
@@ -802,9 +945,15 @@ roomResetButton.addEventListener("click", () => {
 
 const initialUrl = new URL(window.location.href);
 const initialRoomId = sanitizeRoomId(initialUrl.searchParams.get("room"));
+const initialPresenterToken = sanitizePresenterToken(initialUrl.searchParams.get("presenter"));
+if (initialPresenterToken) {
+  persistPresenterToken(initialRoomId, initialPresenterToken);
+  activePresenterToken = initialPresenterToken;
+}
 contextDrawerOpen = initialUrl.searchParams.get("context") === "open";
 renderRoomPanel();
 renderContextPanel();
+renderLecturerControls();
 setRoomParticipantCount(1);
 void joinRoom(initialRoomId);
 `;

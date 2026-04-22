@@ -45,6 +45,18 @@ describe("createSessionResponse", () => {
         method: "POST",
         headers: {
           "content-type": "application/json",
+          "x-demo-presenter-token": "lecturer-token",
+        },
+        body: JSON.stringify({ type: "claim-presenter" }),
+      }),
+    );
+
+    await createSessionResponse(
+      new Request("http://example.com/api/session?room=session-update", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-demo-presenter-token": "lecturer-token",
         },
         body: JSON.stringify({ type: "set-scenario", scenario: "challenge-2" }),
       }),
@@ -132,5 +144,22 @@ describe("createSessionResponse", () => {
     );
 
     expect(response.status).toBe(501);
+  });
+
+  it("rejects challenge changes from non-lecturer clients", async () => {
+    const response = await createSessionResponse(
+      new Request("http://example.com/api/session?room=session-protected", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ type: "set-scenario", scenario: "challenge-2" }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+    });
   });
 });

@@ -22,6 +22,7 @@ describe("worker", () => {
     expect(body).toContain("Context");
     expect(body).toContain("Search Backend");
     expect(body).toContain("Shared Room");
+    expect(body).toContain("Lecturer Controls");
     expect(body).toContain("Type the customer request");
   });
 
@@ -53,6 +54,18 @@ describe("worker", () => {
         method: "POST",
         headers: {
           "content-type": "application/json",
+          "x-demo-presenter-token": "lecturer-token",
+        },
+        body: JSON.stringify({ type: "claim-presenter" }),
+      }),
+    );
+
+    await handleRequest(
+      new Request("http://example.com/api/session?room=worker-command-room", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-demo-presenter-token": "lecturer-token",
         },
         body: JSON.stringify({ type: "set-scenario", scenario: "challenge-2" }),
       }),
@@ -73,6 +86,23 @@ describe("worker", () => {
 
     expect(payload.state.activeScenario).toBe("challenge-2");
     expect(payload.search?.insights).toContain("Context data: cider.");
+  });
+
+  it("rejects challenge changes from non-lecturer clients", async () => {
+    const response = await handleRequest(
+      new Request("http://example.com/api/session?room=worker-protected-room", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ type: "set-scenario", scenario: "challenge-2" }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+    });
   });
 
   it("returns baseline cheese matches for the search API", async () => {
@@ -163,5 +193,6 @@ describe("worker", () => {
     const body = await response.text();
     expect(body).toContain('"/api/session?room=" +');
     expect(body).toContain("Live sync connected");
+    expect(body).toContain("Only the lecturer can change challenges.");
   });
 });

@@ -71,16 +71,33 @@ describe("DemoRoomObject", () => {
 
     expect(payload.roomId).toBe("object-default");
     expect(payload.search.results[0]?.name).toBe("Brie de Meaux");
+    expect(payload.access).toEqual({
+      presenterClaimed: false,
+      canManageScenario: false,
+    });
   });
 
   it("applies commands and returns the updated snapshot", async () => {
     const room = new DemoRoomObject(createStorage());
+
+    const claimResponse = await room.fetch(
+      new Request("http://example.com/internal/session?room=object-update", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-demo-presenter-token": "lecturer-token",
+        },
+        body: JSON.stringify({ type: "claim-presenter" }),
+      }),
+    );
+    expect(claimResponse.status).toBe(200);
 
     const response = await room.fetch(
       new Request("http://example.com/internal/session?room=object-update", {
         method: "POST",
         headers: {
           "content-type": "application/json",
+          "x-demo-presenter-token": "lecturer-token",
         },
         body: JSON.stringify({ type: "set-scenario", scenario: "challenge-3" }),
       }),
@@ -91,10 +108,40 @@ describe("DemoRoomObject", () => {
     expect(payload.snapshot.state.activeScenario).toBe("challenge-3");
   });
 
+  it("rejects challenge changes from non-lecturer clients", async () => {
+    const room = new DemoRoomObject(createStorage());
+
+    const response = await room.fetch(
+      new Request("http://example.com/internal/session?room=object-protected", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ type: "set-scenario", scenario: "challenge-2" }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringContaining("Lecturer controls must be claimed"),
+    });
+  });
+
   it("accepts a live websocket connection and broadcasts snapshots", async () => {
     const room = new DemoRoomObject(createStorage());
+    await room.fetch(
+      new Request("http://example.com/internal/session?room=object-live", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-demo-presenter-token": "lecturer-token",
+        },
+        body: JSON.stringify({ type: "claim-presenter" }),
+      }),
+    );
     const liveResponse = await room.fetch(
-      new Request("http://example.com/internal/session/live?room=object-live", {
+      new Request("http://example.com/internal/session/live?room=object-live&presenter=lecturer-token", {
         headers: {
           upgrade: "websocket",
         },
@@ -118,6 +165,7 @@ describe("DemoRoomObject", () => {
     );
 
     expect(FakeWebSocketPair.lastServer?.sent.some((message) => message.includes('"backend":"llm"'))).toBe(true);
+    expect(FakeWebSocketPair.lastServer?.sent.some((message) => message.includes('"canManageScenario":true'))).toBe(true);
 
     FakeWebSocketPair.lastServer?.close();
   });

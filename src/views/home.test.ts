@@ -11,8 +11,11 @@ describe("renderHomePage", () => {
     expect(html).toContain('id="room-panel-toggle"');
     expect(html).toContain('aria-controls="room-panel-body"');
     expect(html).toContain('value="demo-room"');
+    expect(html).toContain("Lecturer Controls");
+    expect(html).toContain("Claim lecturer controls");
+    expect(html).toContain("Copy audience link");
     expect(html).toContain("Join room");
-    expect(html).toContain("Copy link");
+    expect(html).toContain("Copy lecturer link");
     expect(html).toContain("Reset room");
     expect(html).toContain('aria-label="Choose demo challenge"');
     expect(html).toContain("Hidden needs");

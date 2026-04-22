@@ -68,13 +68,21 @@ export function renderHomePage(): string {
                 <div id="room-panel-body" class="mt-4">
                   <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div class="min-w-0 flex-1">
+                      <div class="mb-3 rounded-[1rem] border border-app-line bg-app-canvas px-4 py-3">
+                        <p class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-app-secondary">Lecturer Controls</p>
+                        <p id="room-lecturer-status" class="mt-2 text-sm leading-6 text-app-text-soft">Challenge changes are unlocked only after the lecturer claims control on this device.</p>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                          <button id="room-claim-lecturer-button" type="button" class="audience-preset">Claim lecturer controls</button>
+                          <button id="room-copy-audience-link-button" type="button" class="audience-preset">Copy audience link</button>
+                        </div>
+                      </div>
                       <label class="block" for="room-id-input">
                         <span class="sr-only">Room id</span>
                         <input id="room-id-input" name="room" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="${escapeHtml(DEFAULT_ROOM_ID)}" class="w-full rounded-[1.15rem] bg-app-surface px-4 py-3 text-sm leading-6 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
                       </label>
                       <div class="mt-3 flex flex-wrap gap-2">
                         <button id="room-join-button" type="button" class="audience-preset audience-preset-active">Join room</button>
-                        <button id="room-copy-link-button" type="button" class="audience-preset">Copy link</button>
+                        <button id="room-copy-link-button" type="button" class="audience-preset">Copy lecturer link</button>
                         <button id="room-reset-button" type="button" class="audience-preset">Reset room</button>
                       </div>
                     </div>

@@ -1,16 +1,17 @@
 import {
   applyRoomCommand,
   buildRoomSnapshot,
-  createDefaultRoomState,
-  normalizeRoomState,
+  createDefaultRoomRecord,
+  normalizeRoomRecord,
   readRoomCommand,
   type DemoRoomSnapshot,
-  type DemoRoomState,
+  type DemoRoomRecord,
 } from "../demo-room";
 import { isDemoScenarioId, isSearchBackend, isShopState, isSimulationSeason, sanitizeRoomId } from "../demo-config";
 import { jsonResponse } from "../views/shared";
 
 const invalidCommandMessage = "Session command is invalid.";
+const presenterHeaderName = "x-demo-presenter-token";
 
 interface DurableObjectStubLike {
   fetch(request: Request): Promise<Response>;
@@ -25,7 +26,7 @@ export interface SessionEnv {
   DEMO_ROOMS?: DurableObjectNamespaceLike;
 }
 
-const inMemoryRooms = new Map<string, DemoRoomState>();
+const inMemoryRooms = new Map<string, DemoRoomRecord>();
 
 export async function createSessionResponse(request: Request, env?: SessionEnv): Promise<Response> {
   const url = new URL(request.url);
@@ -53,9 +54,13 @@ export async function createSessionResponse(request: Request, env?: SessionEnv):
       return jsonResponse({ ok: false, error: invalidCommandMessage }, { status: 400 });
     }
 
-    const nextState = applyRoomCommand(readInMemoryState(roomId, request), command);
-    inMemoryRooms.set(roomId, nextState);
-    return jsonResponse({ ok: true, snapshot: buildRoomSnapshot(nextState, 1) });
+    const result = applyRoomCommand(readInMemoryRecord(roomId, request), command, readPresenterToken(request));
+    if (!result.ok) {
+      return jsonResponse({ ok: false, error: result.error }, { status: 403 });
+    }
+
+    inMemoryRooms.set(roomId, result.record);
+    return jsonResponse({ ok: true, snapshot: buildRoomSnapshot(result.record, 1, readPresenterToken(request)) });
   }
 
   return jsonResponse({ ok: false, error: "Method not allowed." }, { status: 405 });
@@ -73,23 +78,24 @@ export async function createSessionLiveResponse(request: Request, env?: SessionE
 }
 
 function readInMemorySnapshot(roomId: string, request: Request): DemoRoomSnapshot {
-  return buildRoomSnapshot(readInMemoryState(roomId, request), 1);
+  return buildRoomSnapshot(readInMemoryRecord(roomId, request), 1, readPresenterToken(request));
 }
 
-function readInMemoryState(roomId: string, request: Request): DemoRoomState {
-  const currentState = inMemoryRooms.get(roomId);
-  if (currentState) {
-    return currentState;
+function readInMemoryRecord(roomId: string, request: Request): DemoRoomRecord {
+  const currentRecord = inMemoryRooms.get(roomId);
+  if (currentRecord) {
+    return currentRecord;
   }
 
-  const seededState = seedRoomState(roomId, request);
-  inMemoryRooms.set(roomId, seededState);
-  return seededState;
+  const seededRecord = seedRoomRecord(roomId, request);
+  inMemoryRooms.set(roomId, seededRecord);
+  return seededRecord;
 }
 
-function seedRoomState(roomId: string, request: Request): DemoRoomState {
+function seedRoomRecord(roomId: string, request: Request): DemoRoomRecord {
   const url = new URL(request.url);
-  const seededState = createDefaultRoomState(roomId);
+  const seededRecord = createDefaultRoomRecord(roomId);
+  const seededState = seededRecord.state;
   const query = url.searchParams.get("q");
   const scenario = url.searchParams.get("scenario");
   const audience = url.searchParams.get("audience");
@@ -121,7 +127,7 @@ function seedRoomState(roomId: string, request: Request): DemoRoomState {
     seededState.backend = backend;
   }
 
-  return normalizeRoomState(seededState, roomId);
+  return normalizeRoomRecord(seededRecord, roomId);
 }
 
 async function forwardRoomRequest(
@@ -146,4 +152,10 @@ async function forwardRoomRequest(
 
   const forwardedRequest = new Request(targetUrl.toString(), request);
   return await stub.fetch(forwardedRequest);
+}
+
+function readPresenterToken(request: Request): string | null {
+  const url = new URL(request.url);
+  const token = request.headers.get(presenterHeaderName)?.trim() ?? url.searchParams.get("presenter")?.trim() ?? "";
+  return token ? token : null;
 }
