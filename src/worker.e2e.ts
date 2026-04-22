@@ -35,10 +35,27 @@ test("renders the cheese demo home page", async ({ page }) => {
 
   await expect(page.getByRole("heading", { level: 1, name: "French Cheese Shop" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Baseline/ })).toBeVisible();
+  await expect(page.locator("#room-panel-toggle")).toHaveAttribute("aria-expanded", "true");
   await expect(page.locator("#room-id-input")).toHaveValue(new RegExp("e2e-home$"));
   await expect(page.getByRole("searchbox", { name: "Customer request" })).toBeVisible();
   await expect(page.getByRole("searchbox", { name: "Customer request" })).toHaveValue("I want something like Brie, but stronger.");
   await expect(page.locator("#search-status")).toHaveText("5 results");
+});
+
+test("shared room section can be folded and reopened", async ({ page }) => {
+  await page.goto(roomUrl("e2e-room-panel"));
+
+  await expect(page.locator("#room-id-input")).toBeVisible();
+
+  await page.locator("#room-panel-toggle").click();
+
+  await expect(page.locator("#room-panel-toggle")).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator("#room-panel-body")).toBeHidden();
+
+  await page.locator("#room-panel-toggle").click();
+
+  await expect(page.locator("#room-panel-toggle")).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#room-id-input")).toBeVisible();
 });
 
 test("serves the health endpoint", async ({ request }) => {

@@ -38,6 +38,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` exposes one optional backend toggle inside the same `Context` container so the presenter can compare deterministic rules with an LLM-style backend without interrupting the main challenge flow.
 - [ ] The `Context` container stays closed by default and only restores its open state from an explicit query flag.
 - [ ] `GET /` exposes a shareable room id control so multiple browsers can join the same demo session intentionally.
+- [ ] The shared-room controls can be folded when the presenter wants to reduce visual noise without leaving the room.
 - [ ] `GET /` shows whether the room is live and how many participants are currently connected.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...` returns ordered cheese recommendations from the committed catalog.

@@ -8,6 +8,8 @@ describe("renderHomePage", () => {
     expect(html).toContain("French Cheese Shop");
     expect(html).toContain('value="I want something like Brie, but stronger."');
     expect(html).toContain("Shared Room");
+    expect(html).toContain('id="room-panel-toggle"');
+    expect(html).toContain('aria-controls="room-panel-body"');
     expect(html).toContain('value="demo-room"');
     expect(html).toContain("Join room");
     expect(html).toContain("Copy link");

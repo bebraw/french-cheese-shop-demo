@@ -48,23 +48,41 @@ export function renderHomePage(): string {
           <div class="order-1 lg:order-2">
             <div class="sticky top-4 z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">
               <section class="rounded-[1.35rem] border border-app-line bg-white/92 px-4 py-4 shadow-[0_10px_30px_rgba(13,29,46,0.04)]">
-                <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                  <div class="min-w-0 flex-1">
-                    <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Shared Room</p>
-                    <label class="mt-3 block" for="room-id-input">
-                      <span class="sr-only">Room id</span>
-                      <input id="room-id-input" name="room" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="${escapeHtml(DEFAULT_ROOM_ID)}" class="w-full rounded-[1.15rem] bg-app-surface px-4 py-3 text-sm leading-6 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
-                    </label>
-                    <div class="mt-3 flex flex-wrap gap-2">
-                      <button id="room-join-button" type="button" class="audience-preset audience-preset-active">Join room</button>
-                      <button id="room-copy-link-button" type="button" class="audience-preset">Copy link</button>
-                      <button id="room-reset-button" type="button" class="audience-preset">Reset room</button>
+                <button
+                  id="room-panel-toggle"
+                  type="button"
+                  class="flex w-full items-start justify-between gap-4 text-left"
+                  aria-expanded="true"
+                  aria-controls="room-panel-body"
+                >
+                  <span class="min-w-0">
+                    <span class="block text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Shared Room</span>
+                    <span class="mt-2 block text-sm leading-6 text-app-text-soft">Room link, collaboration status, and reset controls.</span>
+                  </span>
+                  <span
+                    id="room-panel-icon"
+                    class="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-app-line bg-app-canvas text-sm text-app-secondary"
+                    aria-hidden="true"
+                  >−</span>
+                </button>
+                <div id="room-panel-body" class="mt-4">
+                  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div class="min-w-0 flex-1">
+                      <label class="block" for="room-id-input">
+                        <span class="sr-only">Room id</span>
+                        <input id="room-id-input" name="room" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="${escapeHtml(DEFAULT_ROOM_ID)}" class="w-full rounded-[1.15rem] bg-app-surface px-4 py-3 text-sm leading-6 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
+                      </label>
+                      <div class="mt-3 flex flex-wrap gap-2">
+                        <button id="room-join-button" type="button" class="audience-preset audience-preset-active">Join room</button>
+                        <button id="room-copy-link-button" type="button" class="audience-preset">Copy link</button>
+                        <button id="room-reset-button" type="button" class="audience-preset">Reset room</button>
+                      </div>
                     </div>
-                  </div>
-                  <div class="rounded-[1.15rem] border border-app-line bg-app-canvas px-4 py-3 sm:max-w-[14rem]">
-                    <p class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-app-secondary">Collaboration</p>
-                    <p id="room-connection-status" class="mt-2 text-sm leading-6 text-app-text-soft">Connecting...</p>
-                    <p id="room-participant-count" class="mt-1 text-sm leading-6 text-app-text-soft">1 participant</p>
+                    <div class="rounded-[1.15rem] border border-app-line bg-app-canvas px-4 py-3 sm:max-w-[14rem]">
+                      <p class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-app-secondary">Collaboration</p>
+                      <p id="room-connection-status" class="mt-2 text-sm leading-6 text-app-text-soft">Connecting...</p>
+                      <p id="room-participant-count" class="mt-1 text-sm leading-6 text-app-text-soft">1 participant</p>
+                    </div>
                   </div>
                 </div>
               </section>

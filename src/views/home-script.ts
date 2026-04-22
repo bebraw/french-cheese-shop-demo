@@ -35,6 +35,9 @@ const insightsLabelElement = document.getElementById("insights-label");
 const scenarioInsightsElement = document.getElementById("scenario-insights");
 const scenarioButtons = Array.from(document.querySelectorAll("[data-scenario]"));
 const roomIdInput = document.getElementById("room-id-input");
+const roomPanelToggle = document.getElementById("room-panel-toggle");
+const roomPanelIcon = document.getElementById("room-panel-icon");
+const roomPanelBody = document.getElementById("room-panel-body");
 const roomJoinButton = document.getElementById("room-join-button");
 const roomCopyLinkButton = document.getElementById("room-copy-link-button");
 const roomResetButton = document.getElementById("room-reset-button");
@@ -53,6 +56,7 @@ let activeRoomId = defaultRoomId;
 let activeScenario = "baseline";
 let activeSnapshot = null;
 let contextDrawerOpen = false;
+let roomPanelOpen = true;
 let liveSocket = null;
 let reconnectHandle = null;
 let pollHandle = null;
@@ -499,6 +503,12 @@ function renderContextPanel() {
   contextDrawerIcon.textContent = contextDrawerOpen ? "◀" : "▶";
 }
 
+function renderRoomPanel() {
+  roomPanelBody.hidden = !roomPanelOpen;
+  roomPanelToggle.setAttribute("aria-expanded", String(roomPanelOpen));
+  roomPanelIcon.textContent = roomPanelOpen ? "−" : "+";
+}
+
 function renderSearchSnapshot(snapshot) {
   const state = snapshot.state;
   const search = snapshot.search;
@@ -742,6 +752,11 @@ contextDrawerToggle.addEventListener("click", () => {
   updateUrlState();
 });
 
+roomPanelToggle.addEventListener("click", () => {
+  roomPanelOpen = !roomPanelOpen;
+  renderRoomPanel();
+});
+
 for (const button of scenarioButtons) {
   button.addEventListener("click", () => {
     sendCommand({ type: "set-scenario", scenario: button.dataset.scenario || "baseline" });
@@ -788,6 +803,7 @@ roomResetButton.addEventListener("click", () => {
 const initialUrl = new URL(window.location.href);
 const initialRoomId = sanitizeRoomId(initialUrl.searchParams.get("room"));
 contextDrawerOpen = initialUrl.searchParams.get("context") === "open";
+renderRoomPanel();
 renderContextPanel();
 setRoomParticipantCount(1);
 void joinRoom(initialRoomId);
