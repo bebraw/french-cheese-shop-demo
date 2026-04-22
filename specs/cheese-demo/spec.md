@@ -31,6 +31,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` keeps one shared customer-request input and a challenge-specific audience answer area.
 - [ ] `GET /` opens with the baseline prompt prefilled so the demo starts in a meaningful default state.
 - [ ] `GET /` keeps the baseline and challenge descriptions visible enough that the audience can tell the four passes apart before the presenter switches tabs.
+- [ ] `GET /` keeps a compact teaching-focus panel in the main column with the current learning outcome plus short `Ask` and `Notice` prompts so the deck's pedagogical goal stays visible on phones and larger screens.
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific choices before falling back to a custom note.
 - [ ] `GET /` carries forward earlier challenge answers into later challenge searches so the teaching flow can layer requirements instead of replacing them.
 - [ ] Each challenge preset list teaches one distinct step in the story: hidden needs, concrete facts, then evaluation criteria.
@@ -79,6 +80,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - The default baseline prompt should stay visible in the main request input instead of being repeated in separate promo copy.
 - The baseline and challenge summaries should remain easy to scan from a distance instead of depending on long body copy or tab switching to become understandable.
 - The audience capture flow should make the type of answer visible in the UI instead of relying on an abstract blank text box.
+- The teaching prompts should stay short enough to scan during a live session and should stay aligned with the slide-deck learning outcomes: interpreting vague requests, specifying domain and operational context, and evaluating ambiguity.
 - HTML responses must ship with restrictive browser security headers, and client-side code must load from same-origin script assets so the CSP can keep `script-src 'self'`.
 - The cheese catalog should stay small, committed, and easy to review.
 - Challenge behavior must stay explainable through returned insights and, for challenge 3, evaluation checks.
@@ -100,7 +102,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 - Given: the demo page is open
 - When: the presenter keeps or enters `I want something like Brie but stronger`
-- Then: the baseline tab returns a plausible but shallow recommendation based on the wording alone and the presenter can explain that step quickly
+- Then: the baseline tab returns a plausible but shallow recommendation based on the wording alone, and the main teaching prompt makes the ambiguity lesson explicit
 
 **Scenario: Presenter adds shared world context before switching challenges**
 
@@ -148,13 +150,13 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 - Given: the presenter is on challenge 1
 - When: the audience selects cues such as `keep it creamy` or `cow's milk`
-- Then: the ranking and insight panel change to reflect those explicit requirements
+- Then: the ranking, insight panel, and teaching prompt all reinforce that the team has converted hidden meaning into explicit requirements
 
 **Scenario: Audience adds data needs**
 
 - Given: the presenter is on challenge 2
 - When: the audience selects extra context such as `serve it with cider`, `it must be in stock`, or `Winter holiday`
-- Then: the ranking changes to use those product, context, and simulation cues, including visible seasonal-fit differences instead of only stock overlays
+- Then: the ranking changes to use those product, context, and simulation cues, and the teaching prompt ties those changes back to domain and operational context
 
 **Scenario: Presenter carries earlier requirements into later challenges**
 
@@ -166,7 +168,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 - Given: the presenter is on challenge 3
 - When: the audience selects criteria such as `show why it fits`, `mark a backup choice`, or `keep it to two finalists`
-- Then: the results include visible changes that make the quality judgment inspectable
+- Then: the results include visible changes that make the quality judgment inspectable, and the teaching prompt frames that step as evaluation under ambiguity
 
 **Scenario: Presenter asks for a why-it-fits explanation**
 

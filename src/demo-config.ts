@@ -26,6 +26,10 @@ export interface DemoScenarioCopy {
   audiencePrompt: string;
   audienceSummaryLabel: string;
   audienceSummaryEmptyText: string;
+  teachingOutcome: string;
+  teachingFocus: string;
+  teachingQuestion: string;
+  teachingNotice: string;
   presets: readonly DemoPresetOption[];
 }
 
@@ -49,13 +53,17 @@ export const backendOptions = [
 export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
   baseline: {
     title: "Baseline",
-    description: "Start with the request wording alone.",
+    description: "Start with the request wording alone and surface the ambiguity before adding help.",
     insightLabel: "Signals in play",
     audienceLabel: "",
     audiencePlaceholder: "",
     audiencePrompt: "",
     audienceSummaryLabel: "",
     audienceSummaryEmptyText: "",
+    teachingOutcome: "Interpret vague requests",
+    teachingFocus: "Baseline shows how a plausible answer can still rest on hidden guesses.",
+    teachingQuestion: "What does “like Brie” and “stronger” actually mean for this customer?",
+    teachingNotice: "The ranking looks reasonable, but the system is still guessing about preferences, constraints, and success criteria.",
     presets: [],
   },
   "challenge-1": {
@@ -67,6 +75,10 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     audiencePrompt: "What hidden need became explicit?",
     audienceSummaryLabel: "Clarified needs",
     audienceSummaryEmptyText: "Select the newly clarified needs.",
+    teachingOutcome: "Interpret vague requests",
+    teachingFocus: "Challenge 1 turns hidden meaning into explicit requirements.",
+    teachingQuestion: "Which preference or constraint did the first pass have to guess?",
+    teachingNotice: "The query stays the same, but the ranking changes because meaning became explicit.",
     presets: [
       { id: "creamy", label: "Keep it creamy", value: "keep it creamy" },
       { id: "cow", label: "Cow's milk", value: "cow's milk" },
@@ -83,6 +95,10 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     audiencePrompt: "What new fact or constraint do we know?",
     audienceSummaryLabel: "Known facts",
     audienceSummaryEmptyText: "Select the extra facts that should influence ranking.",
+    teachingOutcome: "Specify domain and operational context",
+    teachingFocus: "Challenge 2 adds the domain and shop context behind the prompt.",
+    teachingQuestion: "What product fact, pairing, stock rule, or shop condition does the system need next?",
+    teachingNotice: "Better recommendations depend on catalog data and operating context, not only better wording.",
     presets: [
       { id: "cider", label: "With cider", value: "with cider" },
       { id: "washed-rind", label: "Washed rind", value: "prefers washed rind" },
@@ -100,6 +116,10 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     audiencePrompt: "What should the results visibly show?",
     audienceSummaryLabel: "Evaluation criteria",
     audienceSummaryEmptyText: "Select the checks the final answer must satisfy.",
+    teachingOutcome: "Evaluate ambiguity",
+    teachingFocus: "Challenge 3 turns success criteria into inspectable checks.",
+    teachingQuestion: "What should a good answer visibly prove before we trust it?",
+    teachingNotice: "The goal is not one magical answer, but evidence that the recommendation is useful, trusted, and good enough.",
     presets: [
       { id: "explain", label: "Show why it fits", value: "show why it fits" },
       { id: "backup", label: "Mark a backup", value: "mark a backup choice" },

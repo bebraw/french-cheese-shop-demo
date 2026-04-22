@@ -23,6 +23,16 @@ The point is not to explain every tab in depth. It is to show a clean progressio
 
 If there is extra time, use the `Search Backend` controls inside the foldable `Context` drawer as a short coda. `Deterministic rules` shows the stable teaching path, while `LLM backend` offers a local contrast mode for discussing backend variance without adding a live remote dependency.
 
+## Teaching Alignment
+
+The live demo is meant to match the `french-cheese-shop` deck, not just reuse the same visuals.
+
+- `Baseline` sets up the ambiguity problem from the slides: the answer can look plausible even when key meaning is still unstated.
+- `Challenge 1` supports the learning outcome `Interpret vague requests` by turning hidden preferences into explicit ranking signals.
+- `Challenge 2` supports `Specify domain and operational context` by adding catalog facts, stock, pairings, and shared world context.
+- `Challenge 3` supports `Evaluate ambiguity` by making success criteria visible as checks instead of treating the top-ranked answer as self-justifying.
+- The in-app `Teaching Focus` panel keeps the current learning goal, the question to ask the room, and the thing to notice visible in the main column so the session stays pedagogical on phones as well as on desktop.
+
 The repo vendors ASDLC reference material in `.asdlc/` as local guidance instead of recreating it per project. Repo-specific truth lives in `ARCHITECTURE.md`, `specs/`, and `docs/adrs/`: generated code still needs to match those documents, and passing CI alone is not enough.
 
 Local development in this repo targets macOS. Other platforms may need script and tooling adjustments before the baseline workflow works as documented.

@@ -18,10 +18,16 @@ describe("renderHomePage", () => {
     expect(html).toContain("Copy lecturer link");
     expect(html).toContain("Reset room");
     expect(html).toContain('aria-label="Choose demo challenge"');
-    expect(html).toContain("Hidden needs");
-    expect(html).toContain("Missing data");
-    expect(html).toContain("Add facts and constraints.");
-    expect(html).toContain("Make the results prove something concrete.");
+    expect(html).toContain("Hidden meaning");
+    expect(html).toContain("Domain context");
+    expect(html).toContain("Add catalog facts, stock, and shop context.");
+    expect(html).toContain("Make usefulness and trust visible.");
+    expect(html).toContain("Teaching Focus");
+    expect(html).toContain("Interpret vague requests");
+    expect(html).toContain("What does “like Brie” and “stronger” actually mean for this customer?");
+    expect(html).toContain(
+      "The ranking looks reasonable, but the system is still guessing about preferences, constraints, and success criteria.",
+    );
     expect(html).toContain("Context");
     expect(html).toContain("World Context");
     expect(html).toContain("Optional simulation state shared by baseline and every challenge.");

@@ -60,6 +60,7 @@ test("phone layout keeps the first search result visible", async ({ page }) => {
 
   await expect(page.locator("#room-panel-toggle")).toHaveAttribute("aria-expanded", "false");
   await expect(page.locator("#room-panel-body")).toBeHidden();
+  await expect(page.locator("#teaching-outcome")).toHaveText("Interpret vague requests");
   await expect(page.locator("#search-status")).toHaveText("5 results");
   await expect(page.locator("#search-results > li").first()).toBeInViewport();
   await expect(page.getByRole("heading", { level: 3, name: "Brie de Meaux" })).toBeVisible();
@@ -172,6 +173,9 @@ test("signals in play stays synced and cumulative through challenges", async ({ 
 test("challenge copy keeps hidden needs, data, and evaluation distinct", async ({ page }) => {
   await page.goto(roomUrl("e2e-copy"));
 
+  await expect(page.locator("#teaching-outcome")).toHaveText("Interpret vague requests");
+  await expect(page.locator("#teaching-question")).toContainText("like Brie");
+
   await expect(page.getByRole("button", { name: /Context/ })).toBeVisible();
   await page.getByRole("button", { name: /Context/ }).click();
   await expect(page.getByRole("button", { name: "Winter holiday" })).toBeVisible();
@@ -181,18 +185,24 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await page.getByRole("button", { name: /Challenge 1/ }).click();
   await expect(page.locator("#insights-label")).toHaveText("Explicit requirements");
   await expect(page.locator("#scenario-description")).toContainText("customer really means");
+  await expect(page.locator("#teaching-outcome")).toHaveText("Interpret vague requests");
+  await expect(page.locator("#teaching-notice")).toContainText("meaning became explicit");
   await expect(page.getByRole("button", { name: "Oozy center" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Washed rind" })).toHaveCount(0);
 
   await page.getByRole("button", { name: /Challenge 2/ }).click();
   await expect(page.locator("#insights-label")).toHaveText("Extra data in play");
   await expect(page.locator("#scenario-description")).toContainText("facts and constraints");
+  await expect(page.locator("#teaching-outcome")).toHaveText("Specify domain and operational context");
+  await expect(page.locator("#teaching-focus-copy")).toContainText("domain and shop context");
   await expect(page.getByRole("button", { name: "Washed rind" })).toBeVisible();
   await expect(page.getByRole("button", { name: "In stock" })).toBeVisible();
 
   await page.getByRole("button", { name: /Challenge 3/ }).click();
   await expect(page.locator("#insights-label")).toHaveText("Evaluation checks");
   await expect(page.locator("#scenario-description")).toContainText("visibly prove");
+  await expect(page.locator("#teaching-outcome")).toHaveText("Evaluate ambiguity");
+  await expect(page.locator("#teaching-question")).toContainText("good answer visibly prove");
   await expect(page.getByRole("button", { name: "In stock" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Show why it fits" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Mark a backup" })).toBeVisible();

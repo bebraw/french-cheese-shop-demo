@@ -24,29 +24,29 @@ export function renderHomePage(): string {
               <div class="mt-4 grid gap-3" role="group" aria-label="Choose demo challenge">
                 <button type="button" class="scenario-guide-item scenario-guide-item-active text-left" data-scenario="baseline" aria-pressed="true">
                   <p class="scenario-guide-kicker">Baseline</p>
-                  <p class="scenario-guide-title">Surface match</p>
-                  <p class="scenario-guide-copy">Use “${escapeHtml(DEFAULT_QUERY)}” as-is.</p>
+                  <p class="scenario-guide-title">Ambiguity first</p>
+                  <p class="scenario-guide-copy">See how a plausible result still hides meaning.</p>
                 </button>
                 <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-1" aria-pressed="false">
                   <p class="scenario-guide-kicker">Challenge 1</p>
-                  <p class="scenario-guide-title">Hidden needs</p>
-                  <p class="scenario-guide-copy">Clarify implied preferences.</p>
+                  <p class="scenario-guide-title">Hidden meaning</p>
+                  <p class="scenario-guide-copy">Turn implied preferences into explicit requirements.</p>
                 </button>
                 <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-2" aria-pressed="false">
                   <p class="scenario-guide-kicker">Challenge 2</p>
-                  <p class="scenario-guide-title">Missing data</p>
-                  <p class="scenario-guide-copy">Add facts and constraints.</p>
+                  <p class="scenario-guide-title">Domain context</p>
+                  <p class="scenario-guide-copy">Add catalog facts, stock, and shop context.</p>
                 </button>
                 <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-3" aria-pressed="false">
                   <p class="scenario-guide-kicker">Challenge 3</p>
                   <p class="scenario-guide-title">Evaluation</p>
-                  <p class="scenario-guide-copy">Make the results prove something concrete.</p>
+                  <p class="scenario-guide-copy">Make usefulness and trust visible.</p>
                 </button>
               </div>
             </section>
           </aside>
           <div class="order-1 lg:order-2">
-            <div class="z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl lg:sticky lg:top-4">
+            <div class="z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">
               <section class="rounded-[1.35rem] border border-app-line bg-white/92 px-4 py-4 shadow-[0_10px_30px_rgba(13,29,46,0.04)]">
                 <button
                   id="room-panel-toggle"
@@ -112,6 +112,19 @@ export function renderHomePage(): string {
                 </div>
               </div>
               <div id="search-status" class="mt-3 text-sm leading-6 text-app-text-soft"></div>
+              <section class="mt-4 rounded-[1.35rem] border border-app-line bg-white/92 px-4 py-4 shadow-[0_10px_30px_rgba(13,29,46,0.04)]">
+                <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Teaching Focus</p>
+                <p id="teaching-outcome" class="mt-3 font-display text-[1.35rem] leading-[0.95] text-app-primary">Interpret vague requests</p>
+                <p id="teaching-focus-copy" class="mt-2 text-sm leading-6 text-app-text-soft">Baseline shows how a plausible answer can still rest on hidden guesses.</p>
+                <p class="mt-3 text-sm leading-6 text-app-text">
+                  <span class="font-semibold uppercase tracking-[0.16em] text-app-secondary">Ask</span>
+                  <span id="teaching-question" class="ml-2">What does “like Brie” and “stronger” actually mean for this customer?</span>
+                </p>
+                <p class="mt-2 text-sm leading-6 text-app-text">
+                  <span class="font-semibold uppercase tracking-[0.16em] text-app-secondary">Notice</span>
+                  <span id="teaching-notice" class="ml-2">The ranking looks reasonable, but the system is still guessing about preferences, constraints, and success criteria.</span>
+                </p>
+              </section>
             </div>
             <div id="demo-panel" class="mt-4 sm:mt-6">
               <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Search Results</p>

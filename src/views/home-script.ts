@@ -28,6 +28,10 @@ const contextSummaryEmptyElement = document.getElementById("context-summary-empt
 const contextSummaryChipsElement = document.getElementById("context-summary-chips");
 const backendControlsElement = document.getElementById("backend-controls");
 const statusElement = document.getElementById("search-status");
+const teachingOutcomeElement = document.getElementById("teaching-outcome");
+const teachingFocusElement = document.getElementById("teaching-focus-copy");
+const teachingQuestionElement = document.getElementById("teaching-question");
+const teachingNoticeElement = document.getElementById("teaching-notice");
 const resultsElement = document.getElementById("search-results");
 const scenarioTitleElement = document.getElementById("scenario-title");
 const scenarioDescriptionElement = document.getElementById("scenario-description");
@@ -315,6 +319,14 @@ function renderContextSummary() {
   }
 }
 
+function renderTeachingGuide(scenario) {
+  const copy = scenarios[scenario];
+  teachingOutcomeElement.textContent = copy.teachingOutcome;
+  teachingFocusElement.textContent = copy.teachingFocus;
+  teachingQuestionElement.textContent = copy.teachingQuestion;
+  teachingNoticeElement.textContent = copy.teachingNotice;
+}
+
 function renderLecturerControls() {
   const access = getRoomAccess();
 
@@ -473,7 +485,8 @@ function renderResults(results, scenario) {
 
   for (const result of results) {
     const item = document.createElement("li");
-    item.className = "rounded-[1.35rem] border border-app-line bg-app-canvas px-4 py-4 sm:px-5";
+    item.className =
+      "scroll-mt-80 rounded-[1.35rem] border border-app-line bg-app-canvas px-4 py-4 sm:px-5 lg:scroll-mt-[24rem]";
 
     const meta = document.createElement("p");
     meta.className = "text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary";
@@ -592,6 +605,7 @@ function applyScenario(nextScenario) {
   audienceSummaryLabelElement.textContent = copy.audienceSummaryLabel;
   audienceLabel.textContent = copy.audienceLabel;
   audienceCustomInput.placeholder = copy.audiencePlaceholder;
+  renderTeachingGuide(nextScenario);
 
   for (const button of scenarioButtons) {
     const isActive = button.dataset.scenario === nextScenario;
