@@ -41,13 +41,13 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] The shared-room controls can be folded when the presenter wants to reduce visual noise without leaving the room.
 - [ ] `GET /` keeps the shared-room controls folded by default on phone-sized screens so the search results stay visible sooner.
 - [ ] `GET /` shows whether the room is live and how many participants are currently connected.
-- [ ] `GET /` lets one device claim lecturer controls for the current room so only that device can change the shared search query, active challenge, or reset the room.
+- [ ] `GET /` lets one device claim lecturer controls for the current room so only that device can change the shared search query, shared world context, active challenge, or reset the room.
 - [ ] `GET /` exposes a safe audience-link copy action that joins the room without handing lecturer controls to participants.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...` returns ordered cheese recommendations from the committed catalog.
 - [ ] `GET /api/session?room=...` returns the canonical shared room snapshot including the active scenario, accumulated challenge inputs, shared world context, backend mode, derived search results, and lecturer access flags for that room.
 - [ ] `POST /api/session?room=...` accepts room commands such as query changes, scenario changes, preset toggles, context changes, backend changes, and room reset.
-- [ ] `POST /api/session?room=...` protects shared query changes, challenge changes, and room reset behind lecturer access for the current room.
+- [ ] `POST /api/session?room=...` protects shared query changes, shared world context changes, challenge changes, and room reset behind lecturer access for the current room.
 - [ ] `GET /api/session/live?room=...` streams room snapshots so multiple connected browsers converge on the same shared session state without manual refresh.
 - [ ] Search results stay compact by default and can reveal more explanation on demand.
 - [ ] Expanded result rows stay open across incremental challenge updates when the same result remains visible.
@@ -69,7 +69,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Later challenges must preserve earlier explicit audience cues in both ranking and the requirements lens unless the presenter removes them.
 - Shared world context must preserve the selected season and shop state until the presenter changes them, including across baseline and every challenge.
 - The backend toggle must stay optional and shared across baseline plus all challenges, so the presenter can treat it as a short coda instead of a second primary lesson.
-- Participants should still be able to contribute audience, context, and backend inputs even when lecturer controls are locked to one device.
+- Participants should still be able to contribute audience and backend inputs even when lecturer controls are locked to one device.
 - Audience-facing room sharing must not require copying a lecturer token by default.
 - Preset examples and lens labels should avoid challenge overlap unless the carry-forward behavior is the point being taught explicitly.
 - The challenge controls should stay visible in a fixed left sidebar on larger screens, and the requirements lens plus the foldable `Context` container should stay visible on the right.
@@ -105,7 +105,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 **Scenario: Presenter adds shared world context before switching challenges**
 
 - Given: the presenter opens the `Context` container in baseline
-- When: the presenter selects a season or shop-state overlay such as `Winter holiday`
+- When: the lecturer selects a season or shop-state overlay such as `Winter holiday`
 - Then: the same context remains active in baseline and every later challenge until the presenter changes it
 
 **Scenario: Two browsers join the same demo room**
@@ -120,11 +120,11 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - When: the presenter copies the current room link and opens it in another browser
 - Then: both browsers join the same shared room while keeping local-only UI details such as expanded result cards independent
 
-**Scenario: Lecturer locks challenge changes to one device**
+**Scenario: Lecturer locks shared demo controls to one device**
 
 - Given: multiple browsers have joined the same room
 - When: the lecturer claims lecturer controls on one device
-- Then: only that device can change the shared search query, active challenge, or reset the room, while other participants can still contribute shared audience and context inputs
+- Then: only that device can change the shared search query, shared world context, active challenge, or reset the room, while other participants can still contribute shared audience inputs
 
 **Scenario: Presenter optionally compares backend styles**
 

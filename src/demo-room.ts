@@ -43,6 +43,7 @@ export interface DemoRoomRecord {
 export interface DemoRoomAccess {
   presenterClaimed: boolean;
   canManageQuery: boolean;
+  canManageContext: boolean;
   canManageScenario: boolean;
 }
 
@@ -388,6 +389,7 @@ export function buildRoomSnapshot(
     access: {
       presenterClaimed: Boolean(record.presenterToken),
       canManageQuery: Boolean(record.presenterToken && presenterToken === record.presenterToken),
+      canManageContext: Boolean(record.presenterToken && presenterToken === record.presenterToken),
       canManageScenario: Boolean(record.presenterToken && presenterToken === record.presenterToken),
     },
   };
@@ -456,7 +458,13 @@ function bumpVersion(state: DemoRoomState): DemoRoomState {
 }
 
 function requiresPresenterControl(command: Exclude<DemoRoomCommand, { type: "claim-presenter" }>): boolean {
-  return command.type === "set-query" || command.type === "set-scenario" || command.type === "reset-room";
+  return (
+    command.type === "set-query" ||
+    command.type === "set-scenario" ||
+    command.type === "set-season" ||
+    command.type === "set-shop-state" ||
+    command.type === "reset-room"
+  );
 }
 
 function presenterControlError(command: Exclude<DemoRoomCommand, { type: "claim-presenter" }>, presenterClaimed: boolean): string {
@@ -464,6 +472,12 @@ function presenterControlError(command: Exclude<DemoRoomCommand, { type: "claim-
     return presenterClaimed
       ? "Only the lecturer can change the shared search query for this room."
       : "Lecturer controls must be claimed before the shared search query can change.";
+  }
+
+  if (command.type === "set-season" || command.type === "set-shop-state") {
+    return presenterClaimed
+      ? "Only the lecturer can change the shared world context for this room."
+      : "Lecturer controls must be claimed before the shared world context can change.";
   }
 
   if (command.type === "reset-room") {

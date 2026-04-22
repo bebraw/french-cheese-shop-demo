@@ -1,4 +1,4 @@
-# ADR-021: Gate Challenge Changes With A Room-Scoped Lecturer Token
+# ADR-021: Gate Shared Demo Controls With A Room-Scoped Lecturer Token
 
 - Status: Accepted
 - Date: 2026-04-22
@@ -7,8 +7,8 @@
 
 ADR-020 introduced shared room sessions so multiple browsers can participate in
 the same demo. That collaboration worked technically, but it left the shared
-search query, challenge switching, and room reset open to every participant in
-the room.
+search query, shared world context, challenge switching, and room reset open to
+every participant in the room.
 
 That is a poor fit for the teaching flow. The lecturer needs to control when
 the room advances from baseline to challenge 1, 2, or 3, while participants
@@ -26,16 +26,16 @@ more product and operational surface than this demo needs.
 
 ## Decision
 
-Gate the shared search query, room-level challenge switching, and room reset
-with a room-scoped lecturer token.
+Gate the shared search query, shared world context, room-level challenge
+switching, and room reset with a room-scoped lecturer token.
 
 - A room may be claimed by one lecturer token.
 - The browser stores that token locally per room and sends it on session
   requests.
 - Room snapshots expose lecturer access flags so the UI can show whether the
   current device may manage challenge flow.
-- `set-query`, `set-scenario`, and `reset-room` require the room's lecturer
-  token.
+- `set-query`, `set-season`, `set-shop-state`, `set-scenario`, and `reset-room`
+  require the room's lecturer token.
 - Audience inputs, world context, and backend mode remain collaborative so
   participants can still contribute to the current challenge.
 - The UI exposes separate lecturer-link and audience-link copy actions so the
@@ -46,7 +46,7 @@ with a room-scoped lecturer token.
 Positive:
 
 - The lecturer keeps control over the pacing of the challenge narrative and the
-  wording of the shared request.
+  wording of the shared request plus the world state used for the demo.
 - Participants can still collaborate inside each challenge without taking over
   the room flow.
 - The solution stays lightweight and local to the current room model rather

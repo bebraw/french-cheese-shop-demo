@@ -103,7 +103,9 @@ function getAudienceState(scenario) {
 }
 
 function getRoomAccess() {
-  return activeSnapshot ? activeSnapshot.access : { presenterClaimed: false, canManageQuery: false, canManageScenario: false };
+  return activeSnapshot
+    ? activeSnapshot.access
+    : { presenterClaimed: false, canManageQuery: false, canManageContext: false, canManageScenario: false };
 }
 
 function sanitizeRoomId(rawRoomId) {
@@ -336,10 +338,10 @@ function renderLecturerControls() {
       : "Claim lecturer controls on this device to change the shared search query.";
 
   roomLecturerStatusElement.textContent = access.canManageScenario
-    ? "This device controls the shared search query and challenge changes for the room."
+    ? "This device controls the shared search query, world context, and challenge changes for the room."
     : access.presenterClaimed
-      ? "The shared search query and challenge changes are locked to the lecturer device for this room."
-      : "The shared search query and challenge changes stay unlocked only after the lecturer claims control on this device.";
+      ? "The shared search query, world context, and challenge changes are locked to the lecturer device for this room."
+      : "The shared search query, world context, and challenge changes stay unlocked only after the lecturer claims control on this device.";
 }
 
 function sendCommand(command) {
@@ -375,7 +377,7 @@ function sendCommand(command) {
     });
 }
 
-function renderToggleGroup(options, selectedId, container, onSelect) {
+function renderToggleGroup(options, selectedId, container, onSelect, interaction = null) {
   for (const option of options) {
     const button = document.createElement("button");
     button.type = "button";
@@ -384,7 +386,15 @@ function renderToggleGroup(options, selectedId, container, onSelect) {
     const isActive = selectedId === option.id;
     button.setAttribute("aria-pressed", String(isActive));
     button.classList.toggle("audience-preset-active", isActive);
+    const canInteract = !interaction || interaction.canInteract;
+    button.setAttribute("aria-disabled", String(!canInteract));
+    button.classList.toggle("opacity-60", !canInteract);
     button.addEventListener("click", () => {
+      if (!canInteract) {
+        setStatus(interaction.lockedMessage);
+        return;
+      }
+
       onSelect(isActive ? "" : option.id);
     });
     container.appendChild(button);
@@ -401,17 +411,37 @@ function renderBackendControls() {
 
 function renderContextControls() {
   const state = getRoomState();
+  const access = getRoomAccess();
+  const lockedMessage = access.presenterClaimed
+    ? "Only the lecturer can change the shared world context."
+    : "Claim lecturer controls to change the shared world context.";
+  const interaction = {
+    canInteract: access.canManageContext,
+    lockedMessage,
+  };
 
   clearSeasonControls();
   clearShopStateControls();
 
-  renderToggleGroup(seasonOptions, state.season, seasonControlsElement, (nextSeason) => {
-    sendCommand({ type: "set-season", season: nextSeason || "" });
-  });
+  renderToggleGroup(
+    seasonOptions,
+    state.season,
+    seasonControlsElement,
+    (nextSeason) => {
+      sendCommand({ type: "set-season", season: nextSeason || "" });
+    },
+    interaction,
+  );
 
-  renderToggleGroup(shopStateOptions, state.shopState, shopStateControlsElement, (nextShopState) => {
-    sendCommand({ type: "set-shop-state", shopState: nextShopState || "" });
-  });
+  renderToggleGroup(
+    shopStateOptions,
+    state.shopState,
+    shopStateControlsElement,
+    (nextShopState) => {
+      sendCommand({ type: "set-shop-state", shopState: nextShopState || "" });
+    },
+    interaction,
+  );
 }
 
 function renderAudiencePresets(scenario) {

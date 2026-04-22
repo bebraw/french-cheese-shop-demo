@@ -52,6 +52,7 @@ describe("demo room state", () => {
     expect(snapshot.search?.scenario).toBe("challenge-2");
     expect(snapshot.search?.results[0]?.name).toBe("Livarot");
     expect(snapshot.access.canManageQuery).toBe(true);
+    expect(snapshot.access.canManageContext).toBe(true);
     expect(snapshot.access.canManageScenario).toBe(true);
   });
 
@@ -147,6 +148,20 @@ describe("demo room state", () => {
 
     const claimedRecord = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
     const wrongPresenterResult = applyRoomCommand(claimedRecord, { type: "set-query", query: "Custom" }, "audience-token");
+
+    expect(wrongPresenterResult.ok).toBe(false);
+    expect(wrongPresenterResult.error).toContain("Only the lecturer");
+  });
+
+  it("protects shared world context changes until the lecturer claims control", () => {
+    const record = createDefaultRoomRecord("protected-context-room");
+    const unauthorizedResult = applyRoomCommand(record, { type: "set-season", season: "winter" }, null);
+
+    expect(unauthorizedResult.ok).toBe(false);
+    expect(unauthorizedResult.error).toContain("shared world context");
+
+    const claimedRecord = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    const wrongPresenterResult = applyRoomCommand(claimedRecord, { type: "set-shop-state", shopState: "holiday-rush" }, "audience-token");
 
     expect(wrongPresenterResult.ok).toBe(false);
     expect(wrongPresenterResult.error).toContain("Only the lecturer");

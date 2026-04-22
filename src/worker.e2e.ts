@@ -27,7 +27,9 @@ async function claimLecturer(page: import("@playwright/test").Page): Promise<voi
     await claimButton.click();
   }
 
-  await expect(page.locator("#room-lecturer-status")).toContainText("This device controls the shared search query and challenge changes");
+  await expect(page.locator("#room-lecturer-status")).toContainText(
+    "This device controls the shared search query, world context, and challenge changes",
+  );
 }
 
 async function chooseAudienceOption(page: import("@playwright/test").Page, buttonLabel: string, summaryText = buttonLabel): Promise<void> {
@@ -276,6 +278,7 @@ test("world context can be set in baseline and carries into later challenges", a
   await page.goto(roomUrl("e2e-world-context"));
 
   await page.getByRole("button", { name: /Context/ }).click();
+  await claimLecturer(page);
   await chooseContextOption(page, "Winter holiday");
   await chooseContextOption(page, "Holiday rush");
 
@@ -283,7 +286,6 @@ test("world context can be set in baseline and carries into later challenges", a
   await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
   await expect(page.locator("#scenario-insights")).toContainText("Simulation context: winter season and holiday-rush demand.");
 
-  await claimLecturer(page);
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
   await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
   await expect(page.locator("#context-summary-chips")).toContainText("Holiday rush");
@@ -291,9 +293,16 @@ test("world context can be set in baseline and carries into later challenges", a
 
 test("context drawer can reopen from the query state", async ({ page, request }) => {
   const roomId = roomRunId + "-e2e-context-open";
+  const presenterToken = "lecturer-" + roomRunId + "-context-open";
+
+  await request.post("/api/session?room=" + roomId, {
+    data: { type: "claim-presenter" },
+    headers: { "x-demo-presenter-token": presenterToken },
+  });
 
   await request.post("/api/session?room=" + roomId, {
     data: { type: "set-season", season: "winter" },
+    headers: { "x-demo-presenter-token": presenterToken },
   });
   await request.post("/api/session?room=" + roomId, {
     data: { type: "set-backend", backend: "llm" },
@@ -447,7 +456,7 @@ test("participants cannot change the active challenge after the lecturer claims 
   await expect(participantPage.getByRole("button", { name: /Challenge 3/ })).toHaveAttribute("aria-disabled", "true");
   await expect(participantPage.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
   await expect(participantPage.locator("#room-lecturer-status")).toContainText(
-    "The shared search query and challenge changes are locked to the lecturer device for this room.",
+    "The shared search query, world context, and challenge changes are locked to the lecturer device for this room.",
   );
 
   await context.close();
@@ -469,6 +478,33 @@ test("participants cannot change the shared query after the lecturer claims it",
     "I want something like Livarot, but stronger.",
   );
   await expect(participantPage.getByRole("searchbox", { name: "Customer request" })).not.toBeEditable();
+
+  await context.close();
+});
+
+test("participants cannot change world context after the lecturer claims it", async ({ browser }) => {
+  const roomId = "e2e-lecturer-context-lock";
+  const context = await browser.newContext();
+  const lecturerPage = await context.newPage();
+  const participantPage = await context.newPage();
+
+  await lecturerPage.goto(roomUrl(roomId));
+  await participantPage.goto(roomUrl(roomId));
+
+  await lecturerPage.getByRole("button", { name: /Context/ }).click();
+  await participantPage.getByRole("button", { name: /Context/ }).click();
+
+  await claimLecturer(lecturerPage);
+  await chooseContextOption(lecturerPage, "Winter holiday");
+
+  await expect(participantPage.locator("#context-summary-chips")).toContainText("Winter holiday");
+  const participantSeasonButton = participantPage.getByRole("button", { name: "Summer picnic" });
+  await expect(participantSeasonButton).toHaveAttribute("aria-disabled", "true");
+  await participantSeasonButton.click({ force: true });
+
+  await expect(participantPage.locator("#context-summary-chips")).toContainText("Winter holiday");
+  await expect(participantPage.locator("#context-summary-chips")).not.toContainText("Summer picnic");
+  await expect(participantPage.locator("#search-status")).toContainText("Only the lecturer can change the shared world context.");
 
   await context.close();
 });

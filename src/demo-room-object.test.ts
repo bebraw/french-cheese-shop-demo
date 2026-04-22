@@ -74,6 +74,7 @@ describe("DemoRoomObject", () => {
     expect(payload.access).toEqual({
       presenterClaimed: false,
       canManageQuery: false,
+      canManageContext: false,
       canManageScenario: false,
     });
   });
@@ -146,6 +147,26 @@ describe("DemoRoomObject", () => {
     await expect(response.json()).resolves.toMatchObject({
       ok: false,
       error: expect.stringContaining("shared search query"),
+    });
+  });
+
+  it("rejects world context changes from non-lecturer clients", async () => {
+    const room = new DemoRoomObject(createStorage());
+
+    const response = await room.fetch(
+      new Request("http://example.com/internal/session?room=object-protected-context", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ type: "set-season", season: "winter" }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringContaining("shared world context"),
     });
   });
 

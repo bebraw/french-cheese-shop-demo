@@ -105,7 +105,7 @@ The current scenario shifts are:
 - local-only URL synchronization for `room` and explicit `Context` drawer open state
 - debounced shared room updates through `/api/session`
 - live room snapshot synchronization over `/api/session/live`
-- client-side rendering of result cards, insights, evaluation checks, collaboration status, and lecturer-only query plus challenge controls
+- client-side rendering of result cards, insights, evaluation checks, collaboration status, and lecturer-only query, world-context, plus challenge controls
 
 ### 4. Room Coordination Path
 
@@ -124,8 +124,8 @@ Shared room state includes the current query, active challenge, accumulated
 audience inputs, world context, backend mode, room version, and one claimed
 lecturer token for lecturer-only actions. Room snapshots also include access
 flags for the current client so the browser can distinguish between lecturer-only
-query/challenge controls and collaborative audience/context inputs. Local browser
-state such as expanded result cards remains outside the shared room model.
+query/world-context/challenge controls and collaborative audience/backend inputs.
+Local browser state such as expanded result cards remains outside the shared room model.
 
 ## Data Model
 

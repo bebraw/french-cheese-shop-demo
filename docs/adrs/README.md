@@ -15,28 +15,28 @@ Skip an ADR for small, reversible, or purely tactical choices.
 
 ## Active ADRs
 
-| ADR                                                                                | Status     | Summary                                                                                      |
-| ---------------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------- |
-| [ADR-001](./ADR-001-use-architecture-decision-records.md)                          | Accepted   | Use ADRs to capture significant architectural decisions in this repo.                        |
-| [ADR-002](./ADR-002-make-architectural-decisions-explicit.md)                      | Accepted   | Require explicit ADR updates for lasting architectural decisions.                            |
-| [ADR-003](./ADR-003-require-spec-updates-and-high-coverage.md)                     | Accepted   | Treat completed feature work as spec work and gate `src/` code on high unit coverage.        |
-| [ADR-004](./ADR-004-ship-a-worker-stub.md)                                         | Accepted   | Ship a minimal Worker stub so the template is runnable and testable.                         |
-| [ADR-005](./ADR-005-separate-worker-views-and-api.md)                              | Accepted   | Separate the Worker starter into `src/api` and `src/views` for easier evolution.             |
-| [ADR-006](./ADR-006-adopt-tailwind-for-starter-ui.md)                              | Accepted   | Adopt the thesis-journey-tracker Tailwind v4 pipeline for the starter Worker UI.             |
-| [ADR-008](./ADR-008-allow-static-readme-screenshots-without-tooling.md)            | Accepted   | Allow committed README screenshots without restoring screenshot tooling or automation.       |
-| [ADR-009](./ADR-009-split-fast-and-browser-verification.md)                        | Accepted   | Split fast and browser verification so checks can fail earlier and CI can cancel stale runs. |
-| [ADR-010](./ADR-010-adopt-pnpm-for-package-management.md)                          | Superseded | Use pnpm with a committed lockfile and Corepack-backed CI/local workflows instead of npm.    |
-| [ADR-011](./ADR-011-upgrade-runtime-baseline-to-node-24.md)                        | Accepted   | Move the template runtime baseline from Node 22 to Node 24 LTS.                              |
-| [ADR-012](./ADR-012-constrain-local-tooling-to-macos.md)                           | Accepted   | Treat macOS as the local tooling baseline and use direct pinned Agent CI scripts.            |
-| [ADR-013](./ADR-013-return-to-npm-for-agent-ci-compatibility.md)                   | Accepted   | Return to npm because local Agent CI remains unreliable with pnpm warmed dependency mounts.  |
-| [ADR-014](./ADR-014-use-local-import-and-hybrid-vector-reranking.md)               | Superseded | Keep imports local and rerank Vectorize candidates in Worker code for supervisor search.     |
-| [ADR-015](./ADR-015-run-the-fast-gate-on-pre-push.md)                              | Accepted   | Run the fast quality gate automatically before pushes to catch cheap failures locally.       |
-| [ADR-016](./ADR-016-propose-kv-backed-lexical-search.md)                           | Proposed   | Explore replacing Workers AI plus Vectorize retrieval with a KV-backed lexical search path.  |
-| [ADR-017](./ADR-017-use-kv-for-runtime-ranking-config.md)                          | Superseded | Use a dedicated KV binding for live supervisor ranking overrides without moving search data. |
-| [ADR-018](./ADR-018-replace-supervisor-search-with-a-deterministic-cheese-demo.md) | Accepted   | Replace the removed supervisor stack with a deterministic French cheese shop demo.           |
-| [ADR-019](./ADR-019-add-a-local-backend-contrast-mode.md)                          | Accepted   | Add an optional local backend contrast mode without reintroducing live model dependencies.   |
-| [ADR-020](./ADR-020-add-room-based-multiplayer-demo-sessions.md)                   | Accepted   | Add shared room sessions with Durable Object coordination and live browser synchronization.  |
-| [ADR-021](./ADR-021-gate-challenge-changes-with-a-room-scoped-lecturer-token.md)   | Accepted   | Restrict challenge switching and room reset to the room's claimed lecturer device.           |
+| ADR                                                                                | Status     | Summary                                                                                             |
+| ---------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------- |
+| [ADR-001](./ADR-001-use-architecture-decision-records.md)                          | Accepted   | Use ADRs to capture significant architectural decisions in this repo.                               |
+| [ADR-002](./ADR-002-make-architectural-decisions-explicit.md)                      | Accepted   | Require explicit ADR updates for lasting architectural decisions.                                   |
+| [ADR-003](./ADR-003-require-spec-updates-and-high-coverage.md)                     | Accepted   | Treat completed feature work as spec work and gate `src/` code on high unit coverage.               |
+| [ADR-004](./ADR-004-ship-a-worker-stub.md)                                         | Accepted   | Ship a minimal Worker stub so the template is runnable and testable.                                |
+| [ADR-005](./ADR-005-separate-worker-views-and-api.md)                              | Accepted   | Separate the Worker starter into `src/api` and `src/views` for easier evolution.                    |
+| [ADR-006](./ADR-006-adopt-tailwind-for-starter-ui.md)                              | Accepted   | Adopt the thesis-journey-tracker Tailwind v4 pipeline for the starter Worker UI.                    |
+| [ADR-008](./ADR-008-allow-static-readme-screenshots-without-tooling.md)            | Accepted   | Allow committed README screenshots without restoring screenshot tooling or automation.              |
+| [ADR-009](./ADR-009-split-fast-and-browser-verification.md)                        | Accepted   | Split fast and browser verification so checks can fail earlier and CI can cancel stale runs.        |
+| [ADR-010](./ADR-010-adopt-pnpm-for-package-management.md)                          | Superseded | Use pnpm with a committed lockfile and Corepack-backed CI/local workflows instead of npm.           |
+| [ADR-011](./ADR-011-upgrade-runtime-baseline-to-node-24.md)                        | Accepted   | Move the template runtime baseline from Node 22 to Node 24 LTS.                                     |
+| [ADR-012](./ADR-012-constrain-local-tooling-to-macos.md)                           | Accepted   | Treat macOS as the local tooling baseline and use direct pinned Agent CI scripts.                   |
+| [ADR-013](./ADR-013-return-to-npm-for-agent-ci-compatibility.md)                   | Accepted   | Return to npm because local Agent CI remains unreliable with pnpm warmed dependency mounts.         |
+| [ADR-014](./ADR-014-use-local-import-and-hybrid-vector-reranking.md)               | Superseded | Keep imports local and rerank Vectorize candidates in Worker code for supervisor search.            |
+| [ADR-015](./ADR-015-run-the-fast-gate-on-pre-push.md)                              | Accepted   | Run the fast quality gate automatically before pushes to catch cheap failures locally.              |
+| [ADR-016](./ADR-016-propose-kv-backed-lexical-search.md)                           | Proposed   | Explore replacing Workers AI plus Vectorize retrieval with a KV-backed lexical search path.         |
+| [ADR-017](./ADR-017-use-kv-for-runtime-ranking-config.md)                          | Superseded | Use a dedicated KV binding for live supervisor ranking overrides without moving search data.        |
+| [ADR-018](./ADR-018-replace-supervisor-search-with-a-deterministic-cheese-demo.md) | Accepted   | Replace the removed supervisor stack with a deterministic French cheese shop demo.                  |
+| [ADR-019](./ADR-019-add-a-local-backend-contrast-mode.md)                          | Accepted   | Add an optional local backend contrast mode without reintroducing live model dependencies.          |
+| [ADR-020](./ADR-020-add-room-based-multiplayer-demo-sessions.md)                   | Accepted   | Add shared room sessions with Durable Object coordination and live browser synchronization.         |
+| [ADR-021](./ADR-021-gate-challenge-changes-with-a-room-scoped-lecturer-token.md)   | Accepted   | Restrict shared query, world-context, and challenge controls to the room's claimed lecturer device. |
 
 ## Creating A New ADR
 
