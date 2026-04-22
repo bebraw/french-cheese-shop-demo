@@ -39,6 +39,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] The `Context` container stays closed by default and only restores its open state from an explicit query flag.
 - [ ] `GET /` exposes a shareable room id control so multiple browsers can join the same demo session intentionally.
 - [ ] The shared-room controls can be folded when the presenter wants to reduce visual noise without leaving the room.
+- [ ] `GET /` keeps the shared-room controls folded by default on phone-sized screens so the search results stay visible sooner.
 - [ ] `GET /` shows whether the room is live and how many participants are currently connected.
 - [ ] `GET /` lets one device claim lecturer controls for the current room so only that device can change the active challenge or reset the room.
 - [ ] `GET /` exposes a safe audience-link copy action that joins the room without handing lecturer controls to participants.
@@ -72,6 +73,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Audience-facing room sharing must not require copying a lecturer token by default.
 - Preset examples and lens labels should avoid challenge overlap unless the carry-forward behavior is the point being taught explicitly.
 - The challenge controls should stay visible in a fixed left sidebar on larger screens, and the requirements lens plus the foldable `Context` container should stay visible on the right.
+- Phone-sized viewports should prioritize the search box and visible result rows over persistent room chrome or other sticky overlays.
 - URL-synced state should include whether the `Context` container is explicitly open, without forcing it open just because season or backend selections exist.
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
 - The default baseline prompt should stay visible in the main request input instead of being repeated in separate promo copy.
@@ -89,7 +91,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 ### Verification
 
-- **Automated tests:** Vitest covers the scenario engine, Worker responses, and API validation. Playwright covers the tabbed UI and scenario changes against the local Worker.
+- **Automated tests:** Vitest covers the scenario engine, Worker responses, and API validation. Playwright covers the tabbed UI, scenario changes, and at least one phone-sized viewport flow against the local Worker.
 - **Coverage target:** The cheese-domain and Worker entry code must remain within the repo coverage gate enforced by `npm run test:coverage`.
 
 ### Scenarios

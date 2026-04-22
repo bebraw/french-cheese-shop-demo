@@ -14,8 +14,8 @@ export function renderHomePage(): string {
     <script src="/app.js" defer></script>
   </head>
   <body class="min-h-screen bg-app-canvas text-app-text antialiased">
-    <main class="px-5 py-6 sm:px-8 sm:py-8 lg:px-12">
-      <div class="mx-auto flex max-w-7xl flex-col gap-6">
+    <main class="px-4 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-6">
         <h1 class="font-display text-[clamp(1.35rem,2.8vw,2rem)] leading-none text-app-primary">${escapeHtml(appTitle)}</h1>
         <section class="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)_18rem] lg:items-start">
           <aside class="order-2 lg:order-1 lg:sticky lg:top-6 lg:self-start">
@@ -46,7 +46,7 @@ export function renderHomePage(): string {
             </section>
           </aside>
           <div class="order-1 lg:order-2">
-            <div class="sticky top-4 z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl">
+            <div class="z-10 rounded-[1.6rem] bg-app-canvas/92 py-1 supports-[backdrop-filter]:bg-app-canvas/82 backdrop-blur-xl lg:sticky lg:top-4">
               <section class="rounded-[1.35rem] border border-app-line bg-white/92 px-4 py-4 shadow-[0_10px_30px_rgba(13,29,46,0.04)]">
                 <button
                   id="room-panel-toggle"
@@ -96,7 +96,7 @@ export function renderHomePage(): string {
               </section>
               <label class="block" for="customer-query">
                 <span class="sr-only">Customer request</span>
-                <input id="customer-query" name="q" type="search" autocomplete="off" spellcheck="false" value="${escapeHtml(DEFAULT_QUERY)}" placeholder="Type the customer request" class="mt-4 w-full rounded-[1.35rem] bg-app-surface px-5 py-4 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
+                <input id="customer-query" name="q" type="search" autocomplete="off" spellcheck="false" value="${escapeHtml(DEFAULT_QUERY)}" placeholder="Type the customer request" class="mt-4 w-full rounded-[1.35rem] bg-app-surface px-4 py-3 text-base text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28 sm:px-5 sm:py-4 sm:text-lg">
               </label>
               <div id="audience-controls" class="mt-4 hidden">
                 <p id="audience-prompt" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
@@ -113,9 +113,9 @@ export function renderHomePage(): string {
               </div>
               <div id="search-status" class="mt-3 text-sm leading-6 text-app-text-soft"></div>
             </div>
-            <div id="demo-panel" class="mt-6">
+            <div id="demo-panel" class="mt-4 sm:mt-6">
               <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Search Results</p>
-              <ol id="search-results" class="mt-5 grid gap-4" aria-live="polite"></ol>
+              <ol id="search-results" class="mt-4 grid gap-4 sm:mt-5" aria-live="polite"></ol>
             </div>
           </div>
           <aside class="order-3 lg:sticky lg:top-6 lg:self-start">

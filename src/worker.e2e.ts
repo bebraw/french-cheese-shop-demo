@@ -52,6 +52,17 @@ test("renders the cheese demo home page", async ({ page }) => {
   await expect(page.locator("#search-status")).toHaveText("5 results");
 });
 
+test("phone layout keeps the first search result visible", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(roomUrl("e2e-phone-home"));
+
+  await expect(page.locator("#room-panel-toggle")).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator("#room-panel-body")).toBeHidden();
+  await expect(page.locator("#search-status")).toHaveText("5 results");
+  await expect(page.locator("#search-results > li").first()).toBeInViewport();
+  await expect(page.getByRole("heading", { level: 3, name: "Brie de Meaux" })).toBeVisible();
+});
+
 test("shared room section can be folded and reopened", async ({ page }) => {
   await page.goto(roomUrl("e2e-room-panel"));
 
@@ -321,12 +332,14 @@ test("an expanded result stays open across evaluation updates", async ({ page })
   await claimLecturer(page);
   await page.getByRole("button", { name: /Challenge 3/ }).click();
 
+  await expect(page.locator("#search-status")).toHaveText("4 results");
+  await page.locator("#room-panel-toggle").click();
   await expect(page.getByRole("heading", { level: 3, name: resultName })).toBeVisible();
 
   const persistentResult = page.locator("#search-results li").filter({ has: page.getByRole("heading", { level: 3, name: resultName }) });
   const firstToggle = persistentResult.getByRole("button", { name: "More" });
 
-  await firstToggle.click({ force: true });
+  await firstToggle.click();
   await expect(persistentResult.getByRole("button", { name: "Hide" })).toBeVisible();
 
   await page.getByRole("button", { name: "Show why it fits" }).click();

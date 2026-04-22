@@ -55,11 +55,12 @@ const seasonOptions = ${JSON.stringify(seasonOptions)};
 const shopStateOptions = ${JSON.stringify(shopStateOptions)};
 const backendOptions = ${JSON.stringify(backendOptions)};
 const expandedResultIds = new Set();
+const compactViewportQuery = window.matchMedia("(max-width: 639px)");
 let activeRoomId = defaultRoomId;
 let activeScenario = "baseline";
 let activeSnapshot = null;
 let contextDrawerOpen = false;
-let roomPanelOpen = true;
+let roomPanelOpen = !compactViewportQuery.matches;
 let activePresenterToken = null;
 let liveSocket = null;
 let reconnectHandle = null;
@@ -585,6 +586,13 @@ function renderRoomPanel() {
   roomPanelIcon.textContent = roomPanelOpen ? "−" : "+";
 }
 
+function syncViewportDefaults() {
+  if (compactViewportQuery.matches && roomPanelOpen) {
+    roomPanelOpen = false;
+    renderRoomPanel();
+  }
+}
+
 function renderSearchSnapshot(snapshot) {
   const state = snapshot.state;
   const search = snapshot.search;
@@ -854,6 +862,12 @@ roomPanelToggle.addEventListener("click", () => {
   renderRoomPanel();
 });
 
+if (typeof compactViewportQuery.addEventListener === "function") {
+  compactViewportQuery.addEventListener("change", syncViewportDefaults);
+} else if (typeof compactViewportQuery.addListener === "function") {
+  compactViewportQuery.addListener(syncViewportDefaults);
+}
+
 for (const button of scenarioButtons) {
   button.addEventListener("click", () => {
     if (!getRoomAccess().canManageScenario) {
@@ -955,6 +969,7 @@ renderRoomPanel();
 renderContextPanel();
 renderLecturerControls();
 setRoomParticipantCount(1);
+syncViewportDefaults();
 void joinRoom(initialRoomId);
 `;
 }
