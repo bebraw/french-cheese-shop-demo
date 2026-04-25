@@ -159,4 +159,30 @@ describe("searchDemoCatalog", () => {
     expect(response.results[0]?.name).toBe("Crottin de Chavignol");
     expect(response.insights[0]).toBe("Ranking can use product facts and context.");
   });
+
+  it("can route sheep and blue constraints to a distinct result", () => {
+    const response = searchDemoCatalog({
+      query: "Need a strong cheese for salad",
+      scenario: "challenge-2",
+      audienceInput: "Sheep's milk, blue, for salad.",
+    });
+
+    expect(response.results[0]?.name).toBe("Roquefort");
+    expect(response.insights).toContain("Explicit milk types: sheep.");
+    expect(response.insights).toContain("Explicit styles: blue.");
+    expect(response.insights).toContain("Serving context: salad.");
+  });
+
+  it("can make mixed milk and beer constraints visible", () => {
+    const response = searchDemoCatalog({
+      query: "Need a firm cheese for a picnic",
+      scenario: "challenge-2",
+      audienceInput: "Mixed milk, pressed, with beer.",
+    });
+
+    expect(response.results[0]?.name).toBe("Tomme mixte des Pyrenees");
+    expect(response.results[0]?.meta).toContain("mixed milk");
+    expect(response.insights).toContain("Explicit milk types: mixed.");
+    expect(response.insights).toContain("Context data: beer.");
+  });
 });

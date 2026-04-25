@@ -339,6 +339,9 @@ function collectMilkTypes(tokens: Set<string>): Set<CheeseRecord["milkType"]> {
   if (tokens.has("sheep")) {
     milkTypes.add("sheep");
   }
+  if (tokens.has("mixed")) {
+    milkTypes.add("mixed");
+  }
 
   return milkTypes;
 }
@@ -767,7 +770,13 @@ function buildInsights(intent: ParsedIntent, scenario: DemoScenarioId, results: 
 }
 
 function formatMeta(cheese: CheeseRecord): string {
-  return [cheese.region, cheese.milkType + "'s milk", cheese.style, `strength ${cheese.intensity}/5`, `EUR ${cheese.priceEur}`].join(" • ");
+  return [cheese.region, formatMilkType(cheese.milkType), cheese.style, `strength ${cheese.intensity}/5`, `EUR ${cheese.priceEur}`].join(
+    " • ",
+  );
+}
+
+function formatMilkType(milkType: CheeseRecord["milkType"]): string {
+  return milkType === "mixed" ? "mixed milk" : milkType + "'s milk";
 }
 
 function buildPresentationTag(rank: number, scenario: DemoScenarioId, intent: ParsedIntent): string {

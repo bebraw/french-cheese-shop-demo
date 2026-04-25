@@ -10,6 +10,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 - **Entry points:** `GET /`, `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...`, `GET /api/session?room=...`, `POST /api/session?room=...`, `GET /api/session/live?room=...`, and `GET /api/health`
 - **Data models:** `CheeseRecord` in `src/cheese/catalog.ts` is the committed product model. Required fields are `cheeseId`, `name`, `region`, `milkType`, `style`, `textures`, `pairings`, `servingContexts`, `intensity`, `priceEur`, `stock`, and `blurb`.
+- **Catalog coverage:** the committed catalog should include enough cow, goat, sheep, and mixed-milk variants across bloomy, washed-rind, blue, pressed, and fresh-goat styles for visible result changes when the audience votes on constraints.
 - **Scenario contract:** `scenario` must accept `baseline`, `challenge-1`, `challenge-2`, and `challenge-3`.
 - **Simulation context contract:** `season` and `shopState` are shared world-context controls available from baseline through challenge 3.
 - **Backend contract:** `backend` must accept `rules` and `llm`, with `rules` as the default and `llm` implemented as a local contrast mode instead of a live remote model call.
@@ -88,6 +89,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - The teaching prompts should stay short enough to scan during a live session and should stay aligned with the slide-deck learning outcomes: interpreting vague requests, specifying domain and operational context, and evaluating ambiguity.
 - HTML responses must ship with restrictive browser security headers, and client-side code must load from same-origin script assets so the CSP can keep `script-src 'self'`.
 - The cheese catalog should stay small, committed, and easy to review.
+- The cheese catalog should cover the visible vote options well enough that milk type, style, pairing, budget, serving context, season, and stock constraints can change the shortlist.
 - Challenge behavior must stay explainable through returned insights and, for challenge 3, evaluation checks.
 - Comparative follow-up requests such as `like Livarot, but stronger` should not keep the named reference cheese as the top result when the request explicitly asks for the next stronger or milder step away from it.
 - The `LLM backend` option must remain local and deterministic enough for rehearsal, even if it intentionally produces a different ranking style from the rules engine.
