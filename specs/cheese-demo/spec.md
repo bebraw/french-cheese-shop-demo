@@ -16,6 +16,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - **Backend contract:** `backend` must accept `rules` and `llm`, with `rules` as the default and `llm` implemented as a local contrast mode instead of a live remote model call.
 - **Multiplayer contract:** a room id selects one canonical shared demo session. Shared room state is coordinated server-side, while local-only UI state such as expanded result cards and the `Context` drawer open state stays per browser.
 - **Audience voting contract:** challenge presets are grouped vote options. Audience browsers contribute vote counts, the room derives active challenge inputs from the highest-voted option in each semantic group, and lecturer overrides take precedence per group.
+- **Challenge pacing contract:** baseline is the only challenge visible to audience browsers by default. The lecturer can reveal later challenges one at a time, and revealed challenge state is shared by the room.
 - **Dependencies:** The deployed Worker depends only on the committed repo assets, generated CSS, and one Durable Object binding for room coordination. No remote AI, Vectorize, KV, or import-time credentials are part of the current runtime path.
 
 ### Anti-Patterns
@@ -33,6 +34,8 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` keeps one shared customer-request input and a challenge-specific audience answer area.
 - [ ] `GET /` opens with the baseline prompt prefilled so the demo starts in a meaningful default state.
 - [ ] `GET /` keeps the baseline and challenge descriptions visible enough that the audience can tell the four passes apart before the presenter switches tabs.
+- [ ] `GET /` hides unrevealed challenge controls from audience browsers so the lecturer can pace the demo without previewing later steps.
+- [ ] `GET /` gives the lecturer a next-challenge control that reveals and activates the next challenge for the room.
 - [ ] `GET /` keeps a compact lecturer-only teaching-focus panel in the main column with the current learning outcome plus short `Ask` and `Notice` prompts so the deck's pedagogical goal stays available to the presenter without distracting audience browsers.
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific vote choices before falling back to a custom note.
 - [ ] `GET /` groups semantic alternatives such as milk type so the audience votes between options instead of selecting contradictory cues.
@@ -80,6 +83,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Audience-facing room sharing must not require copying a lecturer token by default.
 - Preset examples and lens labels should avoid challenge overlap unless the carry-forward behavior is the point being taught explicitly.
 - The challenge controls should stay visible in a fixed left sidebar on larger screens, and the requirements lens plus the foldable `Context` container should stay visible on the right.
+- Unrevealed challenge controls should stay hidden from audience browsers until the lecturer reveals them.
 - Phone-sized viewports should prioritize the search box and visible result rows over persistent room chrome or other sticky overlays.
 - URL-synced state should include whether the `Context` container is explicitly open, without forcing it open just because season or backend selections exist.
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.

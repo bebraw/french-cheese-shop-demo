@@ -8,6 +8,8 @@ describe("renderHomePage", () => {
     expect(html).toContain("French Cheese Shop");
     expect(html).toContain('value="I want something like Brie, but stronger."');
     expect(html).toContain("Shared Room");
+    expect(html).toContain('id="scenario-next-button"');
+    expect(html).toContain("Reveal next challenge");
     expect(html).toContain('id="room-panel-toggle"');
     expect(html).toContain('aria-controls="room-panel-body"');
     expect(html).toContain('value="demo-room"');
@@ -19,6 +21,7 @@ describe("renderHomePage", () => {
     expect(html).toContain("Reset room");
     expect(html).toContain('aria-label="Choose demo challenge"');
     expect(html).toContain("Hidden meaning");
+    expect(html).toContain('data-scenario="challenge-1" aria-pressed="false" hidden');
     expect(html).toContain("Domain context");
     expect(html).toContain("Add catalog facts, stock, and shop context.");
     expect(html).toContain("Make usefulness and trust visible.");

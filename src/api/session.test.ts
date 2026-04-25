@@ -20,6 +20,7 @@ describe("createSessionResponse", () => {
     const payload = await response.json();
 
     expect(payload.state.activeScenario).toBe("challenge-2");
+    expect(payload.state.revealedChallengeIds).toEqual(["challenge-1", "challenge-2"]);
     expect(payload.state.audienceByChallenge["challenge-2"].customText).toBe("with cider");
     expect(payload.state.season).toBe("winter");
     expect(payload.state.backend).toBe("llm");
@@ -171,6 +172,24 @@ describe("createSessionResponse", () => {
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toMatchObject({
       ok: false,
+    });
+  });
+
+  it("rejects challenge reveal from non-lecturer clients", async () => {
+    const response = await createSessionResponse(
+      new Request("http://example.com/api/session?room=session-protected-advance", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ type: "advance-scenario" }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringContaining("next challenge"),
     });
   });
 

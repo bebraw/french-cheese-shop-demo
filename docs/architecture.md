@@ -106,6 +106,7 @@ The current scenario shifts are:
 - debounced shared room updates through `/api/session`
 - live room snapshot synchronization over `/api/session/live`
 - client-side rendering of result cards, insights, evaluation checks, collaboration status, and lecturer-only query, world-context, plus challenge controls
+- progressive challenge reveal, including a lecturer-only next-challenge control
 - local browser vote selection so one browser contributes one vote per semantic option group
 
 ### 4. Room Coordination Path
@@ -122,15 +123,15 @@ The current scenario shifts are:
    deterministic results embedded in each room snapshot.
 
 Shared room state includes the current query, active challenge, accumulated
-audience vote counts, lecturer overrides for vote groups, custom audience notes,
-world context, backend mode, room version, and one claimed lecturer token for
+revealed challenge ids, audience vote counts, lecturer overrides for vote groups,
+custom audience notes, world context, backend mode, room version, and one claimed lecturer token for
 lecturer-only actions. `src/demo-room.ts` derives the active audience input from
 the highest-voted preset in each semantic group unless the lecturer has
 overridden that group. Room snapshots also include access flags for the current
 client so the browser can distinguish between lecturer-only query/world-context/
-challenge changes, lecturer option overrides, and collaborative audience/backend inputs. Local
-browser state such as expanded result cards and that browser's vote selections
-remains outside the shared room model.
+challenge reveal and changes, lecturer option overrides, and collaborative
+audience/backend inputs. Local browser state such as expanded result cards and
+that browser's vote selections remains outside the shared room model.
 
 ## Data Model
 

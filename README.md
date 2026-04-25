@@ -15,9 +15,9 @@ If time is short, run the demo like this:
 
 1. Start with `I want something like Brie, but stronger.`
 2. `Baseline`: show the plausible but shallow answer from surface wording alone.
-3. `Challenge 1`: let the room vote on hidden requirements such as `keep it creamy` and milk-type alternatives like `cow`, `goat`, `sheep`, or `mixed`.
-4. `Challenge 2`: vote on missing data such as `serve it with cider` or `must be in stock`, while the foldable `Context` drawer can add world context like `Winter holiday` to change both seasonal fit and stock pressure.
-5. `Challenge 3`: vote on evaluation checks such as `show why it fits`, `mark a backup choice`, and `keep it to two finalists`.
+3. Press `Next` to reveal `Challenge 1`, then let the room vote on hidden requirements such as `keep it creamy` and milk-type alternatives like `cow`, `goat`, `sheep`, or `mixed`.
+4. Press `Next` again only if time allows. In `Challenge 2`, vote on missing data such as `serve it with cider` or `must be in stock`, while the foldable `Context` drawer can add world context like `Winter holiday` to change both seasonal fit and stock pressure.
+5. Use `Challenge 3` only as an optional final step for evaluation checks such as `show why it fits`, `mark a backup choice`, and `keep it to two finalists`.
 
 Use the visible vote counts to keep the interaction short. If the room chooses
 an option that is more useful as a discussion point than as the next system
@@ -36,7 +36,7 @@ The live demo is meant to match the `french-cheese-shop` deck, not just reuse th
 - `Challenge 1` supports the learning outcome `Interpret vague requests` by turning hidden preferences into explicit ranking signals.
 - `Challenge 2` supports `Specify domain and operational context` by adding catalog facts, stock, pairings, and shared world context.
 - `Challenge 3` supports `Evaluate ambiguity` by making success criteria visible as checks instead of treating the top-ranked answer as self-justifying.
-- The in-app `Teaching Focus` panel keeps the current learning goal, the question to ask the room, and the thing to notice visible in the main column so the session stays pedagogical on phones as well as on desktop.
+- The lecturer-only `Teaching Focus` panel keeps the current learning goal, the question to ask the room, and the thing to notice available without exposing presenter scaffolding to audience browsers.
 
 The repo vendors ASDLC reference material in `.asdlc/` as local guidance instead of recreating it per project. Repo-specific truth lives in `ARCHITECTURE.md`, `specs/`, and `docs/adrs/`: generated code still needs to match those documents, and passing CI alone is not enough.
 

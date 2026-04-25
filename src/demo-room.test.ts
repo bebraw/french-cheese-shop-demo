@@ -82,6 +82,7 @@ describe("demo room state", () => {
 
     expect(snapshot.participantCount).toBe(3);
     expect(snapshot.search?.scenario).toBe("challenge-2");
+    expect(snapshot.state.revealedChallengeIds).toEqual(["challenge-1", "challenge-2"]);
     expect(snapshot.search?.results[0]?.name).toBe("Livarot");
     expect(snapshot.access.canManageQuery).toBe(true);
     expect(snapshot.access.canManageContext).toBe(true);
@@ -92,6 +93,7 @@ describe("demo room state", () => {
     const state = normalizeRoomState({
       query: "Brie",
       activeScenario: "challenge-1",
+      revealedChallengeIds: ["challenge-1", "invalid"],
       audienceByChallenge: {
         "challenge-1": {
           selectedPresetIds: ["creamy", "invalid"],
@@ -106,7 +108,23 @@ describe("demo room state", () => {
     });
 
     expect(state.audienceByChallenge["challenge-1"].selectedPresetIds).toEqual(["creamy"]);
+    expect(state.revealedChallengeIds).toEqual(["challenge-1"]);
     expect(buildContextSummaryItems(state)).toEqual(["Winter holiday", "Holiday rush"]);
+  });
+
+  it("reveals and advances challenges in lecturer-paced order", () => {
+    let record = createDefaultRoomRecord("advance-room");
+
+    record = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    record = applyOk(record, { type: "advance-scenario" }, "lecturer-token");
+
+    expect(record.state.activeScenario).toBe("challenge-1");
+    expect(record.state.revealedChallengeIds).toEqual(["challenge-1"]);
+
+    record = applyOk(record, { type: "advance-scenario" }, "lecturer-token");
+
+    expect(record.state.activeScenario).toBe("challenge-2");
+    expect(record.state.revealedChallengeIds).toEqual(["challenge-1", "challenge-2"]);
   });
 
   it("normalizes room records stored before presenter access existed", () => {
@@ -140,6 +158,7 @@ describe("demo room state", () => {
     expect(readRoomCommand({ type: "set-backend", backend: "llm" })).toEqual({ type: "set-backend", backend: "llm" });
     expect(readRoomCommand({ type: "claim-presenter" })).toEqual({ type: "claim-presenter" });
     expect(readRoomCommand({ type: "reset-room" })).toEqual({ type: "reset-room" });
+    expect(readRoomCommand({ type: "advance-scenario" })).toEqual({ type: "advance-scenario" });
     expect(readRoomCommand({ type: "cast-preset-vote", scenario: "challenge-1", presetId: "cow", voteDelta: 1 })).toEqual({
       type: "cast-preset-vote",
       scenario: "challenge-1",
@@ -166,6 +185,7 @@ describe("demo room state", () => {
     const state = record.state;
     expect(state.query).toBe("I want something like Brie, but stronger.");
     expect(state.activeScenario).toBe("baseline");
+    expect(state.revealedChallengeIds).toEqual([]);
     expect(state.audienceByChallenge["challenge-2"].selectedPresetIds).toEqual([]);
     expect(state.audienceByChallenge["challenge-2"].votesByPresetId).toEqual({});
   });
@@ -229,6 +249,20 @@ describe("demo room state", () => {
       { type: "toggle-preset-override", scenario: "challenge-1", presetId: "goat" },
       "audience-token",
     );
+
+    expect(wrongPresenterResult.ok).toBe(false);
+    expect(wrongPresenterResult.error).toContain("Only the lecturer");
+  });
+
+  it("protects challenge reveal until the lecturer claims control", () => {
+    const record = createDefaultRoomRecord("protected-advance-room");
+    const unauthorizedResult = applyRoomCommand(record, { type: "advance-scenario" }, null);
+
+    expect(unauthorizedResult.ok).toBe(false);
+    expect(unauthorizedResult.error).toContain("revealing the next challenge");
+
+    const claimedRecord = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    const wrongPresenterResult = applyRoomCommand(claimedRecord, { type: "advance-scenario" }, "audience-token");
 
     expect(wrongPresenterResult.ok).toBe(false);
     expect(wrongPresenterResult.error).toContain("Only the lecturer");

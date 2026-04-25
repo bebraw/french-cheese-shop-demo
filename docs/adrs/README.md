@@ -38,6 +38,7 @@ Skip an ADR for small, reversible, or purely tactical choices.
 | [ADR-020](./ADR-020-add-room-based-multiplayer-demo-sessions.md)                   | Accepted   | Add shared room sessions with Durable Object coordination and live browser synchronization.         |
 | [ADR-021](./ADR-021-gate-challenge-changes-with-a-room-scoped-lecturer-token.md)   | Accepted   | Restrict shared query, world-context, and challenge controls to the room's claimed lecturer device. |
 | [ADR-022](./ADR-022-use-vote-derived-audience-inputs.md)                           | Accepted   | Derive challenge inputs from grouped audience votes with lecturer overrides.                        |
+| [ADR-023](./ADR-023-reveal-demo-challenges-progressively.md)                       | Accepted   | Reveal challenge controls progressively so the lecturer can pace audience attention.                |
 
 ## Creating A New ADR
 

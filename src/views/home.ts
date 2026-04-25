@@ -27,22 +27,23 @@ export function renderHomePage(): string {
                   <p class="scenario-guide-title">Ambiguity first</p>
                   <p class="scenario-guide-copy">See how a plausible result still hides meaning.</p>
                 </button>
-                <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-1" aria-pressed="false">
+                <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-1" aria-pressed="false" hidden>
                   <p class="scenario-guide-kicker">Challenge 1</p>
                   <p class="scenario-guide-title">Hidden meaning</p>
                   <p class="scenario-guide-copy">Turn implied preferences into explicit requirements.</p>
                 </button>
-                <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-2" aria-pressed="false">
+                <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-2" aria-pressed="false" hidden>
                   <p class="scenario-guide-kicker">Challenge 2</p>
                   <p class="scenario-guide-title">Domain context</p>
                   <p class="scenario-guide-copy">Add catalog facts, stock, and shop context.</p>
                 </button>
-                <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-3" aria-pressed="false">
+                <button type="button" class="scenario-guide-item text-left" data-scenario="challenge-3" aria-pressed="false" hidden>
                   <p class="scenario-guide-kicker">Challenge 3</p>
                   <p class="scenario-guide-title">Evaluation</p>
                   <p class="scenario-guide-copy">Make usefulness and trust visible.</p>
                 </button>
               </div>
+              <button id="scenario-next-button" type="button" class="audience-preset mt-4 w-full justify-center" hidden>Reveal next challenge</button>
             </section>
           </aside>
           <div class="order-1 lg:order-2">

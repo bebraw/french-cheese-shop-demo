@@ -30,6 +30,7 @@ export interface DemoRoomState {
   version: number;
   query: string;
   activeScenario: DemoScenarioId;
+  revealedChallengeIds: DemoChallengeId[];
   audienceByChallenge: Record<DemoChallengeId, DemoAudienceState>;
   season: SimulationSeason | "";
   shopState: ShopState | "";
@@ -53,6 +54,7 @@ export type DemoRoomCommand =
   | { type: "claim-presenter" }
   | { type: "set-query"; query: string }
   | { type: "set-scenario"; scenario: DemoScenarioId }
+  | { type: "advance-scenario" }
   | { type: "toggle-preset"; scenario: DemoChallengeId; presetId: string }
   | { type: "cast-preset-vote"; scenario: DemoChallengeId; presetId: string; voteDelta: 1 | -1 }
   | { type: "toggle-preset-override"; scenario: DemoChallengeId; presetId: string }
@@ -89,6 +91,7 @@ export function createDefaultRoomState(roomId = DEFAULT_ROOM_ID): DemoRoomState 
     version: 1,
     query: DEFAULT_QUERY,
     activeScenario: "baseline",
+    revealedChallengeIds: [],
     audienceByChallenge: {
       "challenge-1": emptyAudienceState(),
       "challenge-2": emptyAudienceState(),
@@ -127,6 +130,11 @@ export function normalizeRoomState(candidate: unknown, roomId = DEFAULT_ROOM_ID)
   if (isDemoScenarioId(raw.activeScenario)) {
     nextState.activeScenario = raw.activeScenario;
   }
+
+  if (Array.isArray(raw.revealedChallengeIds)) {
+    nextState.revealedChallengeIds = raw.revealedChallengeIds.filter(isDemoChallengeId);
+  }
+  nextState.revealedChallengeIds = revealThroughScenario(nextState.revealedChallengeIds, nextState.activeScenario);
 
   if (raw.audienceByChallenge && typeof raw.audienceByChallenge === "object") {
     for (const challengeId of challengeSequence) {
@@ -269,6 +277,21 @@ function applyRoomStateCommand(state: DemoRoomState, command: Exclude<DemoRoomCo
     return bumpVersion({
       ...state,
       activeScenario: command.scenario,
+      revealedChallengeIds: revealThroughScenario(state.revealedChallengeIds, command.scenario),
+    });
+  }
+
+  if (command.type === "advance-scenario") {
+    const nextScenario = getNextScenario(state.activeScenario);
+
+    if (nextScenario === state.activeScenario) {
+      return state;
+    }
+
+    return bumpVersion({
+      ...state,
+      activeScenario: nextScenario,
+      revealedChallengeIds: revealThroughScenario(state.revealedChallengeIds, nextScenario),
     });
   }
 
@@ -427,6 +450,10 @@ export function readRoomCommand(payload: unknown): DemoRoomCommand | null {
     return { type: "set-scenario", scenario };
   }
 
+  if (raw.type === "advance-scenario") {
+    return { type: "advance-scenario" };
+  }
+
   const challengeScenario = asString(raw.scenario);
   if (raw.type === "toggle-preset" && isDemoChallengeId(challengeScenario) && typeof raw.presetId === "string") {
     return { type: "toggle-preset", scenario: challengeScenario, presetId: raw.presetId };
@@ -561,6 +588,28 @@ function getScenarioTrail(scenario: DemoScenarioId): readonly DemoChallengeId[] 
   return scenarioIndex >= 0 ? challengeSequence.slice(0, scenarioIndex + 1) : [];
 }
 
+function getNextScenario(scenario: DemoScenarioId): DemoScenarioId {
+  if (scenario === "baseline") {
+    return "challenge-1";
+  }
+
+  const scenarioIndex = challengeSequence.indexOf(scenario);
+  return challengeSequence[scenarioIndex + 1] ?? scenario;
+}
+
+function revealThroughScenario(revealedChallengeIds: DemoChallengeId[], scenario: DemoScenarioId): DemoChallengeId[] {
+  if (scenario === "baseline") {
+    return revealedChallengeIds;
+  }
+
+  const scenarioIndex = challengeSequence.indexOf(scenario);
+  if (scenarioIndex < 0) {
+    return revealedChallengeIds;
+  }
+
+  return [...new Set([...revealedChallengeIds, ...challengeSequence.slice(0, scenarioIndex + 1)])];
+}
+
 function normalizeVotesByPresetId(candidate: unknown, allowedPresetIds: Set<string>): Record<string, number> {
   if (!candidate || typeof candidate !== "object") {
     return {};
@@ -623,6 +672,7 @@ function requiresPresenterControl(command: Exclude<DemoRoomCommand, { type: "cla
   return (
     command.type === "set-query" ||
     command.type === "set-scenario" ||
+    command.type === "advance-scenario" ||
     command.type === "toggle-preset-override" ||
     command.type === "set-season" ||
     command.type === "set-shop-state" ||
@@ -645,6 +695,12 @@ function presenterControlError(command: Exclude<DemoRoomCommand, { type: "claim-
 
   if (command.type === "reset-room") {
     return presenterClaimed ? "Only the lecturer can reset this room." : "Lecturer controls must be claimed before this room can reset.";
+  }
+
+  if (command.type === "advance-scenario") {
+    return presenterClaimed
+      ? "Only the lecturer can reveal the next challenge for this room."
+      : "Lecturer controls must be claimed before revealing the next challenge.";
   }
 
   if (command.type === "toggle-preset-override") {

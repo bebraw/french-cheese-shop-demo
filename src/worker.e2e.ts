@@ -16,7 +16,7 @@ function roomUrl(roomId: string, params?: URLSearchParams): string {
 }
 
 async function switchScenario(page: import("@playwright/test").Page, label: RegExp, title: string): Promise<void> {
-  await page.getByRole("button", { name: label }).click();
+  await page.locator("[data-scenario]").filter({ hasText: label }).click();
   await expect(page.locator("#scenario-title")).toHaveText(title);
 }
 
@@ -55,6 +55,8 @@ test("renders the cheese demo home page", async ({ page }) => {
 
   await expect(page.getByRole("heading", { level: 1, name: "French Cheese Shop" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Baseline/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Challenge 1/ })).toHaveCount(0);
+  await expect(page.locator("#scenario-next-button")).toBeHidden();
   await expect(page.locator("#room-panel-toggle")).toHaveAttribute("aria-expanded", "true");
   await expect(page.locator("#room-id-input")).toHaveValue(new RegExp("e2e-home$"));
   await expect(page.getByRole("searchbox", { name: "Customer request" })).toBeVisible();
@@ -90,6 +92,36 @@ test("shared room section can be folded and reopened", async ({ page }) => {
 
   await expect(page.locator("#room-panel-toggle")).toHaveAttribute("aria-expanded", "true");
   await expect(page.locator("#room-id-input")).toBeVisible();
+});
+
+test("lecturer reveals challenges one step at a time", async ({ browser }) => {
+  const roomId = "e2e-reveal-challenges";
+  const context = await browser.newContext();
+  const lecturerPage = await context.newPage();
+  const participantPage = await context.newPage();
+
+  await lecturerPage.goto(roomUrl(roomId));
+  await participantPage.goto(roomUrl(roomId));
+
+  await expect(participantPage.getByRole("button", { name: /Challenge 1/ })).toHaveCount(0);
+
+  await claimLecturer(lecturerPage);
+  await expect(lecturerPage.locator("#scenario-next-button")).toHaveText("Next: Challenge 1");
+
+  await lecturerPage.locator("#scenario-next-button").click();
+
+  await expect(lecturerPage.locator("#scenario-title")).toHaveText("Challenge 1: Hidden Needs");
+  await expect(participantPage.locator("#scenario-title")).toHaveText("Challenge 1: Hidden Needs");
+  await expect(participantPage.getByRole("button", { name: /Challenge 1/ })).toBeVisible();
+  await expect(participantPage.getByRole("button", { name: /Challenge 2/ })).toHaveCount(0);
+
+  await lecturerPage.locator("#scenario-next-button").click();
+
+  await expect(participantPage.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
+  await expect(participantPage.getByRole("button", { name: /Challenge 2/ })).toBeVisible();
+  await expect(participantPage.getByRole("button", { name: /Challenge 3/ })).toHaveCount(0);
+
+  await context.close();
 });
 
 test("serves the health endpoint", async ({ request }) => {
@@ -225,7 +257,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
 
   await claimLecturer(page);
   await expect(page.locator("#teaching-focus-panel")).toBeVisible();
-  await page.getByRole("button", { name: /Challenge 1/ }).click();
+  await page.locator("[data-scenario='challenge-1']").click();
   await expect(page.locator("#insights-label")).toHaveText("Explicit requirements");
   await expect(page.locator("#scenario-description")).toContainText("customer really means");
   await expect(page.locator("#teaching-outcome")).toHaveText("Interpret vague requests");
@@ -233,7 +265,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(audienceVoteButton(page, "Oozy center")).toBeVisible();
   await expect(audienceVoteButton(page, "Washed rind")).toHaveCount(0);
 
-  await page.getByRole("button", { name: /Challenge 2/ }).click();
+  await page.locator("[data-scenario='challenge-2']").click();
   await expect(page.locator("#insights-label")).toHaveText("Extra data in play");
   await expect(page.locator("#scenario-description")).toContainText("facts and constraints");
   await expect(page.locator("#teaching-outcome")).toHaveText("Specify domain and operational context");
@@ -241,7 +273,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(audienceVoteButton(page, "Washed rind")).toBeVisible();
   await expect(audienceVoteButton(page, "In stock")).toBeVisible();
 
-  await page.getByRole("button", { name: /Challenge 3/ }).click();
+  await page.locator("[data-scenario='challenge-3']").click();
   await expect(page.locator("#insights-label")).toHaveText("Evaluation checks");
   await expect(page.locator("#scenario-description")).toContainText("visibly prove");
   await expect(page.locator("#teaching-outcome")).toHaveText("Evaluate ambiguity");
@@ -508,7 +540,7 @@ test("participants cannot change the active challenge after the lecturer claims 
   await claimLecturer(lecturerPage);
   await switchScenario(lecturerPage, /Challenge 2/, "Challenge 2: Data Requirements");
 
-  await expect(participantPage.getByRole("button", { name: /Challenge 3/ })).toHaveAttribute("aria-disabled", "true");
+  await expect(participantPage.getByRole("button", { name: /Challenge 3/ })).toHaveCount(0);
   await expect(participantPage.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
   await expect(participantPage.locator("#room-lecturer-status")).toContainText(
     "The shared search query, world context, and challenge changes are locked to the lecturer device for this room.",

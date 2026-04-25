@@ -39,6 +39,7 @@ const scenarioDescriptionElement = document.getElementById("scenario-description
 const insightsLabelElement = document.getElementById("insights-label");
 const scenarioInsightsElement = document.getElementById("scenario-insights");
 const scenarioButtons = Array.from(document.querySelectorAll("[data-scenario]"));
+const scenarioNextButton = document.getElementById("scenario-next-button");
 const roomIdInput = document.getElementById("room-id-input");
 const roomPanelToggle = document.getElementById("room-panel-toggle");
 const roomPanelIcon = document.getElementById("room-panel-icon");
@@ -87,10 +88,11 @@ function createFallbackSnapshot(roomId) {
       version: 1,
       query: defaultQuery,
       activeScenario: "baseline",
+      revealedChallengeIds: [],
       audienceByChallenge: {
-        "challenge-1": { selectedPresetIds: [], customText: "" },
-        "challenge-2": { selectedPresetIds: [], customText: "" },
-        "challenge-3": { selectedPresetIds: [], customText: "" },
+        "challenge-1": { selectedPresetIds: [], votesByPresetId: {}, lecturerOverridePresetIds: [], customText: "" },
+        "challenge-2": { selectedPresetIds: [], votesByPresetId: {}, lecturerOverridePresetIds: [], customText: "" },
+        "challenge-3": { selectedPresetIds: [], votesByPresetId: {}, lecturerOverridePresetIds: [], customText: "" },
       },
       season: "",
       shopState: "",
@@ -248,6 +250,23 @@ function getScenarioTrail(scenario) {
   return scenarioIndex >= 0 ? challengeSequence.slice(0, scenarioIndex + 1) : [];
 }
 
+function getNextScenario(scenario) {
+  if (scenario === "baseline") {
+    return "challenge-1";
+  }
+
+  const scenarioIndex = challengeSequence.indexOf(scenario);
+  return challengeSequence[scenarioIndex + 1] || scenario;
+}
+
+function getVisibleScenarioIds(access, state) {
+  if (access.canManageScenario) {
+    return new Set(["baseline", ...challengeSequence]);
+  }
+
+  return new Set(["baseline", ...(state.revealedChallengeIds || []), state.activeScenario]);
+}
+
 function buildAccumulatedAudienceParts(scenario, valueSelector) {
   const parts = [];
   const seen = new Set();
@@ -380,7 +399,18 @@ function renderTeachingGuide(scenario) {
 
 function renderLecturerControls() {
   const access = getRoomAccess();
+  const state = getRoomState();
+  const nextScenario = getNextScenario(state.activeScenario);
+  const hasNextScenario = nextScenario !== state.activeScenario;
+
   teachingFocusPanelElement.hidden = !access.canManageScenario;
+  scenarioNextButton.hidden = !access.canManageScenario;
+  scenarioNextButton.disabled = !hasNextScenario;
+  scenarioNextButton.setAttribute("aria-disabled", String(!hasNextScenario));
+  scenarioNextButton.classList.toggle("opacity-60", !hasNextScenario);
+  scenarioNextButton.textContent = hasNextScenario
+    ? "Next: " + scenarios[nextScenario].title.replace(/^Challenge ([0-9]+):.*/, "Challenge $1")
+    : "All challenges revealed";
 
   roomClaimLecturerButton.disabled = access.canManageScenario;
   roomClaimLecturerButton.setAttribute("aria-disabled", String(access.canManageScenario));
@@ -722,6 +752,10 @@ function renderResults(results, scenario) {
 function applyScenario(nextScenario) {
   activeScenario = nextScenario;
   const copy = scenarios[nextScenario];
+  const access = getRoomAccess();
+  const state = getRoomState();
+  const visibleScenarioIds = getVisibleScenarioIds(access, state);
+
   scenarioTitleElement.textContent = copy.title;
   scenarioDescriptionElement.textContent = copy.description;
   insightsLabelElement.textContent = copy.insightLabel;
@@ -734,10 +768,13 @@ function applyScenario(nextScenario) {
 
   for (const button of scenarioButtons) {
     const isActive = button.dataset.scenario === nextScenario;
+    const scenarioId = button.dataset.scenario || "baseline";
+    const isVisible = visibleScenarioIds.has(scenarioId);
+    button.hidden = !isVisible;
     button.setAttribute("aria-pressed", String(isActive));
     button.classList.toggle("scenario-guide-item-active", isActive);
-    button.setAttribute("aria-disabled", String(!getRoomAccess().canManageScenario));
-    button.classList.toggle("opacity-60", !getRoomAccess().canManageScenario);
+    button.setAttribute("aria-disabled", String(!access.canManageScenario));
+    button.classList.toggle("opacity-60", !access.canManageScenario);
   }
 
   const nextCustomText = nextScenario === "baseline" ? "" : getAudienceState(nextScenario).customText;
@@ -1064,6 +1101,15 @@ for (const button of scenarioButtons) {
     sendCommand({ type: "set-scenario", scenario: button.dataset.scenario || "baseline" });
   });
 }
+
+scenarioNextButton.addEventListener("click", () => {
+  if (!getRoomAccess().canManageScenario) {
+    setStatus("Only the lecturer can reveal the next challenge.");
+    return;
+  }
+
+  sendCommand({ type: "advance-scenario" });
+});
 
 roomClaimLecturerButton.addEventListener("click", () => {
   void claimLecturerControls();
