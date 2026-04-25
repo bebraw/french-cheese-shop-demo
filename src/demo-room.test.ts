@@ -37,6 +37,38 @@ describe("demo room state", () => {
     expect(buildAudienceSummaryItems(state, "challenge-2")).toEqual(["Keep it creamy", "Cow's milk", "With cider"]);
   });
 
+  it("derives active challenge input from grouped vote winners", () => {
+    let record = createDefaultRoomRecord("vote-room");
+
+    record = applyOk(record, { type: "cast-preset-vote", scenario: "challenge-1", presetId: "cow", voteDelta: 1 });
+    record = applyOk(record, { type: "cast-preset-vote", scenario: "challenge-1", presetId: "goat", voteDelta: 1 });
+    record = applyOk(record, { type: "cast-preset-vote", scenario: "challenge-1", presetId: "cow", voteDelta: 1 });
+    record = applyOk(record, { type: "cast-preset-vote", scenario: "challenge-1", presetId: "creamy", voteDelta: 1 });
+
+    expect(record.state.audienceByChallenge["challenge-1"].votesByPresetId).toMatchObject({
+      cow: 2,
+      goat: 1,
+      creamy: 1,
+    });
+    expect(record.state.audienceByChallenge["challenge-1"].selectedPresetIds).toEqual(["creamy", "cow"]);
+    expect(buildAudienceInput(record.state, "challenge-1")).toBe("keep it creamy. cow's milk");
+    expect(buildAudienceSummaryItems(record.state, "challenge-1")).toEqual(["Keep it creamy", "Cow's milk"]);
+  });
+
+  it("lets the lecturer override the vote winner for one semantic group", () => {
+    let record = createDefaultRoomRecord("override-room");
+
+    record = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    record = applyOk(record, { type: "cast-preset-vote", scenario: "challenge-1", presetId: "cow", voteDelta: 1 });
+    record = applyOk(record, { type: "cast-preset-vote", scenario: "challenge-1", presetId: "cow", voteDelta: 1 });
+    record = applyOk(record, { type: "cast-preset-vote", scenario: "challenge-1", presetId: "goat", voteDelta: 1 });
+    record = applyOk(record, { type: "toggle-preset-override", scenario: "challenge-1", presetId: "goat" }, "lecturer-token");
+
+    expect(record.state.audienceByChallenge["challenge-1"].lecturerOverridePresetIds).toEqual(["goat"]);
+    expect(record.state.audienceByChallenge["challenge-1"].selectedPresetIds).toEqual(["goat"]);
+    expect(buildAudienceInput(record.state, "challenge-1")).toBe("goat's milk");
+  });
+
   it("builds a derived search snapshot from the shared room state", () => {
     let record = createDefaultRoomRecord("snapshot-room");
     record = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
@@ -108,7 +140,19 @@ describe("demo room state", () => {
     expect(readRoomCommand({ type: "set-backend", backend: "llm" })).toEqual({ type: "set-backend", backend: "llm" });
     expect(readRoomCommand({ type: "claim-presenter" })).toEqual({ type: "claim-presenter" });
     expect(readRoomCommand({ type: "reset-room" })).toEqual({ type: "reset-room" });
+    expect(readRoomCommand({ type: "cast-preset-vote", scenario: "challenge-1", presetId: "cow", voteDelta: 1 })).toEqual({
+      type: "cast-preset-vote",
+      scenario: "challenge-1",
+      presetId: "cow",
+      voteDelta: 1,
+    });
+    expect(readRoomCommand({ type: "toggle-preset-override", scenario: "challenge-1", presetId: "goat" })).toEqual({
+      type: "toggle-preset-override",
+      scenario: "challenge-1",
+      presetId: "goat",
+    });
     expect(readRoomCommand({ type: "toggle-preset", scenario: "baseline", presetId: "creamy" })).toBeNull();
+    expect(readRoomCommand({ type: "cast-preset-vote", scenario: "challenge-1", presetId: "cow", voteDelta: 2 })).toBeNull();
   });
 
   it("resets the room to the default shared state", () => {
@@ -123,6 +167,7 @@ describe("demo room state", () => {
     expect(state.query).toBe("I want something like Brie, but stronger.");
     expect(state.activeScenario).toBe("baseline");
     expect(state.audienceByChallenge["challenge-2"].selectedPresetIds).toEqual([]);
+    expect(state.audienceByChallenge["challenge-2"].votesByPresetId).toEqual({});
   });
 
   it("protects challenge changes until the lecturer claims control", () => {
@@ -162,6 +207,28 @@ describe("demo room state", () => {
 
     const claimedRecord = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
     const wrongPresenterResult = applyRoomCommand(claimedRecord, { type: "set-shop-state", shopState: "holiday-rush" }, "audience-token");
+
+    expect(wrongPresenterResult.ok).toBe(false);
+    expect(wrongPresenterResult.error).toContain("Only the lecturer");
+  });
+
+  it("protects vote overrides until the lecturer claims control", () => {
+    const record = createDefaultRoomRecord("protected-override-room");
+    const unauthorizedResult = applyRoomCommand(
+      record,
+      { type: "toggle-preset-override", scenario: "challenge-1", presetId: "goat" },
+      null,
+    );
+
+    expect(unauthorizedResult.ok).toBe(false);
+    expect(unauthorizedResult.error).toContain("overriding the audience vote");
+
+    const claimedRecord = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    const wrongPresenterResult = applyRoomCommand(
+      claimedRecord,
+      { type: "toggle-preset-override", scenario: "challenge-1", presetId: "goat" },
+      "audience-token",
+    );
 
     expect(wrongPresenterResult.ok).toBe(false);
     expect(wrongPresenterResult.error).toContain("Only the lecturer");

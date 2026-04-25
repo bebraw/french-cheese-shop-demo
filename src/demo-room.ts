@@ -20,6 +20,8 @@ import {
 
 export interface DemoAudienceState {
   selectedPresetIds: string[];
+  votesByPresetId: Record<string, number>;
+  lecturerOverridePresetIds: string[];
   customText: string;
 }
 
@@ -52,6 +54,8 @@ export type DemoRoomCommand =
   | { type: "set-query"; query: string }
   | { type: "set-scenario"; scenario: DemoScenarioId }
   | { type: "toggle-preset"; scenario: DemoChallengeId; presetId: string }
+  | { type: "cast-preset-vote"; scenario: DemoChallengeId; presetId: string; voteDelta: 1 | -1 }
+  | { type: "toggle-preset-override"; scenario: DemoChallengeId; presetId: string }
   | { type: "set-custom-text"; scenario: DemoChallengeId; customText: string }
   | { type: "set-season"; season: SimulationSeason | "" }
   | { type: "set-shop-state"; shopState: ShopState | "" }
@@ -74,6 +78,8 @@ export interface ApplyRoomCommandResult {
 
 const emptyAudienceState = (): DemoAudienceState => ({
   selectedPresetIds: [],
+  votesByPresetId: {},
+  lecturerOverridePresetIds: [],
   customText: "",
 });
 
@@ -130,13 +136,30 @@ export function normalizeRoomState(candidate: unknown, roomId = DEFAULT_ROOM_ID)
       }
 
       const allowedPresetIds = new Set(scenarioCopy[challengeId].presets.map((preset) => preset.id));
-      nextState.audienceByChallenge[challengeId] = {
-        selectedPresetIds: Array.isArray(rawAudience.selectedPresetIds)
-          ? rawAudience.selectedPresetIds.filter(
-              (presetId): presetId is string => typeof presetId === "string" && allowedPresetIds.has(presetId),
-            )
-          : [],
+      const normalizedVotesByPresetId = normalizeVotesByPresetId(rawAudience.votesByPresetId, allowedPresetIds);
+      const lecturerOverridePresetIds = Array.isArray(rawAudience.lecturerOverridePresetIds)
+        ? rawAudience.lecturerOverridePresetIds.filter(
+            (presetId): presetId is string => typeof presetId === "string" && allowedPresetIds.has(presetId),
+          )
+        : [];
+      const legacySelectedPresetIds = Array.isArray(rawAudience.selectedPresetIds)
+        ? rawAudience.selectedPresetIds.filter(
+            (presetId): presetId is string => typeof presetId === "string" && allowedPresetIds.has(presetId),
+          )
+        : [];
+      const votesByPresetId =
+        Object.keys(normalizedVotesByPresetId).length > 0
+          ? normalizedVotesByPresetId
+          : Object.fromEntries(legacySelectedPresetIds.map((presetId) => [presetId, 1]));
+      const normalizedAudienceState = {
+        votesByPresetId,
+        lecturerOverridePresetIds,
+        selectedPresetIds: [],
         customText: typeof rawAudience.customText === "string" ? rawAudience.customText : "",
+      };
+      nextState.audienceByChallenge[challengeId] = {
+        ...normalizedAudienceState,
+        selectedPresetIds: resolveSelectedPresetIds(challengeId, normalizedAudienceState),
       };
     }
   }
@@ -261,13 +284,91 @@ function applyRoomStateCommand(state: DemoRoomState, command: Exclude<DemoRoomCo
       ? audienceState.selectedPresetIds.filter((presetId) => presetId !== command.presetId)
       : [...audienceState.selectedPresetIds, command.presetId];
 
+    const votesByPresetId = Object.fromEntries(selectedPresetIds.map((presetId) => [presetId, 1]));
+    const nextAudienceState = {
+      ...audienceState,
+      selectedPresetIds,
+      votesByPresetId,
+      lecturerOverridePresetIds: [],
+    };
+
+    return bumpVersion({
+      ...state,
+      audienceByChallenge: {
+        ...state.audienceByChallenge,
+        [command.scenario]: nextAudienceState,
+      },
+    });
+  }
+
+  if (command.type === "cast-preset-vote") {
+    const audienceState = state.audienceByChallenge[command.scenario];
+    const allowedPresetIds = new Set(scenarioCopy[command.scenario].presets.map((preset) => preset.id));
+
+    if (!allowedPresetIds.has(command.presetId)) {
+      return state;
+    }
+
+    const currentVotes = audienceState.votesByPresetId[command.presetId] ?? 0;
+    const nextVotes = Math.max(0, currentVotes + command.voteDelta);
+    const votesByPresetId = {
+      ...audienceState.votesByPresetId,
+      [command.presetId]: nextVotes,
+    };
+    if (nextVotes === 0) {
+      delete votesByPresetId[command.presetId];
+    }
+
+    const nextAudienceState = {
+      ...audienceState,
+      votesByPresetId,
+    };
+
     return bumpVersion({
       ...state,
       audienceByChallenge: {
         ...state.audienceByChallenge,
         [command.scenario]: {
-          ...audienceState,
-          selectedPresetIds,
+          ...nextAudienceState,
+          selectedPresetIds: resolveSelectedPresetIds(command.scenario, nextAudienceState),
+        },
+      },
+    });
+  }
+
+  if (command.type === "toggle-preset-override") {
+    const audienceState = state.audienceByChallenge[command.scenario];
+    const presets = scenarioCopy[command.scenario].presets;
+    const preset = presets.find((candidate) => candidate.id === command.presetId);
+
+    if (!preset) {
+      return state;
+    }
+
+    const overrideSet = new Set(audienceState.lecturerOverridePresetIds);
+    if (overrideSet.has(command.presetId)) {
+      overrideSet.delete(command.presetId);
+    } else {
+      for (const option of presets) {
+        if (option.voteGroupId === preset.voteGroupId) {
+          overrideSet.delete(option.id);
+        }
+      }
+      overrideSet.add(command.presetId);
+    }
+
+    const nextAudienceState = {
+      ...audienceState,
+      lecturerOverridePresetIds: [...overrideSet],
+    };
+
+    return bumpVersion({
+      ...state,
+      audienceByChallenge: {
+        ...state.audienceByChallenge,
+        [command.scenario]: {
+          ...nextAudienceState,
+          selectedPresetIds: resolveSelectedPresetIds(command.scenario, nextAudienceState),
         },
       },
     });
@@ -329,6 +430,17 @@ export function readRoomCommand(payload: unknown): DemoRoomCommand | null {
   const challengeScenario = asString(raw.scenario);
   if (raw.type === "toggle-preset" && isDemoChallengeId(challengeScenario) && typeof raw.presetId === "string") {
     return { type: "toggle-preset", scenario: challengeScenario, presetId: raw.presetId };
+  }
+
+  if (raw.type === "cast-preset-vote" && isDemoChallengeId(challengeScenario) && typeof raw.presetId === "string") {
+    const voteDelta = raw.voteDelta === -1 ? -1 : raw.voteDelta === 1 ? 1 : null;
+    if (voteDelta) {
+      return { type: "cast-preset-vote", scenario: challengeScenario, presetId: raw.presetId, voteDelta };
+    }
+  }
+
+  if (raw.type === "toggle-preset-override" && isDemoChallengeId(challengeScenario) && typeof raw.presetId === "string") {
+    return { type: "toggle-preset-override", scenario: challengeScenario, presetId: raw.presetId };
   }
 
   if (raw.type === "set-custom-text" && isDemoChallengeId(challengeScenario) && typeof raw.customText === "string") {
@@ -449,6 +561,56 @@ function getScenarioTrail(scenario: DemoScenarioId): readonly DemoChallengeId[] 
   return scenarioIndex >= 0 ? challengeSequence.slice(0, scenarioIndex + 1) : [];
 }
 
+function normalizeVotesByPresetId(candidate: unknown, allowedPresetIds: Set<string>): Record<string, number> {
+  if (!candidate || typeof candidate !== "object") {
+    return {};
+  }
+
+  const votesByPresetId: Record<string, number> = {};
+  for (const [presetId, rawCount] of Object.entries(candidate)) {
+    if (!allowedPresetIds.has(presetId) || typeof rawCount !== "number" || !Number.isFinite(rawCount) || rawCount <= 0) {
+      continue;
+    }
+
+    votesByPresetId[presetId] = Math.floor(rawCount);
+  }
+
+  return votesByPresetId;
+}
+
+function resolveSelectedPresetIds(
+  scenario: DemoChallengeId,
+  audienceState: Pick<DemoAudienceState, "votesByPresetId" | "lecturerOverridePresetIds">,
+): string[] {
+  const selectedPresetIds: string[] = [];
+  const presetsByGroup = new Map<string, (typeof scenarioCopy)[DemoChallengeId]["presets"][number][]>();
+
+  for (const preset of scenarioCopy[scenario].presets) {
+    const group = presetsByGroup.get(preset.voteGroupId) ?? [];
+    group.push(preset);
+    presetsByGroup.set(preset.voteGroupId, group);
+  }
+
+  for (const presets of presetsByGroup.values()) {
+    const overrideIds = presets.map((preset) => preset.id).filter((presetId) => audienceState.lecturerOverridePresetIds.includes(presetId));
+    if (overrideIds.length > 0) {
+      selectedPresetIds.push(...overrideIds);
+      continue;
+    }
+
+    const maxVotes = Math.max(...presets.map((preset) => audienceState.votesByPresetId[preset.id] ?? 0));
+    if (maxVotes <= 0) {
+      continue;
+    }
+
+    selectedPresetIds.push(
+      ...presets.filter((preset) => (audienceState.votesByPresetId[preset.id] ?? 0) === maxVotes).map((preset) => preset.id),
+    );
+  }
+
+  return selectedPresetIds;
+}
+
 function bumpVersion(state: DemoRoomState): DemoRoomState {
   return {
     ...state,
@@ -461,6 +623,7 @@ function requiresPresenterControl(command: Exclude<DemoRoomCommand, { type: "cla
   return (
     command.type === "set-query" ||
     command.type === "set-scenario" ||
+    command.type === "toggle-preset-override" ||
     command.type === "set-season" ||
     command.type === "set-shop-state" ||
     command.type === "reset-room"
@@ -482,6 +645,12 @@ function presenterControlError(command: Exclude<DemoRoomCommand, { type: "claim-
 
   if (command.type === "reset-room") {
     return presenterClaimed ? "Only the lecturer can reset this room." : "Lecturer controls must be claimed before this room can reset.";
+  }
+
+  if (command.type === "toggle-preset-override") {
+    return presenterClaimed
+      ? "Only the lecturer can override the audience vote for this room."
+      : "Lecturer controls must be claimed before overriding the audience vote.";
   }
 
   return presenterClaimed

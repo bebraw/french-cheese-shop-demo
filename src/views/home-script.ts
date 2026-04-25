@@ -74,6 +74,8 @@ let audienceSyncHandle = null;
 let pendingQueryDraft = null;
 let pendingAudienceDraft = null;
 const presenterStoragePrefix = "demo-presenter-token:";
+const voteStoragePrefix = "demo-vote-state:";
+let localVoteState = createEmptyVoteState();
 
 function createFallbackSnapshot(roomId) {
   return {
@@ -130,6 +132,38 @@ function sanitizePresenterToken(rawToken) {
 
 function getPresenterStorageKey(roomId) {
   return presenterStoragePrefix + roomId;
+}
+
+function createEmptyVoteState() {
+  return Object.fromEntries(challengeSequence.map((scenario) => [scenario, []]));
+}
+
+function getVoteStorageKey(roomId) {
+  return voteStoragePrefix + roomId;
+}
+
+function readLocalVoteState(roomId) {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(getVoteStorageKey(roomId)) || "{}");
+    const nextState = createEmptyVoteState();
+
+    for (const scenario of challengeSequence) {
+      const allowedPresetIds = new Set(scenarios[scenario].presets.map((preset) => preset.id));
+      nextState[scenario] = Array.isArray(parsed[scenario])
+        ? parsed[scenario].filter((presetId) => typeof presetId === "string" && allowedPresetIds.has(presetId))
+        : [];
+    }
+
+    return nextState;
+  } catch {
+    return createEmptyVoteState();
+  }
+}
+
+function persistLocalVoteState(roomId) {
+  try {
+    window.localStorage.setItem(getVoteStorageKey(roomId), JSON.stringify(localVoteState));
+  } catch {}
 }
 
 function readStoredPresenterToken(roomId) {
@@ -221,12 +255,13 @@ function buildAccumulatedAudienceParts(scenario, valueSelector) {
     const audienceState = getAudienceState(scenarioId);
     const selectedPresets = scenarios[scenarioId].presets.filter((preset) => audienceState.selectedPresetIds.includes(preset.id));
 
-    for (const part of [...selectedPresets.map((preset) => valueSelector(preset)), audienceState.customText.trim()]) {
-      if (!part || seen.has(part)) {
+    for (const part of [...selectedPresets.map((preset) => valueSelector(preset, audienceState)), audienceState.customText.trim()]) {
+      const partKey = typeof part === "string" ? part : part.label + ":" + part.groupLabel;
+      if (!part || seen.has(partKey)) {
         continue;
       }
 
-      seen.add(part);
+      seen.add(partKey);
       parts.push(part);
     }
   }
@@ -235,7 +270,12 @@ function buildAccumulatedAudienceParts(scenario, valueSelector) {
 }
 
 function buildAudienceSummaryItems(scenario) {
-  return buildAccumulatedAudienceParts(scenario, (preset) => preset.label);
+  return buildAccumulatedAudienceParts(scenario, (preset, audienceState) => ({
+    label: preset.label,
+    groupLabel: preset.voteGroupLabel,
+    votes: audienceState.votesByPresetId[preset.id] || 0,
+    isOverride: audienceState.lecturerOverridePresetIds.includes(preset.id),
+  }));
 }
 
 function buildContextSummaryItems() {
@@ -284,6 +324,10 @@ function renderInsights(insights, promptLabel) {
   }
 }
 
+function formatVoteCount(votes) {
+  return votes + " " + (votes === 1 ? "vote" : "votes");
+}
+
 function renderAudienceSummary(scenario) {
   clearAudienceSummary();
 
@@ -296,11 +340,17 @@ function renderAudienceSummary(scenario) {
   const hasItems = summaryItems.length > 0;
   audienceSummaryEmptyElement.textContent = hasItems ? "" : scenarios[scenario].audienceSummaryEmptyText;
 
-  for (const itemText of summaryItems) {
-    const item = document.createElement("li");
-    item.className = "audience-summary-chip";
-    item.textContent = itemText;
-    audienceSummaryChipsElement.appendChild(item);
+  for (const summaryItem of summaryItems) {
+    const chip = document.createElement("li");
+    chip.className = "audience-summary-chip";
+    if (typeof summaryItem === "string") {
+      chip.textContent = summaryItem;
+    } else {
+      const voteText = typeof summaryItem.votes === "number" ? " · " + formatVoteCount(summaryItem.votes) : "";
+      const overrideText = summaryItem.isOverride ? " · lecturer override" : "";
+      chip.textContent = summaryItem.groupLabel + ": " + summaryItem.label + voteText + overrideText;
+    }
+    audienceSummaryChipsElement.appendChild(chip);
   }
 }
 
@@ -464,19 +514,92 @@ function renderAudiencePresets(scenario) {
   }
 
   const audienceState = getAudienceState(scenario);
+  const access = getRoomAccess();
+  const localPresetIds = new Set(localVoteState[scenario] || []);
+  const groupedPresets = [];
+  const groupIndexById = new Map();
 
   for (const preset of scenarios[scenario].presets) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "audience-preset";
-    button.textContent = preset.label;
-    const isActive = audienceState.selectedPresetIds.includes(preset.id);
-    button.setAttribute("aria-pressed", String(isActive));
-    button.classList.toggle("audience-preset-active", isActive);
-    button.addEventListener("click", () => {
-      sendCommand({ type: "toggle-preset", scenario, presetId: preset.id });
-    });
-    audiencePresetsElement.appendChild(button);
+    if (!groupIndexById.has(preset.voteGroupId)) {
+      groupIndexById.set(preset.voteGroupId, groupedPresets.length);
+      groupedPresets.push({
+        id: preset.voteGroupId,
+        label: preset.voteGroupLabel,
+        presets: [],
+      });
+    }
+
+    groupedPresets[groupIndexById.get(preset.voteGroupId)].presets.push(preset);
+  }
+
+  for (const group of groupedPresets) {
+    const groupElement = document.createElement("section");
+    groupElement.className = "grid gap-2";
+
+    const heading = document.createElement("p");
+    heading.className = "text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-app-text-soft";
+    heading.textContent = group.label;
+    groupElement.appendChild(heading);
+
+    const optionList = document.createElement("div");
+    optionList.className = "flex flex-wrap gap-2";
+
+    for (const preset of group.presets) {
+      const voteCount = audienceState.votesByPresetId[preset.id] || 0;
+      const hasLocalVote = localPresetIds.has(preset.id);
+      const isSelected = audienceState.selectedPresetIds.includes(preset.id);
+      const isOverride = audienceState.lecturerOverridePresetIds.includes(preset.id);
+
+      const voteButton = document.createElement("button");
+      voteButton.type = "button";
+      voteButton.className = "audience-preset";
+      voteButton.textContent = preset.label + " · " + formatVoteCount(voteCount) + (isOverride ? " · Lecturer choice" : "");
+      voteButton.setAttribute("aria-pressed", String(access.canManageScenario ? isOverride : hasLocalVote));
+      voteButton.classList.toggle("audience-preset-active", hasLocalVote || isSelected || isOverride);
+      voteButton.addEventListener("click", () => {
+        if (access.canManageScenario) {
+          sendCommand({ type: "toggle-preset-override", scenario, presetId: preset.id });
+          return;
+        }
+
+        handlePresetVote(scenario, preset);
+      });
+      optionList.appendChild(voteButton);
+    }
+
+    groupElement.appendChild(optionList);
+    audiencePresetsElement.appendChild(groupElement);
+  }
+}
+
+function handlePresetVote(scenario, preset) {
+  const currentPresetIds = new Set(localVoteState[scenario] || []);
+  const voteCommands = [];
+
+  if (currentPresetIds.has(preset.id)) {
+    currentPresetIds.delete(preset.id);
+    voteCommands.push({ type: "cast-preset-vote", scenario, presetId: preset.id, voteDelta: -1 });
+  } else {
+    for (const option of scenarios[scenario].presets) {
+      if (option.voteGroupId === preset.voteGroupId && currentPresetIds.has(option.id)) {
+        currentPresetIds.delete(option.id);
+        voteCommands.push({ type: "cast-preset-vote", scenario, presetId: option.id, voteDelta: -1 });
+      }
+    }
+
+    currentPresetIds.add(preset.id);
+    voteCommands.push({ type: "cast-preset-vote", scenario, presetId: preset.id, voteDelta: 1 });
+  }
+
+  localVoteState = {
+    ...localVoteState,
+    [scenario]: [...currentPresetIds],
+  };
+  persistLocalVoteState(activeRoomId);
+  renderAudiencePresets(scenario);
+
+  for (const command of voteCommands) {
+    sendCommand(command);
   }
 }
 
@@ -840,6 +963,7 @@ async function joinRoom(nextRoomId) {
   const roomId = sanitizeRoomId(nextRoomId);
   closeLiveSync();
   activePresenterToken = readStoredPresenterToken(roomId) || "";
+  localVoteState = readLocalVoteState(roomId);
   activeRoomId = roomId;
   roomIdInput.value = roomId;
   updateUrlState();

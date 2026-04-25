@@ -209,4 +209,22 @@ describe("createSessionResponse", () => {
       error: expect.stringContaining("shared world context"),
     });
   });
+
+  it("rejects vote overrides from non-lecturer clients", async () => {
+    const response = await createSessionResponse(
+      new Request("http://example.com/api/session?room=session-protected-override", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ type: "toggle-preset-override", scenario: "challenge-1", presetId: "goat" }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringContaining("audience vote"),
+    });
+  });
 });

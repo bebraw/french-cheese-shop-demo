@@ -37,8 +37,9 @@ describe("renderHomePage", () => {
     expect(html).toContain("Context in play");
     expect(html).toContain("Search backend options");
     expect(html).toContain("LLM backend");
-    expect(html).toContain("Audience answer");
+    expect(html).toContain("Audience vote");
     expect(html).toContain("Other audience note");
+    expect(html).toContain("Selected by votes");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');
     expect(html).toContain('<script src="/app.js" defer></script>');
   });

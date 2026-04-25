@@ -15,6 +15,8 @@ export interface DemoPresetOption {
   id: string;
   label: string;
   value: string;
+  voteGroupId: string;
+  voteGroupLabel: string;
 }
 
 export interface DemoScenarioCopy {
@@ -72,18 +74,21 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     insightLabel: "Explicit requirements",
     audienceLabel: "Other hidden need",
     audiencePlaceholder: "Add another hidden preference.",
-    audiencePrompt: "What hidden need became explicit?",
+    audiencePrompt: "Vote on the hidden need that should become explicit.",
     audienceSummaryLabel: "Clarified needs",
-    audienceSummaryEmptyText: "Select the newly clarified needs.",
+    audienceSummaryEmptyText: "Vote on the options the recommendation should use.",
     teachingOutcome: "Interpret vague requests",
     teachingFocus: "Challenge 1 turns hidden meaning into explicit requirements.",
     teachingQuestion: "Which preference or constraint did the first pass have to guess?",
     teachingNotice: "The query stays the same, but the ranking changes because meaning became explicit.",
     presets: [
-      { id: "creamy", label: "Keep it creamy", value: "keep it creamy" },
-      { id: "cow", label: "Cow's milk", value: "cow's milk" },
-      { id: "stronger", label: "Much stronger", value: "much stronger" },
-      { id: "oozy", label: "Oozy center", value: "oozy center" },
+      { id: "creamy", label: "Keep it creamy", value: "keep it creamy", voteGroupId: "texture", voteGroupLabel: "Texture" },
+      { id: "oozy", label: "Oozy center", value: "oozy center", voteGroupId: "texture", voteGroupLabel: "Texture" },
+      { id: "cow", label: "Cow's milk", value: "cow's milk", voteGroupId: "milk", voteGroupLabel: "Milk" },
+      { id: "goat", label: "Goat's milk", value: "goat's milk", voteGroupId: "milk", voteGroupLabel: "Milk" },
+      { id: "sheep", label: "Sheep's milk", value: "sheep's milk", voteGroupId: "milk", voteGroupLabel: "Milk" },
+      { id: "mixed", label: "Mixed milk ok", value: "mixed milk is acceptable", voteGroupId: "milk", voteGroupLabel: "Milk" },
+      { id: "stronger", label: "Much stronger", value: "much stronger", voteGroupId: "strength", voteGroupLabel: "Strength" },
     ],
   },
   "challenge-2": {
@@ -92,19 +97,21 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     insightLabel: "Extra data in play",
     audienceLabel: "Other fact or constraint",
     audiencePlaceholder: "Add another fact or constraint.",
-    audiencePrompt: "What new fact or constraint do we know?",
+    audiencePrompt: "Vote on the fact or constraint the system should use.",
     audienceSummaryLabel: "Known facts",
-    audienceSummaryEmptyText: "Select the extra facts that should influence ranking.",
+    audienceSummaryEmptyText: "Vote on the facts that should influence ranking.",
     teachingOutcome: "Specify domain and operational context",
     teachingFocus: "Challenge 2 adds the domain and shop context behind the prompt.",
     teachingQuestion: "What product fact, pairing, stock rule, or shop condition does the system need next?",
     teachingNotice: "Better recommendations depend on catalog data and operating context, not only better wording.",
     presets: [
-      { id: "cider", label: "With cider", value: "with cider" },
-      { id: "washed-rind", label: "Washed rind", value: "prefers washed rind" },
-      { id: "stock", label: "In stock", value: "it must be in stock" },
-      { id: "budget", label: "Budget", value: "under EUR 12" },
-      { id: "salad", label: "For salad", value: "for salad" },
+      { id: "cider", label: "With cider", value: "with cider", voteGroupId: "pairing", voteGroupLabel: "Pairing" },
+      { id: "burgundy", label: "With Burgundy", value: "with burgundy", voteGroupId: "pairing", voteGroupLabel: "Pairing" },
+      { id: "beer", label: "With beer", value: "with beer", voteGroupId: "pairing", voteGroupLabel: "Pairing" },
+      { id: "washed-rind", label: "Washed rind", value: "prefers washed rind", voteGroupId: "style", voteGroupLabel: "Style" },
+      { id: "stock", label: "In stock", value: "it must be in stock", voteGroupId: "availability", voteGroupLabel: "Availability" },
+      { id: "budget", label: "Budget", value: "under EUR 12", voteGroupId: "budget", voteGroupLabel: "Budget" },
+      { id: "salad", label: "For salad", value: "for salad", voteGroupId: "serving", voteGroupLabel: "Serving" },
     ],
   },
   "challenge-3": {
@@ -113,17 +120,17 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     insightLabel: "Evaluation checks",
     audienceLabel: "Other evaluation criterion",
     audiencePlaceholder: "Add another success criterion.",
-    audiencePrompt: "What should the results visibly show?",
+    audiencePrompt: "Vote on what the results should visibly show.",
     audienceSummaryLabel: "Evaluation criteria",
-    audienceSummaryEmptyText: "Select the checks the final answer must satisfy.",
+    audienceSummaryEmptyText: "Vote on the checks the final answer must satisfy.",
     teachingOutcome: "Evaluate ambiguity",
     teachingFocus: "Challenge 3 turns success criteria into inspectable checks.",
     teachingQuestion: "What should a good answer visibly prove before we trust it?",
     teachingNotice: "The goal is not one magical answer, but evidence that the recommendation is useful, trusted, and good enough.",
     presets: [
-      { id: "explain", label: "Show why it fits", value: "show why it fits" },
-      { id: "backup", label: "Mark a backup", value: "mark a backup choice" },
-      { id: "shortlist", label: "Two finalists", value: "keep it to two finalists" },
+      { id: "explain", label: "Show why it fits", value: "show why it fits", voteGroupId: "explanation", voteGroupLabel: "Explanation" },
+      { id: "backup", label: "Mark a backup", value: "mark a backup choice", voteGroupId: "fallback", voteGroupLabel: "Fallback" },
+      { id: "shortlist", label: "Two finalists", value: "keep it to two finalists", voteGroupId: "scope", voteGroupLabel: "Scope" },
     ],
   },
 };

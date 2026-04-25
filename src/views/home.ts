@@ -99,14 +99,14 @@ export function renderHomePage(): string {
                 <input id="customer-query" name="q" type="search" autocomplete="off" spellcheck="false" value="${escapeHtml(DEFAULT_QUERY)}" placeholder="Type the customer request" class="mt-4 w-full rounded-[1.35rem] bg-app-surface px-4 py-3 text-base text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28 sm:px-5 sm:py-4 sm:text-lg">
               </label>
               <div id="audience-controls" class="mt-4 hidden">
-                <p id="audience-prompt" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
-                <div id="audience-presets" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Audience answer options"></div>
+                <p id="audience-prompt" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience vote</p>
+                <div id="audience-presets" class="mt-3 grid gap-4" role="group" aria-label="Audience answer options"></div>
                 <label class="mt-4 block" for="audience-custom-input">
                   <span id="audience-label" class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Other audience note</span>
                   <input id="audience-custom-input" name="audience-note" type="text" autocomplete="off" spellcheck="false" placeholder="" class="w-full rounded-[1.15rem] bg-app-surface px-4 py-3 text-sm leading-6 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
                 </label>
                 <div class="mt-4 border-t border-app-line pt-4">
-                  <p id="audience-summary-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience answer</p>
+                  <p id="audience-summary-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Selected by votes</p>
                   <p id="audience-summary-empty" class="mt-3 text-sm leading-6 text-app-text-soft">Choose one or more answers below.</p>
                   <ul id="audience-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
                 </div>

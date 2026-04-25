@@ -14,6 +14,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - **Simulation context contract:** `season` and `shopState` are shared world-context controls available from baseline through challenge 3.
 - **Backend contract:** `backend` must accept `rules` and `llm`, with `rules` as the default and `llm` implemented as a local contrast mode instead of a live remote model call.
 - **Multiplayer contract:** a room id selects one canonical shared demo session. Shared room state is coordinated server-side, while local-only UI state such as expanded result cards and the `Context` drawer open state stays per browser.
+- **Audience voting contract:** challenge presets are grouped vote options. Audience browsers contribute vote counts, the room derives active challenge inputs from the highest-voted option in each semantic group, and lecturer overrides take precedence per group.
 - **Dependencies:** The deployed Worker depends only on the committed repo assets, generated CSS, and one Durable Object binding for room coordination. No remote AI, Vectorize, KV, or import-time credentials are part of the current runtime path.
 
 ### Anti-Patterns
@@ -32,7 +33,10 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` opens with the baseline prompt prefilled so the demo starts in a meaningful default state.
 - [ ] `GET /` keeps the baseline and challenge descriptions visible enough that the audience can tell the four passes apart before the presenter switches tabs.
 - [ ] `GET /` keeps a compact teaching-focus panel in the main column with the current learning outcome plus short `Ask` and `Notice` prompts so the deck's pedagogical goal stays visible on phones and larger screens.
-- [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific choices before falling back to a custom note.
+- [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific vote choices before falling back to a custom note.
+- [ ] `GET /` groups semantic alternatives such as milk type so the audience votes between options instead of selecting contradictory cues.
+- [ ] `GET /` shows vote counts beside challenge options and in the selected audience summary.
+- [ ] `GET /` lets the lecturer override the audience vote for one option group by pressing an option in that group when the teaching path needs a deliberate contrast.
 - [ ] `GET /` carries forward earlier challenge answers into later challenge searches so the teaching flow can layer requirements instead of replacing them.
 - [ ] Each challenge preset list teaches one distinct step in the story: hidden needs, concrete facts, then evaluation criteria.
 - [ ] `GET /` exposes simulation context controls inside a compact foldable `Context` container on the right so the presenter can change season and shop state explicitly from baseline through challenge 3.
@@ -71,6 +75,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Shared world context must preserve the selected season and shop state until the presenter changes them, including across baseline and every challenge.
 - The backend toggle must stay optional and shared across baseline plus all challenges, so the presenter can treat it as a short coda instead of a second primary lesson.
 - Participants should still be able to contribute audience and backend inputs even when lecturer controls are locked to one device.
+- Audience challenge inputs should be derived from grouped vote winners, while lecturer overrides should visibly replace the vote winner for that group.
 - Audience-facing room sharing must not require copying a lecturer token by default.
 - Preset examples and lens labels should avoid challenge overlap unless the carry-forward behavior is the point being taught explicitly.
 - The challenge controls should stay visible in a fixed left sidebar on larger screens, and the requirements lens plus the foldable `Context` container should stay visible on the right.
@@ -79,7 +84,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
 - The default baseline prompt should stay visible in the main request input instead of being repeated in separate promo copy.
 - The baseline and challenge summaries should remain easy to scan from a distance instead of depending on long body copy or tab switching to become understandable.
-- The audience capture flow should make the type of answer visible in the UI instead of relying on an abstract blank text box.
+- The audience capture flow should make the type of answer and vote count visible in the UI instead of relying on an abstract blank text box.
 - The teaching prompts should stay short enough to scan during a live session and should stay aligned with the slide-deck learning outcomes: interpreting vague requests, specifying domain and operational context, and evaluating ambiguity.
 - HTML responses must ship with restrictive browser security headers, and client-side code must load from same-origin script assets so the CSP can keep `script-src 'self'`.
 - The cheese catalog should stay small, committed, and easy to review.
@@ -149,13 +154,25 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 **Scenario: Audience adds hidden requirements**
 
 - Given: the presenter is on challenge 1
-- When: the audience selects cues such as `keep it creamy` or `cow's milk`
+- When: the audience votes for cues such as `keep it creamy` or `cow's milk`
 - Then: the ranking, insight panel, and teaching prompt all reinforce that the team has converted hidden meaning into explicit requirements
+
+**Scenario: Audience votes between semantic alternatives**
+
+- Given: the presenter is on challenge 1
+- When: the audience votes for milk-type alternatives such as `cow's milk`, `goat's milk`, `sheep's milk`, or `mixed milk ok`
+- Then: the room uses the highest-voted milk option as the active requirement and shows the vote count for the selected option
+
+**Scenario: Lecturer overrides an audience vote**
+
+- Given: the audience has voted on a challenge option group
+- When: the lecturer presses a different option in that group
+- Then: the overridden option becomes the active requirement for that group while the audience vote count remains visible for discussion
 
 **Scenario: Audience adds data needs**
 
 - Given: the presenter is on challenge 2
-- When: the audience selects extra context such as `serve it with cider`, `it must be in stock`, or `Winter holiday`
+- When: the audience votes for extra context such as `serve it with cider`, `it must be in stock`, or `Winter holiday`
 - Then: the ranking changes to use those product, context, and simulation cues, and the teaching prompt ties those changes back to domain and operational context
 
 **Scenario: Presenter carries earlier requirements into later challenges**
@@ -167,7 +184,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 **Scenario: Audience defines success criteria**
 
 - Given: the presenter is on challenge 3
-- When: the audience selects criteria such as `show why it fits`, `mark a backup choice`, or `keep it to two finalists`
+- When: the audience votes for criteria such as `show why it fits`, `mark a backup choice`, or `keep it to two finalists`
 - Then: the results include visible changes that make the quality judgment inspectable, and the teaching prompt frames that step as evaluation under ambiguity
 
 **Scenario: Presenter asks for a why-it-fits explanation**

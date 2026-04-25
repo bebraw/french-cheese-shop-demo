@@ -32,8 +32,16 @@ async function claimLecturer(page: import("@playwright/test").Page): Promise<voi
   );
 }
 
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function audienceVoteButton(page: import("@playwright/test").Page, buttonLabel: string) {
+  return page.getByRole("button", { name: new RegExp("^" + escapeRegex(buttonLabel) + " · \\d+ votes?$") });
+}
+
 async function chooseAudienceOption(page: import("@playwright/test").Page, buttonLabel: string, summaryText = buttonLabel): Promise<void> {
-  await page.getByRole("button", { name: buttonLabel }).click();
+  await audienceVoteButton(page, buttonLabel).click();
   await expect(page.locator("#audience-summary-chips")).toContainText(summaryText);
 }
 
@@ -170,6 +178,36 @@ test("signals in play stays synced and cumulative through challenges", async ({ 
   await expect(page.locator("#audience-summary-chips")).toContainText("With cider");
 });
 
+test("audience votes show counts and lecturer override wins one option group", async ({ browser }) => {
+  const roomId = "e2e-vote-override";
+  const context = await browser.newContext();
+  const lecturerPage = await context.newPage();
+  const participantPage = await context.newPage();
+
+  await lecturerPage.goto(roomUrl(roomId));
+  await participantPage.goto(roomUrl(roomId));
+
+  await claimLecturer(lecturerPage);
+  await switchScenario(lecturerPage, /Challenge 1/, "Challenge 1: Hidden Needs");
+
+  await audienceVoteButton(participantPage, "Cow's milk").click();
+  await audienceVoteButton(lecturerPage, "Cow's milk").click();
+
+  await expect(lecturerPage.locator("#audience-summary-chips")).toContainText("Cow's milk");
+  await expect(lecturerPage.locator("#audience-summary-chips")).toContainText("2 votes");
+  await expect(audienceVoteButton(participantPage, "Cow's milk")).toContainText("2 votes");
+
+  await audienceVoteButton(lecturerPage, "Goat's milk").click();
+
+  await expect(lecturerPage.locator("#audience-summary-chips")).toContainText("Goat's milk");
+  await expect(lecturerPage.locator("#audience-summary-chips")).toContainText("lecturer override");
+  await expect(lecturerPage.getByRole("button", { name: /Goat's milk · 0 votes · Lecturer choice/ })).toBeVisible();
+  await expect(participantPage.locator("#audience-summary-chips")).toContainText("Goat's milk");
+  await expect(participantPage.locator("#scenario-insights")).toContainText("Explicit milk types: goat.");
+
+  await context.close();
+});
+
 test("challenge copy keeps hidden needs, data, and evaluation distinct", async ({ page }) => {
   await page.goto(roomUrl("e2e-copy"));
 
@@ -187,26 +225,26 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.locator("#scenario-description")).toContainText("customer really means");
   await expect(page.locator("#teaching-outcome")).toHaveText("Interpret vague requests");
   await expect(page.locator("#teaching-notice")).toContainText("meaning became explicit");
-  await expect(page.getByRole("button", { name: "Oozy center" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Washed rind" })).toHaveCount(0);
+  await expect(audienceVoteButton(page, "Oozy center")).toBeVisible();
+  await expect(audienceVoteButton(page, "Washed rind")).toHaveCount(0);
 
   await page.getByRole("button", { name: /Challenge 2/ }).click();
   await expect(page.locator("#insights-label")).toHaveText("Extra data in play");
   await expect(page.locator("#scenario-description")).toContainText("facts and constraints");
   await expect(page.locator("#teaching-outcome")).toHaveText("Specify domain and operational context");
   await expect(page.locator("#teaching-focus-copy")).toContainText("domain and shop context");
-  await expect(page.getByRole("button", { name: "Washed rind" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "In stock" })).toBeVisible();
+  await expect(audienceVoteButton(page, "Washed rind")).toBeVisible();
+  await expect(audienceVoteButton(page, "In stock")).toBeVisible();
 
   await page.getByRole("button", { name: /Challenge 3/ }).click();
   await expect(page.locator("#insights-label")).toHaveText("Evaluation checks");
   await expect(page.locator("#scenario-description")).toContainText("visibly prove");
   await expect(page.locator("#teaching-outcome")).toHaveText("Evaluate ambiguity");
   await expect(page.locator("#teaching-question")).toContainText("good answer visibly prove");
-  await expect(page.getByRole("button", { name: "In stock" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Show why it fits" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Mark a backup" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Two finalists" })).toBeVisible();
+  await expect(audienceVoteButton(page, "In stock")).toHaveCount(0);
+  await expect(audienceVoteButton(page, "Show why it fits")).toBeVisible();
+  await expect(audienceVoteButton(page, "Mark a backup")).toBeVisible();
+  await expect(audienceVoteButton(page, "Two finalists")).toBeVisible();
 });
 
 test("context drawer enables the optional llm contrast mode", async ({ page }) => {
@@ -363,7 +401,7 @@ test("an expanded result stays open across evaluation updates", async ({ page })
   await firstToggle.click();
   await expect(persistentResult.getByRole("button", { name: "Hide" })).toBeVisible();
 
-  await page.getByRole("button", { name: "Show why it fits" }).click();
+  await audienceVoteButton(page, "Show why it fits").click();
 
   await expect(page.locator("#search-status")).toHaveText("4 results");
   await expect(page.getByRole("heading", { level: 3, name: resultName })).toBeVisible();

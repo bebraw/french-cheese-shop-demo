@@ -15,9 +15,14 @@ If time is short, run the demo like this:
 
 1. Start with `I want something like Brie, but stronger.`
 2. `Baseline`: show the plausible but shallow answer from surface wording alone.
-3. `Challenge 1`: add hidden requirements such as `keep it creamy` and `cow's milk`.
-4. `Challenge 2`: add missing data such as `serve it with cider` or `must be in stock`, while the foldable `Context` drawer can add world context like `Winter holiday` to change both seasonal fit and stock pressure.
-5. `Challenge 3`: judge the gathered requirements with visible checks such as `show why it fits`, `mark a backup choice`, and `keep it to two finalists`.
+3. `Challenge 1`: let the room vote on hidden requirements such as `keep it creamy` and milk-type alternatives like `cow`, `goat`, `sheep`, or `mixed`.
+4. `Challenge 2`: vote on missing data such as `serve it with cider` or `must be in stock`, while the foldable `Context` drawer can add world context like `Winter holiday` to change both seasonal fit and stock pressure.
+5. `Challenge 3`: vote on evaluation checks such as `show why it fits`, `mark a backup choice`, and `keep it to two finalists`.
+
+Use the visible vote counts to keep the interaction short. If the room chooses
+an option that is more useful as a discussion point than as the next system
+input, press that option from the lecturer device to override the group and
+explain why the override changes the recommendation.
 
 The point is not to explain every tab in depth. It is to show a clean progression from vague wording, to clarified needs, to concrete facts, to visible evaluation checks.
 
