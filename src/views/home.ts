@@ -112,7 +112,7 @@ export function renderHomePage(): string {
                 </div>
               </div>
               <div id="search-status" class="mt-3 text-sm leading-6 text-app-text-soft"></div>
-              <section class="mt-4 rounded-[1.35rem] border border-app-line bg-white/92 px-4 py-4 shadow-[0_10px_30px_rgba(13,29,46,0.04)]">
+              <section id="teaching-focus-panel" class="mt-4 rounded-[1.35rem] border border-app-line bg-white/92 px-4 py-4 shadow-[0_10px_30px_rgba(13,29,46,0.04)]" hidden>
                 <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Teaching Focus</p>
                 <p id="teaching-outcome" class="mt-3 font-display text-[1.35rem] leading-[0.95] text-app-primary">Interpret vague requests</p>
                 <p id="teaching-focus-copy" class="mt-2 text-sm leading-6 text-app-text-soft">Baseline shows how a plausible answer can still rest on hidden guesses.</p>

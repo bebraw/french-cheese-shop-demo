@@ -59,6 +59,7 @@ test("renders the cheese demo home page", async ({ page }) => {
   await expect(page.locator("#room-id-input")).toHaveValue(new RegExp("e2e-home$"));
   await expect(page.getByRole("searchbox", { name: "Customer request" })).toBeVisible();
   await expect(page.getByRole("searchbox", { name: "Customer request" })).toHaveValue("I want something like Brie, but stronger.");
+  await expect(page.locator("#teaching-focus-panel")).toBeHidden();
   await expect(page.locator("#search-status")).toHaveText("5 results");
 });
 
@@ -68,6 +69,7 @@ test("phone layout keeps the first search result visible", async ({ page }) => {
 
   await expect(page.locator("#room-panel-toggle")).toHaveAttribute("aria-expanded", "false");
   await expect(page.locator("#room-panel-body")).toBeHidden();
+  await expect(page.locator("#teaching-focus-panel")).toBeHidden();
   await expect(page.locator("#teaching-outcome")).toHaveText("Interpret vague requests");
   await expect(page.locator("#search-status")).toHaveText("5 results");
   await expect(page.locator("#search-results > li").first()).toBeInViewport();
@@ -105,6 +107,7 @@ test("shows baseline results for a vague request", async ({ page }) => {
   await page.goto(roomUrl("e2e-baseline"));
 
   await claimLecturer(page);
+  await expect(page.locator("#teaching-focus-panel")).toBeVisible();
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
 
   await expect(page.locator("#search-status")).toHaveText("5 results");
@@ -211,6 +214,7 @@ test("audience votes show counts and lecturer override wins one option group", a
 test("challenge copy keeps hidden needs, data, and evaluation distinct", async ({ page }) => {
   await page.goto(roomUrl("e2e-copy"));
 
+  await expect(page.locator("#teaching-focus-panel")).toBeHidden();
   await expect(page.locator("#teaching-outcome")).toHaveText("Interpret vague requests");
   await expect(page.locator("#teaching-question")).toContainText("like Brie");
 
@@ -220,6 +224,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.getByRole("button", { name: "Holiday rush" })).toBeVisible();
 
   await claimLecturer(page);
+  await expect(page.locator("#teaching-focus-panel")).toBeVisible();
   await page.getByRole("button", { name: /Challenge 1/ }).click();
   await expect(page.locator("#insights-label")).toHaveText("Explicit requirements");
   await expect(page.locator("#scenario-description")).toContainText("customer really means");
@@ -477,6 +482,8 @@ test("two pages in the same room stay synchronized", async ({ browser }) => {
   await expect(pageB.locator("#room-participant-count")).toHaveText("2 participants");
 
   await claimLecturer(pageA);
+  await expect(pageA.locator("#teaching-focus-panel")).toBeVisible();
+  await expect(pageB.locator("#teaching-focus-panel")).toBeHidden();
   await switchScenario(pageA, /Challenge 2/, "Challenge 2: Data Requirements");
   await chooseAudienceOption(pageA, "With cider");
 

@@ -23,6 +23,9 @@ describe("renderHomePage", () => {
     expect(html).toContain("Add catalog facts, stock, and shop context.");
     expect(html).toContain("Make usefulness and trust visible.");
     expect(html).toContain("Teaching Focus");
+    expect(html).toContain('id="teaching-focus-panel"');
+    expect(html).toContain('id="teaching-focus-panel" class=');
+    expect(html).toContain("hidden>");
     expect(html).toContain("Interpret vague requests");
     expect(html).toContain("What does “like Brie” and “stronger” actually mean for this customer?");
     expect(html).toContain(

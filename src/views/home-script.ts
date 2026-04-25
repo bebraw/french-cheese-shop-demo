@@ -28,6 +28,7 @@ const contextSummaryEmptyElement = document.getElementById("context-summary-empt
 const contextSummaryChipsElement = document.getElementById("context-summary-chips");
 const backendControlsElement = document.getElementById("backend-controls");
 const statusElement = document.getElementById("search-status");
+const teachingFocusPanelElement = document.getElementById("teaching-focus-panel");
 const teachingOutcomeElement = document.getElementById("teaching-outcome");
 const teachingFocusElement = document.getElementById("teaching-focus-copy");
 const teachingQuestionElement = document.getElementById("teaching-question");
@@ -379,6 +380,7 @@ function renderTeachingGuide(scenario) {
 
 function renderLecturerControls() {
   const access = getRoomAccess();
+  teachingFocusPanelElement.hidden = !access.canManageScenario;
 
   roomClaimLecturerButton.disabled = access.canManageScenario;
   roomClaimLecturerButton.setAttribute("aria-disabled", String(access.canManageScenario));
