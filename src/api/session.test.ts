@@ -229,6 +229,53 @@ describe("createSessionResponse", () => {
     });
   });
 
+  it("resets the in-memory room and releases lecturer control", async () => {
+    const roomUrl = "http://example.com/api/session?room=session-reset";
+    const lecturerHeaders = {
+      "content-type": "application/json",
+      "x-demo-presenter-token": "lecturer-token",
+    };
+
+    await createSessionResponse(
+      new Request(roomUrl, {
+        method: "POST",
+        headers: lecturerHeaders,
+        body: JSON.stringify({ type: "claim-presenter" }),
+      }),
+    );
+    await createSessionResponse(
+      new Request(roomUrl, {
+        method: "POST",
+        headers: lecturerHeaders,
+        body: JSON.stringify({ type: "set-query", query: "Custom" }),
+      }),
+    );
+
+    const resetResponse = await createSessionResponse(
+      new Request(roomUrl, {
+        method: "POST",
+        headers: lecturerHeaders,
+        body: JSON.stringify({ type: "reset-room" }),
+      }),
+    );
+    const resetPayload = await resetResponse.json();
+
+    expect(resetPayload.ok).toBe(true);
+    expect(resetPayload.snapshot.state.query).toBe("I want something like Brie, but stronger.");
+    expect(resetPayload.snapshot.access.presenterClaimed).toBe(false);
+    expect(resetPayload.snapshot.access.canManageScenario).toBe(false);
+
+    const protectedResponse = await createSessionResponse(
+      new Request(roomUrl, {
+        method: "POST",
+        headers: lecturerHeaders,
+        body: JSON.stringify({ type: "set-scenario", scenario: "challenge-1" }),
+      }),
+    );
+
+    expect(protectedResponse.status).toBe(403);
+  });
+
   it("rejects vote overrides from non-lecturer clients", async () => {
     const response = await createSessionResponse(
       new Request("http://example.com/api/session?room=session-protected-override", {

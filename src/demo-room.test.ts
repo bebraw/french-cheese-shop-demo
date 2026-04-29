@@ -180,6 +180,7 @@ describe("demo room state", () => {
     record = applyOk(record, { type: "set-query", query: "Custom" }, "lecturer-token");
     record = applyOk(record, { type: "set-scenario", scenario: "challenge-2" }, "lecturer-token");
     record = applyOk(record, { type: "toggle-preset", scenario: "challenge-2", presetId: "cider" });
+    const versionBeforeReset = record.state.version;
     record = applyOk(record, { type: "reset-room" }, "lecturer-token");
 
     const state = record.state;
@@ -188,6 +189,22 @@ describe("demo room state", () => {
     expect(state.revealedChallengeIds).toEqual([]);
     expect(state.audienceByChallenge["challenge-2"].selectedPresetIds).toEqual([]);
     expect(state.audienceByChallenge["challenge-2"].votesByPresetId).toEqual({});
+    expect(state.version).toBe(versionBeforeReset + 1);
+    expect(record.presenterToken).toBeNull();
+  });
+
+  it("requires a new lecturer claim after a complete room reset", () => {
+    let record = createDefaultRoomRecord("reset-claim-room");
+    record = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    record = applyOk(record, { type: "reset-room" }, "lecturer-token");
+
+    const protectedResult = applyRoomCommand(record, { type: "set-scenario", scenario: "challenge-1" }, "lecturer-token");
+    expect(protectedResult.ok).toBe(false);
+    expect(protectedResult.error).toContain("Lecturer controls must be claimed");
+
+    record = applyOk(record, { type: "claim-presenter" }, "new-lecturer-token");
+    record = applyOk(record, { type: "set-scenario", scenario: "challenge-1" }, "new-lecturer-token");
+    expect(record.state.activeScenario).toBe("challenge-1");
   });
 
   it("protects challenge changes until the lecturer claims control", () => {

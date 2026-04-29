@@ -187,6 +187,37 @@ function persistPresenterToken(roomId, presenterToken) {
   } catch {}
 }
 
+function syncLocalVotesWithSnapshot(snapshot) {
+  if (!isResetSnapshot(snapshot) || challengeSequence.every((scenario) => (localVoteState[scenario] || []).length === 0)) {
+    return;
+  }
+
+  localVoteState = createEmptyVoteState();
+  persistLocalVoteState(activeRoomId);
+}
+
+function isResetSnapshot(snapshot) {
+  const state = snapshot.state;
+
+  return (
+    state.query === defaultQuery &&
+    state.activeScenario === "baseline" &&
+    state.revealedChallengeIds.length === 0 &&
+    state.season === "" &&
+    state.shopState === "" &&
+    state.backend === "rules" &&
+    challengeSequence.every((scenario) => {
+      const audienceState = state.audienceByChallenge[scenario];
+      return (
+        audienceState.selectedPresetIds.length === 0 &&
+        Object.keys(audienceState.votesByPresetId).length === 0 &&
+        audienceState.lecturerOverridePresetIds.length === 0 &&
+        audienceState.customText === ""
+      );
+    })
+  );
+}
+
 function createPresenterToken() {
   if (window.crypto && typeof window.crypto.randomUUID === "function") {
     return window.crypto.randomUUID();
@@ -853,6 +884,7 @@ function applySnapshot(snapshot) {
   }
 
   activeSnapshot = snapshot;
+  syncLocalVotesWithSnapshot(snapshot);
   setRoomParticipantCount(snapshot.participantCount || 1);
 
   if (pendingQueryDraft !== null && snapshot.state.query === pendingQueryDraft) {
@@ -866,8 +898,10 @@ function applySnapshot(snapshot) {
     pendingAudienceDraft = null;
   }
 
-  if (document.activeElement !== queryInput || pendingQueryDraft === null) {
+  if (pendingQueryDraft === null) {
     queryInput.value = snapshot.state.query;
+  } else {
+    queryInput.value = pendingQueryDraft;
   }
 
   roomIdInput.value = snapshot.roomId;
@@ -1031,7 +1065,25 @@ async function claimLecturerControls() {
     return;
   }
 
+  closeLiveSync();
+  openLiveSync();
   setStatus("Lecturer controls claimed for this room.");
+}
+
+async function resetRoom() {
+  const snapshot = await sendCommand({ type: "reset-room" });
+  if (!snapshot) {
+    return;
+  }
+
+  activePresenterToken = "";
+  persistPresenterToken(activeRoomId, "");
+  localVoteState = createEmptyVoteState();
+  persistLocalVoteState(activeRoomId);
+  closeLiveSync();
+  openLiveSync();
+  applySnapshot(snapshot);
+  setStatus("Room reset. Lecturer controls are unclaimed.");
 }
 
 function flashCopyButton(message) {
@@ -1185,7 +1237,7 @@ roomResetButton.addEventListener("click", () => {
   }
 
   if (window.confirm("Reset the shared room for everyone connected to it?")) {
-    sendCommand({ type: "reset-room" });
+    void resetRoom();
   }
 });
 

@@ -250,6 +250,16 @@ export function applyRoomCommand(record: DemoRoomRecord, command: DemoRoomComman
     };
   }
 
+  if (command.type === "reset-room") {
+    return {
+      ok: true,
+      record: {
+        state: createResetRoomState(record.state),
+        presenterToken: null,
+      },
+    };
+  }
+
   const nextState = applyRoomStateCommand(record.state, command);
 
   return {
@@ -261,11 +271,10 @@ export function applyRoomCommand(record: DemoRoomRecord, command: DemoRoomComman
   };
 }
 
-function applyRoomStateCommand(state: DemoRoomState, command: Exclude<DemoRoomCommand, { type: "claim-presenter" }>): DemoRoomState {
-  if (command.type === "reset-room") {
-    return bumpVersion(createDefaultRoomState(state.roomId));
-  }
-
+function applyRoomStateCommand(
+  state: DemoRoomState,
+  command: Exclude<DemoRoomCommand, { type: "claim-presenter" } | { type: "reset-room" }>,
+): DemoRoomState {
   if (command.type === "set-query") {
     return bumpVersion({
       ...state,
@@ -428,6 +437,14 @@ function applyRoomStateCommand(state: DemoRoomState, command: Exclude<DemoRoomCo
     ...state,
     backend: command.backend,
   });
+}
+
+function createResetRoomState(state: DemoRoomState): DemoRoomState {
+  return {
+    ...createDefaultRoomState(state.roomId),
+    version: state.version + 1,
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 export function readRoomCommand(payload: unknown): DemoRoomCommand | null {

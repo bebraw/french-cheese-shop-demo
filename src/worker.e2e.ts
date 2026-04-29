@@ -218,15 +218,17 @@ test("audience votes show counts and lecturer override wins one option group", a
   const context = await browser.newContext();
   const lecturerPage = await context.newPage();
   const participantPage = await context.newPage();
+  const secondParticipantPage = await context.newPage();
 
   await lecturerPage.goto(roomUrl(roomId));
   await participantPage.goto(roomUrl(roomId));
+  await secondParticipantPage.goto(roomUrl(roomId));
 
   await claimLecturer(lecturerPage);
   await switchScenario(lecturerPage, /Challenge 1/, "Challenge 1: Hidden Needs");
 
   await audienceVoteButton(participantPage, "Cow's milk").click();
-  await audienceVoteButton(lecturerPage, "Cow's milk").click();
+  await audienceVoteButton(secondParticipantPage, "Cow's milk").click();
 
   await expect(lecturerPage.locator("#audience-summary-chips")).toContainText("Cow's milk");
   await expect(lecturerPage.locator("#audience-summary-chips")).toContainText("2 votes");
@@ -239,6 +241,43 @@ test("audience votes show counts and lecturer override wins one option group", a
   await expect(lecturerPage.getByRole("button", { name: /Goat's milk · 0 votes · Lecturer choice/ })).toBeVisible();
   await expect(participantPage.locator("#audience-summary-chips")).toContainText("Goat's milk");
   await expect(participantPage.locator("#scenario-insights")).toContainText("Explicit milk types: goat.");
+
+  await context.close();
+});
+
+test("lecturer can completely reset a shared room", async ({ browser }) => {
+  const roomId = "e2e-reset-room";
+  const context = await browser.newContext();
+  const lecturerPage = await context.newPage();
+  const participantPage = await context.newPage();
+
+  await lecturerPage.goto(roomUrl(roomId));
+  await participantPage.goto(roomUrl(roomId));
+
+  await claimLecturer(lecturerPage);
+  await lecturerPage.getByRole("searchbox", { name: "Customer request" }).fill("Custom demo query");
+  await switchScenario(lecturerPage, /Challenge 1/, "Challenge 1: Hidden Needs");
+  await audienceVoteButton(participantPage, "Cow's milk").click();
+
+  await expect(lecturerPage.locator("#audience-summary-chips")).toContainText("Cow's milk");
+  await expect(lecturerPage.getByRole("searchbox", { name: "Customer request" })).toHaveValue("Custom demo query");
+
+  lecturerPage.once("dialog", async (dialog) => {
+    await dialog.accept();
+  });
+  await lecturerPage.getByRole("button", { name: "Reset room" }).click();
+
+  await expect(lecturerPage.locator("#scenario-title")).toHaveText("Baseline");
+  await expect(lecturerPage.getByRole("searchbox", { name: "Customer request" })).toHaveValue("I want something like Brie, but stronger.");
+  await expect(lecturerPage.getByRole("button", { name: "Reset room" })).toHaveAttribute("aria-disabled", "true");
+  await expect(participantPage.locator("#scenario-title")).toHaveText("Baseline");
+  await expect(participantPage.getByRole("button", { name: /Challenge 1/ })).toHaveCount(0);
+
+  await claimLecturer(lecturerPage);
+  await lecturerPage.locator("#scenario-next-button").click();
+
+  await expect(participantPage.locator("#scenario-title")).toHaveText("Challenge 1: Hidden Needs");
+  await expect(audienceVoteButton(participantPage, "Cow's milk")).toBeVisible();
 
   await context.close();
 });

@@ -131,7 +131,10 @@ overridden that group. Room snapshots also include access flags for the current
 client so the browser can distinguish between lecturer-only query/world-context/
 challenge reveal and changes, lecturer option overrides, and collaborative
 audience/backend inputs. Local browser state such as expanded result cards and
-that browser's vote selections remains outside the shared room model.
+that browser's vote selections remains outside the shared room model. A complete
+room reset returns the shared state to the default baseline, increments the room
+version from the previous state, clears audience votes and lecturer overrides,
+and releases the lecturer token so the next run starts unclaimed.
 
 ## Data Model
 
