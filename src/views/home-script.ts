@@ -15,6 +15,7 @@ const audienceControls = document.getElementById("audience-controls");
 const audiencePromptElement = document.getElementById("audience-prompt");
 const audiencePresetsElement = document.getElementById("audience-presets");
 const audienceCustomInput = document.getElementById("audience-custom-input");
+const audienceCustomField = document.getElementById("audience-custom-field");
 const audienceLabel = document.getElementById("audience-label");
 const audienceSummaryLabelElement = document.getElementById("audience-summary-label");
 const audienceSummaryEmptyElement = document.getElementById("audience-summary-empty");
@@ -46,6 +47,7 @@ const roomPanelIcon = document.getElementById("room-panel-icon");
 const roomPanelBody = document.getElementById("room-panel-body");
 const roomLecturerStatusElement = document.getElementById("room-lecturer-status");
 const roomClaimLecturerButton = document.getElementById("room-claim-lecturer-button");
+const roomSimpleModeButton = document.getElementById("room-simple-mode-button");
 const roomCopyAudienceLinkButton = document.getElementById("room-copy-audience-link-button");
 const roomJoinButton = document.getElementById("room-join-button");
 const roomCopyLinkButton = document.getElementById("room-copy-link-button");
@@ -76,8 +78,10 @@ let audienceSyncHandle = null;
 let pendingQueryDraft = null;
 let pendingAudienceDraft = null;
 const presenterStoragePrefix = "demo-presenter-token:";
+const simpleModeStorageKey = "demo-simple-mode";
 const voteStoragePrefix = "demo-vote-state:";
 let localVoteState = createEmptyVoteState();
+let simpleModeEnabled = false;
 
 function createFallbackSnapshot(roomId) {
   return {
@@ -139,6 +143,24 @@ function getPresenterStorageKey(roomId) {
 
 function createEmptyVoteState() {
   return Object.fromEntries(challengeSequence.map((scenario) => [scenario, []]));
+}
+
+function readStoredSimpleMode() {
+  try {
+    return window.localStorage.getItem(simpleModeStorageKey) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function persistSimpleMode(enabled) {
+  try {
+    if (enabled) {
+      window.localStorage.setItem(simpleModeStorageKey, "1");
+    } else {
+      window.localStorage.removeItem(simpleModeStorageKey);
+    }
+  } catch {}
 }
 
 function getVoteStorageKey(roomId) {
@@ -290,7 +312,23 @@ function getNextScenario(scenario) {
   return challengeSequence[scenarioIndex + 1] || scenario;
 }
 
+function getNextScenarioForMode(scenario) {
+  if (isSimpleModeActive()) {
+    return scenario === "baseline" ? "challenge-1" : scenario;
+  }
+
+  return getNextScenario(scenario);
+}
+
+function isSimpleModeActive() {
+  return simpleModeEnabled && getRoomAccess().canManageScenario;
+}
+
 function getVisibleScenarioIds(access, state) {
+  if (isSimpleModeActive()) {
+    return new Set(["baseline", "challenge-1"]);
+  }
+
   if (access.canManageScenario) {
     return new Set(["baseline", ...challengeSequence]);
   }
@@ -349,6 +387,12 @@ function buildContextSummaryItems() {
 function updateUrlState() {
   const url = new URL(window.location.href);
   url.searchParams.set("room", activeRoomId);
+
+  if (simpleModeEnabled) {
+    url.searchParams.set("simple", "1");
+  } else {
+    url.searchParams.delete("simple");
+  }
 
   if (contextDrawerOpen) {
     url.searchParams.set("context", "open");
@@ -431,7 +475,8 @@ function renderTeachingGuide(scenario) {
 function renderLecturerControls() {
   const access = getRoomAccess();
   const state = getRoomState();
-  const nextScenario = getNextScenario(state.activeScenario);
+  const simpleModeActive = isSimpleModeActive();
+  const nextScenario = getNextScenarioForMode(state.activeScenario);
   const hasNextScenario = nextScenario !== state.activeScenario;
 
   teachingFocusPanelElement.hidden = !access.canManageScenario;
@@ -441,12 +486,20 @@ function renderLecturerControls() {
   scenarioNextButton.classList.toggle("opacity-60", !hasNextScenario);
   scenarioNextButton.textContent = hasNextScenario
     ? "Next: " + scenarios[nextScenario].title.replace(/^Challenge ([0-9]+):.*/, "Challenge $1")
-    : "All challenges revealed";
+    : simpleModeActive
+      ? "Simple flow ready"
+      : "All challenges revealed";
 
   roomClaimLecturerButton.disabled = access.canManageScenario;
   roomClaimLecturerButton.setAttribute("aria-disabled", String(access.canManageScenario));
   roomClaimLecturerButton.classList.toggle("opacity-60", access.canManageScenario);
   roomClaimLecturerButton.textContent = access.canManageScenario ? "Lecturer controls active" : "Claim lecturer controls";
+
+  roomSimpleModeButton.disabled = !access.canManageScenario;
+  roomSimpleModeButton.setAttribute("aria-disabled", String(!access.canManageScenario));
+  roomSimpleModeButton.setAttribute("aria-pressed", String(simpleModeActive));
+  roomSimpleModeButton.classList.toggle("opacity-60", !access.canManageScenario);
+  roomSimpleModeButton.classList.toggle("audience-preset-active", simpleModeActive);
 
   roomResetButton.disabled = !access.canManageScenario;
   roomResetButton.setAttribute("aria-disabled", String(!access.canManageScenario));
@@ -463,10 +516,14 @@ function renderLecturerControls() {
       : "Claim lecturer controls on this device to change the shared search query.";
 
   roomLecturerStatusElement.textContent = access.canManageScenario
-    ? "This device controls the shared search query, world context, and challenge changes for the room."
+    ? simpleModeActive
+      ? "This device is in simple mode: Baseline and Challenge 1 stay in focus for a short demo."
+      : "This device controls the shared search query, world context, and challenge changes for the room."
     : access.presenterClaimed
       ? "The shared search query, world context, and challenge changes are locked to the lecturer device for this room."
       : "The shared search query, world context, and challenge changes stay unlocked only after the lecturer claims control on this device.";
+
+  renderContextPanel();
 }
 
 function sendCommand(command) {
@@ -582,7 +639,7 @@ function renderAudiencePresets(scenario) {
   const groupedPresets = [];
   const groupIndexById = new Map();
 
-  for (const preset of scenarios[scenario].presets) {
+  for (const preset of getVisiblePresets(scenario)) {
     if (!groupIndexById.has(preset.voteGroupId)) {
       groupIndexById.set(preset.voteGroupId, groupedPresets.length);
       groupedPresets.push({
@@ -633,6 +690,17 @@ function renderAudiencePresets(scenario) {
     groupElement.appendChild(optionList);
     audiencePresetsElement.appendChild(groupElement);
   }
+}
+
+function getVisiblePresets(scenario) {
+  const presets = scenarios[scenario].presets;
+
+  if (!isSimpleModeActive() || scenario !== "challenge-1") {
+    return presets;
+  }
+
+  const simplePresetIds = new Set(["creamy", "oozy", "cow", "goat"]);
+  return presets.filter((preset) => simplePresetIds.has(preset.id));
 }
 
 function handlePresetVote(scenario, preset) {
@@ -791,6 +859,7 @@ function applyScenario(nextScenario) {
   scenarioDescriptionElement.textContent = copy.description;
   insightsLabelElement.textContent = copy.insightLabel;
   audienceControls.classList.toggle("hidden", nextScenario === "baseline");
+  audienceCustomField.hidden = isSimpleModeActive();
   audiencePromptElement.textContent = copy.audiencePrompt;
   audienceSummaryLabelElement.textContent = copy.audienceSummaryLabel;
   audienceLabel.textContent = copy.audienceLabel;
@@ -822,9 +891,11 @@ function applyScenario(nextScenario) {
 }
 
 function renderContextPanel() {
-  contextDrawerPanel.hidden = !contextDrawerOpen;
-  contextDrawerToggle.setAttribute("aria-expanded", String(contextDrawerOpen));
-  contextDrawerIcon.textContent = contextDrawerOpen ? "◀" : "▶";
+  const contextHidden = isSimpleModeActive();
+  contextDrawerToggle.hidden = contextHidden;
+  contextDrawerPanel.hidden = contextHidden || !contextDrawerOpen;
+  contextDrawerToggle.setAttribute("aria-expanded", String(!contextHidden && contextDrawerOpen));
+  contextDrawerIcon.textContent = !contextHidden && contextDrawerOpen ? "◀" : "▶";
 }
 
 function renderRoomPanel() {
@@ -1071,11 +1142,16 @@ async function claimLecturerControls() {
 }
 
 async function resetRoom() {
+  window.clearTimeout(querySyncHandle);
+  window.clearTimeout(audienceSyncHandle);
+
   const snapshot = await sendCommand({ type: "reset-room" });
   if (!snapshot) {
     return;
   }
 
+  pendingQueryDraft = null;
+  pendingAudienceDraft = null;
   activePresenterToken = "";
   persistPresenterToken(activeRoomId, "");
   localVoteState = createEmptyVoteState();
@@ -1127,6 +1203,10 @@ audienceCustomInput.addEventListener("input", () => {
 });
 
 contextDrawerToggle.addEventListener("click", () => {
+  if (isSimpleModeActive()) {
+    return;
+  }
+
   contextDrawerOpen = !contextDrawerOpen;
   renderContextPanel();
   updateUrlState();
@@ -1160,11 +1240,35 @@ scenarioNextButton.addEventListener("click", () => {
     return;
   }
 
+  if (isSimpleModeActive() && getRoomState().activeScenario !== "baseline") {
+    setStatus("Simple mode keeps the demo on Baseline and Challenge 1.");
+    return;
+  }
+
   sendCommand({ type: "advance-scenario" });
 });
 
 roomClaimLecturerButton.addEventListener("click", () => {
   void claimLecturerControls();
+});
+
+roomSimpleModeButton.addEventListener("click", () => {
+  if (!getRoomAccess().canManageScenario) {
+    setStatus("Claim lecturer controls to use simple mode.");
+    return;
+  }
+
+  simpleModeEnabled = !simpleModeEnabled;
+  persistSimpleMode(simpleModeEnabled);
+  updateUrlState();
+
+  if (isSimpleModeActive() && !new Set(["baseline", "challenge-1"]).has(getRoomState().activeScenario)) {
+    void sendCommand({ type: "set-scenario", scenario: "challenge-1" });
+    return;
+  }
+
+  applySnapshot(activeSnapshot || createFallbackSnapshot(activeRoomId));
+  setStatus(simpleModeEnabled ? "Simple mode on." : "Simple mode off.");
 });
 
 roomJoinButton.addEventListener("click", () => {
@@ -1189,6 +1293,11 @@ roomCopyLinkButton.addEventListener("click", async () => {
   } else {
     shareUrl.searchParams.delete("context");
   }
+  if (simpleModeEnabled) {
+    shareUrl.searchParams.set("simple", "1");
+  } else {
+    shareUrl.searchParams.delete("simple");
+  }
 
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1205,6 +1314,7 @@ roomCopyAudienceLinkButton.addEventListener("click", async () => {
   const shareUrl = new URL(window.location.href);
   shareUrl.searchParams.set("room", activeRoomId);
   shareUrl.searchParams.delete("presenter");
+  shareUrl.searchParams.delete("simple");
   if (contextDrawerOpen) {
     shareUrl.searchParams.set("context", "open");
   } else {
@@ -1244,6 +1354,7 @@ roomResetButton.addEventListener("click", () => {
 const initialUrl = new URL(window.location.href);
 const initialRoomId = sanitizeRoomId(initialUrl.searchParams.get("room"));
 const initialPresenterToken = sanitizePresenterToken(initialUrl.searchParams.get("presenter"));
+simpleModeEnabled = initialUrl.searchParams.get("simple") === "1" || readStoredSimpleMode();
 if (initialPresenterToken) {
   persistPresenterToken(initialRoomId, initialPresenterToken);
   activePresenterToken = initialPresenterToken;

@@ -38,6 +38,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` hides unrevealed challenge controls from audience browsers so the lecturer can pace the demo without previewing later steps.
 - [ ] `GET /` gives the lecturer a next-challenge control that reveals and activates the next challenge for the room.
 - [ ] `GET /` keeps a compact lecturer-only teaching-focus panel in the main column with the current learning outcome plus short `Ask` and `Notice` prompts so the deck's pedagogical goal stays available to the presenter without distracting audience browsers.
+- [ ] `GET /` lets the lecturer enable a local simple mode for short demos that keeps Baseline and Challenge 1 in focus, hides Context plus later challenges, and narrows Challenge 1 to the clearest vote choices.
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific vote choices before falling back to a custom note.
 - [ ] `GET /` groups semantic alternatives such as milk type so the audience votes between options instead of selecting contradictory cues.
 - [ ] `GET /` shows vote counts beside challenge options and in the selected audience summary.
@@ -91,6 +92,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Phone-sized viewports should prioritize the search box and visible result rows over persistent room chrome or other sticky overlays.
 - URL-synced state should include whether the `Context` container is explicitly open, without forcing it open just because season or backend selections exist.
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
+- Simple mode should stay a lecturer-device presentation setting instead of a shared room-state command, so normal audience links and the full demo path remain available.
 - The default baseline prompt should stay visible in the main request input instead of being repeated in separate promo copy.
 - The baseline and challenge summaries should remain easy to scan from a distance instead of depending on long body copy or tab switching to become understandable.
 - The audience capture flow should make the type of answer and vote count visible in the UI instead of relying on an abstract blank text box.

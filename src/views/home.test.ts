@@ -15,6 +15,7 @@ describe("renderHomePage", () => {
     expect(html).toContain('value="demo-room"');
     expect(html).toContain("Lecturer Controls");
     expect(html).toContain("Claim lecturer controls");
+    expect(html).toContain("Simple mode");
     expect(html).toContain("Copy audience link");
     expect(html).toContain("Join room");
     expect(html).toContain("Copy lecturer link");
@@ -44,6 +45,7 @@ describe("renderHomePage", () => {
     expect(html).toContain("Search backend options");
     expect(html).toContain("LLM backend");
     expect(html).toContain("Audience vote");
+    expect(html).toContain('id="audience-custom-field"');
     expect(html).toContain("Other audience note");
     expect(html).toContain("Selected by votes");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');

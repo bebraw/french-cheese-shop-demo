@@ -74,6 +74,7 @@ export function renderHomePage(): string {
                         <p id="room-lecturer-status" class="mt-2 text-sm leading-6 text-app-text-soft">The shared search query, world context, and challenge changes stay unlocked only after the lecturer claims control on this device.</p>
                         <div class="mt-3 flex flex-wrap gap-2">
                           <button id="room-claim-lecturer-button" type="button" class="audience-preset">Claim lecturer controls</button>
+                          <button id="room-simple-mode-button" type="button" class="audience-preset" aria-pressed="false">Simple mode</button>
                           <button id="room-copy-audience-link-button" type="button" class="audience-preset">Copy audience link</button>
                         </div>
                       </div>
@@ -102,7 +103,7 @@ export function renderHomePage(): string {
               <div id="audience-controls" class="mt-4 hidden">
                 <p id="audience-prompt" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Audience vote</p>
                 <div id="audience-presets" class="mt-3 grid gap-4" role="group" aria-label="Audience answer options"></div>
-                <label class="mt-4 block" for="audience-custom-input">
+                <label id="audience-custom-field" class="mt-4 block" for="audience-custom-input">
                   <span id="audience-label" class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Other audience note</span>
                   <input id="audience-custom-input" name="audience-note" type="text" autocomplete="off" spellcheck="false" placeholder="" class="w-full rounded-[1.15rem] bg-app-surface px-4 py-3 text-sm leading-6 text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-white focus:ring-2 focus:ring-app-secondary/28">
                 </label>

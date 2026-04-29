@@ -124,6 +124,41 @@ test("lecturer reveals challenges one step at a time", async ({ browser }) => {
   await context.close();
 });
 
+test("lecturer simple mode focuses the five-minute flow", async ({ browser }) => {
+  const roomId = "e2e-simple-mode";
+  const context = await browser.newContext();
+  const lecturerPage = await context.newPage();
+  const participantPage = await context.newPage();
+
+  await lecturerPage.goto(roomUrl(roomId));
+  await participantPage.goto(roomUrl(roomId));
+
+  await claimLecturer(lecturerPage);
+  await lecturerPage.getByRole("button", { name: "Simple mode" }).click();
+
+  await expect(lecturerPage.getByRole("button", { name: "Simple mode" })).toHaveAttribute("aria-pressed", "true");
+  await expect(lecturerPage.locator("#room-lecturer-status")).toContainText("Baseline and Challenge 1");
+  await expect(lecturerPage).toHaveURL(/[\?&]simple=1/);
+  await expect(lecturerPage.getByRole("button", { name: /Context/ })).toBeHidden();
+  await expect(lecturerPage.getByRole("button", { name: /Challenge 2/ })).toHaveCount(0);
+  await expect(participantPage.getByRole("button", { name: /Context/ })).toBeVisible();
+
+  await lecturerPage.locator("#scenario-next-button").click();
+
+  await expect(lecturerPage.locator("#scenario-title")).toHaveText("Challenge 1: Hidden Needs");
+  await expect(lecturerPage.locator("#scenario-next-button")).toHaveText("Simple flow ready");
+  await expect(lecturerPage.locator("#audience-custom-field")).toBeHidden();
+  await expect(audienceVoteButton(lecturerPage, "Keep it creamy")).toBeVisible();
+  await expect(audienceVoteButton(lecturerPage, "Oozy center")).toBeVisible();
+  await expect(audienceVoteButton(lecturerPage, "Cow's milk")).toBeVisible();
+  await expect(audienceVoteButton(lecturerPage, "Goat's milk")).toBeVisible();
+  await expect(audienceVoteButton(lecturerPage, "Sheep's milk")).toHaveCount(0);
+  await expect(audienceVoteButton(lecturerPage, "Mixed milk ok")).toHaveCount(0);
+  await expect(audienceVoteButton(lecturerPage, "Much stronger")).toHaveCount(0);
+
+  await context.close();
+});
+
 test("serves the health endpoint", async ({ request }) => {
   const response = await request.get("/api/health");
 
