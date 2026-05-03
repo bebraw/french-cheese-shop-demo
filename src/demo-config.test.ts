@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { isDemoChallengeId, isDemoScenarioId, isSearchBackend, isShopState, isSimulationSeason, sanitizeRoomId } from "./demo-config";
+import {
+  getScenarioTrail,
+  isDemoChallengeId,
+  isDemoScenarioId,
+  isSearchBackend,
+  isShopState,
+  isSimulationSeason,
+  sanitizeRoomId,
+} from "./demo-config";
 
 describe("demo config", () => {
   it("sanitizes room ids into a stable lowercase slug", () => {
@@ -23,5 +31,11 @@ describe("demo config", () => {
     expect(isSimulationSeason("monsoon")).toBe(false);
     expect(isShopState("holiday-rush")).toBe(true);
     expect(isShopState("rush")).toBe(false);
+  });
+
+  it("builds the challenge trail up to the active scenario", () => {
+    expect(getScenarioTrail("baseline")).toEqual([]);
+    expect(getScenarioTrail("challenge-1")).toEqual(["challenge-1"]);
+    expect(getScenarioTrail("challenge-3")).toEqual(["challenge-1", "challenge-2", "challenge-3"]);
   });
 });
