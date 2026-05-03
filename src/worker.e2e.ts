@@ -611,8 +611,10 @@ test("challenge 3 options visibly change the results", async ({ page }) => {
   const topResult = page.locator("#search-results > li").first();
   await topResult.getByRole("button", { name: "More" }).click({ force: true });
   await expect(topResult).toContainText("Why it fits:");
-  await expect(topResult).toContainText("Trade-off is visible");
+  await expect(topResult).toContainText("Trade-off");
   await expect(topResult).toContainText("Gains:");
+  await expect(topResult).toContainText("Gives up:");
+  await expect(topResult).toContainText("Trade-off is visible");
 });
 
 test("show why it fits explains challenge 3 results without reordering them", async ({ page }) => {

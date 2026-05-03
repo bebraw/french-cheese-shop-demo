@@ -907,6 +907,26 @@ function renderResults(results, scenario) {
     details.append(blurb, reason, explanation, matchedSignals);
     item.append(meta, summaryRow, details);
 
+    if (scenario === "challenge-3" && result.tradeoff) {
+      const tradeoffPanel = document.createElement("section");
+      tradeoffPanel.className = "rounded-[1rem] border border-app-line bg-white px-3 py-3 text-sm leading-6 text-app-text";
+
+      const tradeoffTitle = document.createElement("p");
+      tradeoffTitle.className = "text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-app-secondary";
+      tradeoffTitle.textContent = "Trade-off";
+
+      const gain = document.createElement("p");
+      gain.className = "mt-2";
+      gain.textContent = "Gains: " + result.tradeoff.gain;
+
+      const givesUp = document.createElement("p");
+      givesUp.className = "mt-1 text-app-text-soft";
+      givesUp.textContent = "Gives up: " + result.tradeoff.givesUp;
+
+      tradeoffPanel.append(tradeoffTitle, gain, givesUp);
+      details.appendChild(tradeoffPanel);
+    }
+
     if (scenario === "challenge-3" && Array.isArray(result.checks) && result.checks.length > 0) {
       const checksList = document.createElement("ul");
       checksList.className = "grid gap-2";

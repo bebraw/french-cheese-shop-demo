@@ -135,6 +135,8 @@ describe("searchDemoCatalog", () => {
 
     expect(response.results[0]?.presentationTag).toBe("Top pick");
     expect(response.results[0]?.explanation).toContain("same ranking signals already in play");
+    expect(response.results[0]?.tradeoff?.gain).toBeTruthy();
+    expect(response.results[0]?.tradeoff?.givesUp).toBeTruthy();
     expect(response.results[0]?.checks).toHaveLength(5);
     expect(response.results[0]?.checks.at(-1)?.label).toBe("Trade-off is visible");
     expect(response.results[0]?.checks.at(-1)?.note).toContain("Gains:");

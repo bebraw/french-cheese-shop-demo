@@ -18,6 +18,11 @@ export interface DemoResultCheck {
   note: string;
 }
 
+export interface DemoResultTradeoff {
+  gain: string;
+  givesUp: string;
+}
+
 export interface DemoSearchResult {
   cheeseId: string;
   name: string;
@@ -28,6 +33,7 @@ export interface DemoSearchResult {
   explanation: string;
   presentationTag: string;
   matchedSignals: string[];
+  tradeoff: DemoResultTradeoff | null;
   checks: DemoResultCheck[];
 }
 
@@ -126,6 +132,8 @@ export function searchDemoCatalog({
       explanation: buildExplanation(cheese, matchedSignals, rankingScenario, intent),
       presentationTag: buildPresentationTag(index, rankingScenario),
       matchedSignals,
+      tradeoff:
+        intent.wantsTradeoffs && rankingScenario === "challenge-3" ? buildTradeoff(cheese, intent, effectiveStock, matchedSignals) : null,
       checks: buildChecks(cheese, intent, rankingScenario, effectiveStock, matchedSignals),
     };
   });
@@ -668,10 +676,11 @@ function buildChecks(
   });
 
   if (intent.wantsTradeoffs) {
+    const tradeoff = buildTradeoff(cheese, intent, effectiveStock, matchedSignals);
     checks.push({
       label: "Trade-off is visible",
       passed: matchedSignals.length >= 2,
-      note: formatTradeoffNote(cheese, intent, effectiveStock, matchedSignals),
+      note: `Gains: ${tradeoff.gain}; gives up: ${tradeoff.givesUp}`,
     });
   }
 
@@ -815,21 +824,21 @@ function buildPresentationTag(rank: number, scenario: DemoScenarioId): string {
   return "";
 }
 
-function formatTradeoffNote(
+function buildTradeoff(
   cheese: CheeseRecord,
   intent: ParsedIntent,
   effectiveStock: CheeseRecord["stock"],
   matchedSignals: string[],
-): string {
+): DemoResultTradeoff {
   const gain = matchedSignals[0] || "closest overall fit";
-  const giveUp =
+  const givesUp =
     intent.requireInStock && effectiveStock !== "in"
       ? formatStockNote(effectiveStock)
       : intent.targetIntensity !== null && scoreTargetIntensity(cheese, intent.targetIntensity) < 0.75
         ? `strength ${cheese.intensity}/5`
         : matchedSignals[1] || "few explicit constraints to compare";
 
-  return `Gains: ${gain}; gives up: ${giveUp}`;
+  return { gain, givesUp };
 }
 
 function buildExplanation(cheese: CheeseRecord, matchedSignals: string[], scenario: DemoScenarioId, intent: ParsedIntent): string {
