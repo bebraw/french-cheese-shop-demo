@@ -105,9 +105,10 @@ export function searchDemoCatalog({
   backend = "rules",
 }: DemoSearchParams): DemoSearchResponse {
   const normalizedAudienceInput = audienceInput.trim();
-  const intent = parseIntent(query, normalizedAudienceInput, scenario, season, shopState);
+  const rankingScenario = getRankingScenario(scenario, normalizedAudienceInput);
+  const intent = parseIntent(query, normalizedAudienceInput, rankingScenario, season, shopState);
   const scored = cheeseCatalog
-    .map((cheese) => scoreCheese(cheese, intent, scenario, backend))
+    .map((cheese) => scoreCheese(cheese, intent, rankingScenario, backend))
     .sort((left, right) => right.score - left.score || left.cheese.name.localeCompare(right.cheese.name));
   const visibleCount = scenario === "challenge-3" ? (intent.wantsShortlist ? 2 : 4) : 5;
   const visibleScored = scored.slice(0, visibleCount);
@@ -122,11 +123,11 @@ export function searchDemoCatalog({
       meta: formatMeta(cheese),
       blurb: cheese.blurb,
       score,
-      reason: formatReason(cheese, matchedSignals, scenario, intent, effectiveStock, backend),
-      explanation: buildExplanation(cheese, matchedSignals, scenario, intent),
-      presentationTag: buildPresentationTag(index, scenario, intent),
+      reason: formatReason(cheese, matchedSignals, rankingScenario, intent, effectiveStock, backend),
+      explanation: buildExplanation(cheese, matchedSignals, rankingScenario, intent),
+      presentationTag: buildPresentationTag(index, rankingScenario, intent),
       matchedSignals,
-      checks: buildChecks(cheese, intent, scenario, index, backupOptionName, effectiveStock, matchedSignals),
+      checks: buildChecks(cheese, intent, rankingScenario, index, backupOptionName, effectiveStock, matchedSignals),
     };
   });
 
@@ -139,9 +140,13 @@ export function searchDemoCatalog({
     teachingFocus: scenarioCopy[scenario].teachingFocus,
     promptLabel: scenarioCopy[scenario].promptLabel,
     audienceInput: normalizedAudienceInput,
-    insights: buildInsights(intent, scenario, visibleResults, backend),
+    insights: buildInsights(intent, scenario, rankingScenario, visibleResults, backend),
     results: visibleResults,
   };
+}
+
+function getRankingScenario(scenario: DemoScenarioId, audienceInput: string): DemoScenarioId {
+  return scenario === "challenge-1" && audienceInput === "" ? "baseline" : scenario;
 }
 
 function scoreCheese(cheese: CheeseRecord, intent: ParsedIntent, scenario: DemoScenarioId, backend: SearchBackend) {
@@ -675,8 +680,18 @@ function buildChecks(
   return checks;
 }
 
-function buildInsights(intent: ParsedIntent, scenario: DemoScenarioId, results: DemoSearchResult[], backend: SearchBackend): string[] {
-  const insights = [scenarioCopy[scenario].introInsight];
+function buildInsights(
+  intent: ParsedIntent,
+  scenario: DemoScenarioId,
+  rankingScenario: DemoScenarioId,
+  results: DemoSearchResult[],
+  backend: SearchBackend,
+): string[] {
+  const insights = [
+    scenario === "challenge-1" && rankingScenario === "baseline"
+      ? "Baseline ranking remains until a hidden need is selected."
+      : scenarioCopy[scenario].introInsight,
+  ];
 
   if (backendCopy[backend].insight) {
     insights.push(backendCopy[backend].insight);

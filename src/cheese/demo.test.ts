@@ -12,6 +12,22 @@ describe("searchDemoCatalog", () => {
     expect(response.insights[0]).toBe("Only surface wording affects ranking.");
   });
 
+  it("keeps challenge 1 on baseline ranking until a hidden need is explicit", () => {
+    const baselineResponse = searchDemoCatalog({
+      query: "I want something like Brie but stronger",
+      scenario: "baseline",
+    });
+    const challengeResponse = searchDemoCatalog({
+      query: "I want something like Brie but stronger",
+      scenario: "challenge-1",
+    });
+
+    expect(challengeResponse.results.map((result) => result.name)).toEqual(baselineResponse.results.map((result) => result.name));
+    expect(challengeResponse.results.map((result) => result.score)).toEqual(baselineResponse.results.map((result) => result.score));
+    expect(challengeResponse.teachingFocus).toBe("Challenge 1 makes hidden requirements explicit.");
+    expect(challengeResponse.insights[0]).toBe("Baseline ranking remains until a hidden need is selected.");
+  });
+
   it("promotes a stronger creamy washed-rind option when hidden requirements are explicit", () => {
     const response = searchDemoCatalog({
       query: "I want something like Brie but stronger",

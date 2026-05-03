@@ -619,6 +619,8 @@ test("participants cannot change the active challenge after the lecturer claims 
   await expect(participantPage.locator("#room-lecturer-status")).toContainText(
     "The shared search query, world context, and challenge changes are locked to the lecturer device for this room.",
   );
+  await expect(participantPage.getByRole("button", { name: "Claim lecturer controls" })).toBeHidden();
+  await expect(participantPage.getByRole("button", { name: "Simple mode" })).toBeHidden();
 
   await context.close();
 });

@@ -39,6 +39,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` gives the lecturer a next-challenge control that reveals and activates the next challenge for the room.
 - [ ] `GET /` keeps a compact lecturer-only teaching-focus panel in the main column with the current learning outcome plus short `Ask` and `Notice` prompts so the deck's pedagogical goal stays available to the presenter without distracting audience browsers.
 - [ ] `GET /` lets the lecturer enable a local simple mode for short demos that keeps Baseline and Challenge 1 in focus, hides Context plus later challenges, and narrows Challenge 1 to the clearest vote choices.
+- [ ] `GET /` keeps Challenge 1 on the same baseline ranking until the lecturer or audience selects an explicit hidden need.
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific vote choices before falling back to a custom note.
 - [ ] `GET /` groups semantic alternatives such as milk type so the audience votes between options instead of selecting contradictory cues.
 - [ ] `GET /` shows vote counts beside challenge options and in the selected audience summary.
@@ -53,6 +54,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` keeps the shared-room controls folded by default on phone-sized screens so the search results stay visible sooner.
 - [ ] `GET /` shows whether the room is live and how many participants are currently connected.
 - [ ] `GET /` lets one device claim lecturer controls for the current room so only that device can change the shared search query, shared world context, active challenge, or reset the room.
+- [ ] `GET /` hides lecturer-only action buttons from non-lecturer browsers after another device has claimed lecturer controls for the room.
 - [ ] `GET /` lets the lecturer completely reset the current room and leaves lecturer controls unclaimed afterward so the next run starts cleanly.
 - [ ] `GET /` exposes a safe audience-link copy action that joins the room without handing lecturer controls to participants.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.

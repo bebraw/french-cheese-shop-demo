@@ -490,12 +490,15 @@ function renderLecturerControls() {
       ? "Simple flow ready"
       : "All challenges revealed";
 
+  const controlsClaimedByOtherDevice = access.presenterClaimed && !access.canManageScenario;
   roomClaimLecturerButton.disabled = access.canManageScenario;
+  roomClaimLecturerButton.hidden = controlsClaimedByOtherDevice;
   roomClaimLecturerButton.setAttribute("aria-disabled", String(access.canManageScenario));
   roomClaimLecturerButton.classList.toggle("opacity-60", access.canManageScenario);
   roomClaimLecturerButton.textContent = access.canManageScenario ? "Lecturer controls active" : "Claim lecturer controls";
 
   roomSimpleModeButton.disabled = !access.canManageScenario;
+  roomSimpleModeButton.hidden = controlsClaimedByOtherDevice;
   roomSimpleModeButton.setAttribute("aria-disabled", String(!access.canManageScenario));
   roomSimpleModeButton.setAttribute("aria-pressed", String(simpleModeActive));
   roomSimpleModeButton.classList.toggle("opacity-60", !access.canManageScenario);
