@@ -10,6 +10,7 @@ describe("searchDemoCatalog", () => {
 
     expect(response.results[0]?.name).toBe("Brie de Meaux");
     expect(response.insights[0]).toBe("Only surface wording affects ranking.");
+    expect(response.insights).toContain("Deliberate failure: the lead repeats Brie de Meaux even though the request asks for strength 4/5.");
   });
 
   it("keeps challenge 1 on baseline ranking until a hidden need is explicit", () => {

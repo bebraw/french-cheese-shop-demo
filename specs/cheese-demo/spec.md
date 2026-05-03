@@ -77,6 +77,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] The requirements lens stays synchronized with each active ranking signal, including explicit milk type and carry-forward audience cues from earlier challenges.
 - [ ] Context controls produce visible suitability and availability changes in the results and requirements lens.
 - [ ] `baseline` ranks from the request wording alone unless the presenter enables shared world context.
+- [ ] `baseline` makes the deliberate teaching failure visible when the lead repeats the named reference despite a stronger-target request.
 - [ ] `challenge-1` makes hidden requirements explicit in the ranking and insight output.
 - [ ] `challenge-2` uses extra product, operating constraint, and use-context cues from the audience input.
 - [ ] `challenge-3` returns evaluation checks alongside the ranking.

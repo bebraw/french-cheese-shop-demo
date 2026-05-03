@@ -701,6 +701,17 @@ function buildInsights(
   if (intent.targetIntensity !== null) {
     insights.push(`Strength target: ${intent.targetIntensity}/5.`);
   }
+  if (
+    scenario === "baseline" &&
+    intent.referenceCheese &&
+    intent.targetIntensity !== null &&
+    intent.targetIntensity !== intent.referenceCheese.intensity &&
+    results[0]?.cheeseId === intent.referenceCheese.cheeseId
+  ) {
+    insights.push(
+      `Deliberate failure: the lead repeats ${intent.referenceCheese.name} even though the request asks for strength ${intent.targetIntensity}/5.`,
+    );
+  }
   if (scenario !== "baseline" && intent.desiredMilkTypes.size > 0) {
     insights.push(`Explicit milk types: ${[...intent.desiredMilkTypes].join(", ")}.`);
   }
