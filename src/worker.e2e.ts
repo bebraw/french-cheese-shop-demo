@@ -124,8 +124,8 @@ test("lecturer reveals challenges one step at a time", async ({ browser }) => {
   await context.close();
 });
 
-test("lecturer simple mode focuses the five-minute flow", async ({ browser }) => {
-  const roomId = "e2e-simple-mode";
+test("lecturer focus mode reduces visual noise for the five-minute flow", async ({ browser }) => {
+  const roomId = "e2e-focus-mode";
   const context = await browser.newContext();
   const lecturerPage = await context.newPage();
   const participantPage = await context.newPage();
@@ -134,9 +134,9 @@ test("lecturer simple mode focuses the five-minute flow", async ({ browser }) =>
   await participantPage.goto(roomUrl(roomId));
 
   await claimLecturer(lecturerPage);
-  await lecturerPage.getByRole("button", { name: "Simple mode" }).click();
+  await lecturerPage.getByRole("button", { name: "Focus mode" }).click();
 
-  await expect(lecturerPage.getByRole("button", { name: "Simple mode" })).toHaveAttribute("aria-pressed", "true");
+  await expect(lecturerPage.getByRole("button", { name: "Focus mode" })).toHaveAttribute("aria-pressed", "true");
   await expect(lecturerPage.locator("#room-lecturer-status")).toContainText("all challenges remain available");
   await expect(lecturerPage).toHaveURL(/[\?&]simple=1/);
   await expect(lecturerPage.getByRole("button", { name: /Context/ })).toBeHidden();
@@ -625,7 +625,7 @@ test("participants cannot change the active challenge after the lecturer claims 
     "The shared search query, world context, and challenge changes are locked to the lecturer device for this room.",
   );
   await expect(participantPage.getByRole("button", { name: "Claim lecturer controls" })).toBeHidden();
-  await expect(participantPage.getByRole("button", { name: "Simple mode" })).toBeHidden();
+  await expect(participantPage.getByRole("button", { name: "Focus mode" })).toBeHidden();
 
   await context.close();
 });

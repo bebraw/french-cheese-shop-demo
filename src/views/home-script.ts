@@ -512,7 +512,7 @@ function renderLecturerControls() {
 
   roomLecturerStatusElement.textContent = access.canManageScenario
     ? simpleModeActive
-      ? "This device is in simple mode: context stays hidden while all challenges remain available."
+      ? "This device is in focus mode: context stays hidden while all challenges remain available."
       : "This device controls the shared search query, world context, and challenge changes for the room."
     : access.presenterClaimed
       ? "The shared search query, world context, and challenge changes are locked to the lecturer device for this room."
@@ -1244,7 +1244,7 @@ roomClaimLecturerButton.addEventListener("click", () => {
 
 roomSimpleModeButton.addEventListener("click", () => {
   if (!getRoomAccess().canManageScenario) {
-    setStatus("Claim lecturer controls to use simple mode.");
+    setStatus("Claim lecturer controls to use focus mode.");
     return;
   }
 
@@ -1253,7 +1253,7 @@ roomSimpleModeButton.addEventListener("click", () => {
   updateUrlState();
 
   applySnapshot(activeSnapshot || createFallbackSnapshot(activeRoomId));
-  setStatus(simpleModeEnabled ? "Simple mode on." : "Simple mode off.");
+  setStatus(simpleModeEnabled ? "Focus mode on." : "Focus mode off.");
 });
 
 roomJoinButton.addEventListener("click", () => {
