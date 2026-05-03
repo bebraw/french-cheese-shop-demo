@@ -275,6 +275,50 @@ describe("createSessionResponse", () => {
     });
   });
 
+  it("releases lecturer control from the current lecturer token", async () => {
+    const roomUrl = "http://example.com/api/session?room=session-release";
+    const lecturerHeaders = {
+      "content-type": "application/json",
+      "x-demo-presenter-token": "lecturer-token",
+    };
+
+    await createSessionResponse(
+      new Request(roomUrl, {
+        method: "POST",
+        headers: lecturerHeaders,
+        body: JSON.stringify({ type: "claim-presenter" }),
+      }),
+    );
+
+    const releaseResponse = await createSessionResponse(
+      new Request(roomUrl, {
+        method: "POST",
+        headers: lecturerHeaders,
+        body: JSON.stringify({ type: "release-presenter" }),
+      }),
+    );
+    const releasePayload = await releaseResponse.json();
+
+    expect(releasePayload.ok).toBe(true);
+    expect(releasePayload.snapshot.access.presenterClaimed).toBe(false);
+    expect(releasePayload.snapshot.access.canManageScenario).toBe(false);
+
+    const newClaimResponse = await createSessionResponse(
+      new Request(roomUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-demo-presenter-token": "new-lecturer-token",
+        },
+        body: JSON.stringify({ type: "claim-presenter" }),
+      }),
+    );
+    const newClaimPayload = await newClaimResponse.json();
+
+    expect(newClaimPayload.ok).toBe(true);
+    expect(newClaimPayload.snapshot.access.canManageScenario).toBe(true);
+  });
+
   it("rejects world context changes from non-lecturer clients", async () => {
     const response = await createSessionResponse(
       new Request("http://example.com/api/session?room=session-protected-context", {

@@ -51,6 +51,7 @@ const roomPanelBody = document.getElementById("room-panel-body");
 const roomLecturerControlsPanel = document.getElementById("room-lecturer-controls-panel");
 const roomLecturerStatusElement = document.getElementById("room-lecturer-status");
 const roomClaimLecturerButton = document.getElementById("room-claim-lecturer-button");
+const roomReleaseLecturerButton = document.getElementById("room-release-lecturer-button");
 const roomSimpleModeButton = document.getElementById("room-simple-mode-button");
 const roomCopyAudienceLinkButton = document.getElementById("room-copy-audience-link-button");
 const roomJoinButton = document.getElementById("room-join-button");
@@ -531,6 +532,10 @@ function renderLecturerControls() {
   roomClaimLecturerButton.setAttribute("aria-disabled", String(access.canManageScenario));
   roomClaimLecturerButton.classList.toggle("opacity-60", access.canManageScenario);
   roomClaimLecturerButton.textContent = access.canManageScenario ? "Lecturer controls active" : "Claim lecturer controls";
+
+  roomReleaseLecturerButton.hidden = !access.canManageScenario;
+  roomReleaseLecturerButton.disabled = !access.canManageScenario;
+  roomReleaseLecturerButton.setAttribute("aria-disabled", String(!access.canManageScenario));
 
   roomSimpleModeButton.disabled = !access.canManageScenario;
   roomSimpleModeButton.setAttribute("aria-disabled", String(!access.canManageScenario));
@@ -1182,6 +1187,25 @@ async function claimLecturerControls() {
   setStatus("Lecturer controls claimed for this room.");
 }
 
+async function releaseLecturerControls() {
+  if (!getRoomAccess().canManageScenario) {
+    setStatus("Only the lecturer can release this room.");
+    return;
+  }
+
+  const snapshot = await sendCommand({ type: "release-presenter" });
+  if (!snapshot) {
+    return;
+  }
+
+  activePresenterToken = "";
+  persistPresenterToken(activeRoomId, "");
+  closeLiveSync();
+  openLiveSync();
+  applySnapshot(snapshot);
+  setStatus("Lecturer controls released.");
+}
+
 async function resetRoom() {
   window.clearTimeout(querySyncHandle);
   window.clearTimeout(audienceSyncHandle);
@@ -1284,6 +1308,10 @@ scenarioNextButton.addEventListener("click", () => {
 
 roomClaimLecturerButton.addEventListener("click", () => {
   void claimLecturerControls();
+});
+
+roomReleaseLecturerButton.addEventListener("click", () => {
+  void releaseLecturerControls();
 });
 
 roomSimpleModeButton.addEventListener("click", () => {

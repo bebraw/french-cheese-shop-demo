@@ -74,6 +74,7 @@ export function renderHomePage(): string {
                         <p id="room-lecturer-status" class="mt-2 text-sm leading-6 text-app-text-soft">The shared search query, world context, and challenge changes stay unlocked only after the lecturer claims control on this device.</p>
                         <div class="mt-3 flex flex-wrap gap-2">
                           <button id="room-claim-lecturer-button" type="button" class="audience-preset">Claim lecturer controls</button>
+                          <button id="room-release-lecturer-button" type="button" class="audience-preset">Release room</button>
                           <button id="room-simple-mode-button" type="button" class="audience-preset" aria-pressed="false">Focus mode</button>
                           <button id="room-copy-audience-link-button" type="button" class="audience-preset">Copy audience link</button>
                         </div>

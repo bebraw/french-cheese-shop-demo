@@ -136,7 +136,8 @@ that browser's vote selections remains outside the shared room model. A complete
 room reset returns the shared state to the default baseline, increments the room
 version from the previous state, clears audience votes and lecturer overrides,
 and keeps the lecturer token so the same lecturer can immediately start the next
-run.
+run. A lecturer release clears only the lecturer token, leaving the current
+shared demo state intact for the next lecturer device to claim.
 
 ## Data Model
 

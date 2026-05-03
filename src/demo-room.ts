@@ -53,6 +53,7 @@ export interface DemoRoomAccess {
 
 export type DemoRoomCommand =
   | { type: "claim-presenter" }
+  | { type: "release-presenter" }
   | { type: "set-query"; query: string }
   | { type: "set-scenario"; scenario: DemoScenarioId }
   | { type: "advance-scenario" }
@@ -258,6 +259,16 @@ export function applyRoomCommand(record: DemoRoomRecord, command: DemoRoomComman
     };
   }
 
+  if (command.type === "release-presenter") {
+    return {
+      ok: true,
+      record: {
+        ...record,
+        presenterToken: null,
+      },
+    };
+  }
+
   if (command.type === "reset-room") {
     return {
       ok: true,
@@ -281,7 +292,7 @@ export function applyRoomCommand(record: DemoRoomRecord, command: DemoRoomComman
 
 function applyRoomStateCommand(
   state: DemoRoomState,
-  command: Exclude<DemoRoomCommand, { type: "claim-presenter" } | { type: "reset-room" }>,
+  command: Exclude<DemoRoomCommand, { type: "claim-presenter" } | { type: "release-presenter" } | { type: "reset-room" }>,
 ): DemoRoomState {
   if (command.type === "set-query") {
     return bumpVersion({
@@ -482,6 +493,10 @@ export function readRoomCommand(payload: unknown): DemoRoomCommand | null {
 
   if (raw.type === "claim-presenter") {
     return { type: "claim-presenter" };
+  }
+
+  if (raw.type === "release-presenter") {
+    return { type: "release-presenter" };
   }
 
   if (raw.type === "set-query" && typeof raw.query === "string") {
@@ -721,6 +736,7 @@ function bumpVersion(state: DemoRoomState): DemoRoomState {
 
 function requiresPresenterControl(command: Exclude<DemoRoomCommand, { type: "claim-presenter" }>): boolean {
   return (
+    command.type === "release-presenter" ||
     command.type === "set-query" ||
     command.type === "set-scenario" ||
     command.type === "advance-scenario" ||
@@ -738,6 +754,12 @@ function presenterControlError(command: Exclude<DemoRoomCommand, { type: "claim-
     return presenterClaimed
       ? "Only the lecturer can change the shared search query for this room."
       : "Lecturer controls must be claimed before the shared search query can change.";
+  }
+
+  if (command.type === "release-presenter") {
+    return presenterClaimed
+      ? "Only the lecturer can release controls for this room."
+      : "Lecturer controls must be claimed before they can be released.";
   }
 
   if (command.type === "set-season" || command.type === "set-shop-state") {

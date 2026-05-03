@@ -34,11 +34,13 @@ switching, and room reset with a room-scoped lecturer token.
   requests.
 - Room snapshots expose lecturer access flags so the UI can show whether the
   current device may manage challenge flow.
-- `set-query`, `set-season`, `set-shop-state`, `set-scenario`, and `reset-room`
-  require the room's lecturer token.
+- `set-query`, `set-season`, `set-shop-state`, `set-scenario`,
+  `release-presenter`, and `reset-room` require the room's lecturer token.
 - `reset-room` clears shared demo state after authorization while retaining the
   room-scoped lecturer token, so the same lecturer can immediately start the
   next run.
+- `release-presenter` clears the room-scoped lecturer token without resetting
+  shared demo state, so another lecturer device can claim control.
 - Audience inputs, world context, and backend mode remain collaborative so
   participants can still contribute to the current challenge.
 - The UI exposes separate lecturer-link and audience-link copy actions so the
@@ -63,7 +65,8 @@ Trade-offs:
 - Room coordination now has to personalize access flags per connected client in
   live snapshots instead of broadcasting one identical access view to everyone.
 - A reset preserves lecturer possession, so the lecturer must intentionally
-  share or clear their local lecturer link if another device should take over.
+  release the room or share their lecturer link if another device should take
+  over.
 
 ## Rejected Alternatives
 

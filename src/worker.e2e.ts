@@ -127,6 +127,26 @@ test("lecturer reveals challenges one step at a time", async ({ browser }) => {
   await context.close();
 });
 
+test("lecturer can release room controls", async ({ browser }) => {
+  const roomId = "e2e-release-room";
+  const context = await browser.newContext();
+  const lecturerPage = await context.newPage();
+  const participantPage = await context.newPage();
+
+  await lecturerPage.goto(roomUrl(roomId));
+  await participantPage.goto(roomUrl(roomId));
+
+  await claimLecturer(lecturerPage);
+  await expect(participantPage.getByRole("button", { name: "Claim lecturer controls" })).toHaveCount(0);
+
+  await lecturerPage.getByRole("button", { name: "Release room" }).click();
+
+  await expect(lecturerPage.locator("#room-lecturer-status")).toContainText("stay unlocked");
+  await expect(participantPage.getByRole("button", { name: "Claim lecturer controls" })).toBeVisible();
+
+  await context.close();
+});
+
 test("lecturer focus mode reduces visual noise for the five-minute flow", async ({ browser }) => {
   const roomId = "e2e-focus-mode";
   const context = await browser.newContext();

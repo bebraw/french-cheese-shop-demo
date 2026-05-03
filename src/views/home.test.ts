@@ -15,6 +15,7 @@ describe("renderHomePage", () => {
     expect(html).toContain('value="demo-room"');
     expect(html).toContain("Lecturer Controls");
     expect(html).toContain("Claim lecturer controls");
+    expect(html).toContain("Release room");
     expect(html).toContain("Focus mode");
     expect(html).toContain("Copy audience link");
     expect(html).toContain("Join room");

@@ -195,6 +195,7 @@ describe("demo room state", () => {
     expect(readRoomCommand({ type: "set-focus-mode", focusMode: true })).toEqual({ type: "set-focus-mode", focusMode: true });
     expect(readRoomCommand({ type: "set-backend", backend: "llm" })).toEqual({ type: "set-backend", backend: "llm" });
     expect(readRoomCommand({ type: "claim-presenter" })).toEqual({ type: "claim-presenter" });
+    expect(readRoomCommand({ type: "release-presenter" })).toEqual({ type: "release-presenter" });
     expect(readRoomCommand({ type: "reset-room" })).toEqual({ type: "reset-room" });
     expect(readRoomCommand({ type: "advance-scenario" })).toEqual({ type: "advance-scenario" });
     expect(readRoomCommand({ type: "cast-preset-vote", scenario: "challenge-1", presetId: "cow", voteDelta: 1 })).toEqual({
@@ -276,6 +277,21 @@ describe("demo room state", () => {
     expect(record.state.activeScenario).toBe("challenge-1");
   });
 
+  it("lets the lecturer release room controls without resetting shared state", () => {
+    let record = createDefaultRoomRecord("release-room");
+    record = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    record = applyOk(record, { type: "set-query", query: "Custom" }, "lecturer-token");
+    record = applyOk(record, { type: "set-scenario", scenario: "challenge-1" }, "lecturer-token");
+    record = applyOk(record, { type: "release-presenter" }, "lecturer-token");
+
+    expect(record.presenterToken).toBeNull();
+    expect(record.state.query).toBe("Custom");
+    expect(record.state.activeScenario).toBe("challenge-1");
+
+    record = applyOk(record, { type: "claim-presenter" }, "new-lecturer-token");
+    expect(record.presenterToken).toBe("new-lecturer-token");
+  });
+
   it("protects challenge changes until the lecturer claims control", () => {
     const record = createDefaultRoomRecord("protected-room");
     const unauthorizedResult = applyRoomCommand(record, { type: "set-scenario", scenario: "challenge-2" }, null);
@@ -299,6 +315,20 @@ describe("demo room state", () => {
 
     const claimedRecord = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
     const wrongPresenterResult = applyRoomCommand(claimedRecord, { type: "set-query", query: "Custom" }, "audience-token");
+
+    expect(wrongPresenterResult.ok).toBe(false);
+    expect(wrongPresenterResult.error).toContain("Only the lecturer");
+  });
+
+  it("protects lecturer release until the current lecturer authorizes it", () => {
+    const record = createDefaultRoomRecord("protected-release-room");
+    const unauthorizedResult = applyRoomCommand(record, { type: "release-presenter" }, null);
+
+    expect(unauthorizedResult.ok).toBe(false);
+    expect(unauthorizedResult.error).toContain("released");
+
+    const claimedRecord = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    const wrongPresenterResult = applyRoomCommand(claimedRecord, { type: "release-presenter" }, "audience-token");
 
     expect(wrongPresenterResult.ok).toBe(false);
     expect(wrongPresenterResult.error).toContain("Only the lecturer");
