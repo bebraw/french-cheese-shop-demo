@@ -745,14 +745,7 @@ function renderAudiencePresets(scenario) {
 }
 
 function getVisiblePresets(scenario) {
-  const presets = scenarios[scenario].presets;
-
-  if (!isSimpleModeActive() || scenario !== "challenge-1") {
-    return presets;
-  }
-
-  const simplePresetIds = new Set(["creamy", "oozy", "cow", "goat"]);
-  return presets.filter((preset) => simplePresetIds.has(preset.id));
+  return scenarios[scenario].presets;
 }
 
 function handlePresetVote(scenario, preset) {

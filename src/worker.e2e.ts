@@ -156,9 +156,12 @@ test("lecturer focus mode reduces visual noise for the five-minute flow", async 
   await expect(audienceVoteButton(lecturerPage, "Oozy center")).toBeVisible();
   await expect(audienceVoteButton(lecturerPage, "Cow's milk")).toBeVisible();
   await expect(audienceVoteButton(lecturerPage, "Goat's milk")).toBeVisible();
-  await expect(audienceVoteButton(lecturerPage, "Sheep's milk")).toHaveCount(0);
-  await expect(audienceVoteButton(lecturerPage, "Mixed milk ok")).toHaveCount(0);
-  await expect(audienceVoteButton(lecturerPage, "Much stronger")).toHaveCount(0);
+  await expect(audienceVoteButton(lecturerPage, "Sheep's milk")).toBeVisible();
+  await expect(audienceVoteButton(lecturerPage, "Mixed milk ok")).toBeVisible();
+  await expect(audienceVoteButton(lecturerPage, "Much stronger")).toBeVisible();
+  await expect(audienceVoteButton(participantPage, "Sheep's milk")).toBeVisible();
+  await expect(audienceVoteButton(participantPage, "Mixed milk ok")).toBeVisible();
+  await expect(audienceVoteButton(participantPage, "Much stronger")).toBeVisible();
 
   await lecturerPage.locator("#scenario-next-button").click();
   await expect(lecturerPage.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
