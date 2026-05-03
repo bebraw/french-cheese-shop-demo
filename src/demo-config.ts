@@ -34,6 +34,7 @@ export interface DemoScenarioCopy {
   teachingQuestion: string;
   teachingNotice: string;
   teachingPause: string;
+  teachingTimebox: string;
   presets: readonly DemoPresetOption[];
 }
 
@@ -69,6 +70,7 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     teachingQuestion: "What does “like Brie” and “stronger” actually mean for this customer?",
     teachingNotice: "The ranking looks reasonable, but the system is still guessing about preferences, constraints, and success criteria.",
     teachingPause: "Before moving on: what assumption did the system just make?",
+    teachingTimebox: "30 sec setup",
     presets: [],
   },
   "challenge-1": {
@@ -85,6 +87,7 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     teachingQuestion: "Which preference or constraint did the first pass have to guess?",
     teachingNotice: "The query stays the same, but the ranking changes because meaning became explicit.",
     teachingPause: "Before moving on: which hidden need changed the answer most?",
+    teachingTimebox: "45 sec vote, 30 sec discuss",
     presets: [
       { id: "creamy", label: "Keep it creamy", value: "keep it creamy", voteGroupId: "texture", voteGroupLabel: "Texture", recommended: true },
       { id: "oozy", label: "Oozy center", value: "oozy center", voteGroupId: "texture", voteGroupLabel: "Texture" },
@@ -109,6 +112,7 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     teachingQuestion: "Which fact, constraint, or use context must the system know before ranking?",
     teachingNotice: "Better recommendations depend on catalog data and operating context, not only better wording.",
     teachingPause: "Before moving on: which missing fact would make the result unsafe or unusable?",
+    teachingTimebox: "45 sec vote, 45 sec compare",
     presets: [
       { id: "cider", label: "Pairing: cider", value: "with cider", voteGroupId: "pairing", voteGroupLabel: "Pairing data" },
       { id: "burgundy", label: "Pairing: Burgundy", value: "with burgundy", voteGroupId: "pairing", voteGroupLabel: "Pairing data" },
@@ -146,6 +150,7 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     teachingQuestion: "What should a good answer visibly prove before we trust it?",
     teachingNotice: "The goal is not one magical answer, but evidence that the recommendation is useful, trusted, and good enough.",
     teachingPause: "Close here: what evidence would make this recommendation ready to use?",
+    teachingTimebox: "Optional 60 sec coda",
     presets: [
       {
         id: "explain",
