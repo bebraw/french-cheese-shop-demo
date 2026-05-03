@@ -40,6 +40,45 @@ describe("createSessionResponse", () => {
     expect(response.status).toBe(400);
   });
 
+  it("rejects malformed JSON commands", async () => {
+    const response = await createSessionResponse(
+      new Request("http://example.com/api/session?room=session-invalid-json", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: "{",
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: "Session command is invalid.",
+    });
+  });
+
+  it("rejects unsupported session methods", async () => {
+    const response = await createSessionResponse(
+      new Request("http://example.com/api/session?room=session-method", {
+        method: "PUT",
+      }),
+    );
+
+    expect(response.status).toBe(405);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: "Method not allowed.",
+    });
+  });
+
+  it("sanitizes short or invalid room ids before creating fallback rooms", async () => {
+    const response = await createSessionResponse(new Request("http://example.com/api/session?room=!"));
+    const payload = await response.json();
+
+    expect(payload.roomId).toBe("demo-room");
+  });
+
   it("applies commands in the in-memory fallback room", async () => {
     await createSessionResponse(
       new Request("http://example.com/api/session?room=session-update", {
@@ -114,6 +153,31 @@ describe("createSessionResponse", () => {
     expect(forwarded[0]).toBe("forwarded-room");
     expect(forwarded[1]).toContain("/internal/session?room=forwarded-room");
     expect(forwarded[2]).toBe("GET");
+  });
+
+  it("preserves non-room query parameters when forwarding to durable objects", async () => {
+    let forwardedUrl = "";
+    const env = {
+      DEMO_ROOMS: {
+        idFromName(name: string) {
+          return name;
+        },
+        get() {
+          return {
+            async fetch(request: Request) {
+              forwardedUrl = request.url;
+              return Response.json({ ok: true });
+            },
+          };
+        },
+      },
+    };
+
+    await createSessionResponse(new Request("http://example.com/api/session?room=forwarded-query&presenter=token&context=open"), env);
+
+    expect(forwardedUrl).toContain("room=forwarded-query");
+    expect(forwardedUrl).toContain("presenter=token");
+    expect(forwardedUrl).toContain("context=open");
   });
 
   it("forwards live sync requests when a durable object binding exists", async () => {
