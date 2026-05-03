@@ -92,7 +92,14 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     teachingTimebox: "45 sec vote, 30 sec discuss",
     teachingStopHere: "Stop here if time is short: ambiguity became an explicit requirement.",
     presets: [
-      { id: "creamy", label: "Keep it creamy", value: "keep it creamy", voteGroupId: "texture", voteGroupLabel: "Texture", recommended: true },
+      {
+        id: "creamy",
+        label: "Keep it creamy",
+        value: "keep it creamy",
+        voteGroupId: "texture",
+        voteGroupLabel: "Texture",
+        recommended: true,
+      },
       { id: "oozy", label: "Oozy center", value: "oozy center", voteGroupId: "texture", voteGroupLabel: "Texture" },
       { id: "cow", label: "Cow's milk", value: "cow's milk", voteGroupId: "milk", voteGroupLabel: "Milk" },
       { id: "goat", label: "Goat's milk", value: "goat's milk", voteGroupId: "milk", voteGroupLabel: "Milk" },
