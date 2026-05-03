@@ -405,6 +405,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.locator("#scenario-description")).toContainText("facts and constraints");
   await expect(page.locator("#teaching-outcome")).toHaveText("Specify domain and operational context");
   await expect(page.locator("#teaching-focus-copy")).toContainText("domain and shop context");
+  await expect(page.locator("#teaching-pause")).toContainText("missing fact");
   await expect(audienceVoteButton(page, "Washed rind")).toBeVisible();
   await expect(audienceVoteButton(page, "In stock")).toBeVisible();
 
@@ -414,6 +415,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.locator("#scenario-description")).toContainText("visibly prove");
   await expect(page.locator("#teaching-outcome")).toHaveText("Evaluate ambiguity");
   await expect(page.locator("#teaching-question")).toContainText("good answer visibly prove");
+  await expect(page.locator("#teaching-pause")).toContainText("ready to use");
   await expect(audienceVoteButton(page, "In stock")).toHaveCount(0);
   await expect(audienceVoteButton(page, "Show why it fits")).toBeVisible();
   await expect(audienceVoteButton(page, "Show trade-offs")).toBeVisible();

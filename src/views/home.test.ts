@@ -29,6 +29,7 @@ describe("renderHomePage", () => {
     expect(html).toContain("Make usefulness and trust visible.");
     expect(html).toContain("Teaching Focus");
     expect(html).toContain('id="teaching-focus-panel"');
+    expect(html).toContain('id="teaching-pause"');
     expect(html).toContain('id="teaching-focus-panel" class=');
     expect(html).toContain("hidden>");
     expect(html).toContain("Interpret vague requests");
@@ -36,6 +37,7 @@ describe("renderHomePage", () => {
     expect(html).toContain(
       "The ranking looks reasonable, but the system is still guessing about preferences, constraints, and success criteria.",
     );
+    expect(html).toContain("Before moving on: what assumption did the system just make?");
     expect(html).toContain("Context");
     expect(html).toContain("World Context");
     expect(html).toContain("Optional simulation state shared by baseline and every challenge.");

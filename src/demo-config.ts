@@ -32,6 +32,7 @@ export interface DemoScenarioCopy {
   teachingFocus: string;
   teachingQuestion: string;
   teachingNotice: string;
+  teachingPause: string;
   presets: readonly DemoPresetOption[];
 }
 
@@ -66,6 +67,7 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     teachingFocus: "Baseline shows how a plausible answer can still rest on hidden guesses.",
     teachingQuestion: "What does “like Brie” and “stronger” actually mean for this customer?",
     teachingNotice: "The ranking looks reasonable, but the system is still guessing about preferences, constraints, and success criteria.",
+    teachingPause: "Before moving on: what assumption did the system just make?",
     presets: [],
   },
   "challenge-1": {
@@ -81,6 +83,7 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     teachingFocus: "Challenge 1 turns hidden meaning into explicit requirements.",
     teachingQuestion: "Which preference or constraint did the first pass have to guess?",
     teachingNotice: "The query stays the same, but the ranking changes because meaning became explicit.",
+    teachingPause: "Before moving on: which hidden need changed the answer most?",
     presets: [
       { id: "creamy", label: "Keep it creamy", value: "keep it creamy", voteGroupId: "texture", voteGroupLabel: "Texture" },
       { id: "oozy", label: "Oozy center", value: "oozy center", voteGroupId: "texture", voteGroupLabel: "Texture" },
@@ -104,6 +107,7 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     teachingFocus: "Challenge 2 adds the domain and shop context behind the prompt.",
     teachingQuestion: "What product fact, pairing, stock rule, or shop condition does the system need next?",
     teachingNotice: "Better recommendations depend on catalog data and operating context, not only better wording.",
+    teachingPause: "Before moving on: which missing fact would make the result unsafe or unusable?",
     presets: [
       { id: "cider", label: "With cider", value: "with cider", voteGroupId: "pairing", voteGroupLabel: "Pairing" },
       { id: "burgundy", label: "With Burgundy", value: "with burgundy", voteGroupId: "pairing", voteGroupLabel: "Pairing" },
@@ -127,6 +131,7 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     teachingFocus: "Challenge 3 turns success criteria into inspectable checks.",
     teachingQuestion: "What should a good answer visibly prove before we trust it?",
     teachingNotice: "The goal is not one magical answer, but evidence that the recommendation is useful, trusted, and good enough.",
+    teachingPause: "Close here: what evidence would make this recommendation ready to use?",
     presets: [
       { id: "explain", label: "Show why it fits", value: "show why it fits", voteGroupId: "explanation", voteGroupLabel: "Explanation" },
       { id: "tradeoffs", label: "Show trade-offs", value: "show trade-offs", voteGroupId: "tradeoffs", voteGroupLabel: "Trade-offs" },

@@ -130,6 +130,10 @@ export function renderHomePage(): string {
                   <span class="font-semibold uppercase tracking-[0.16em] text-app-secondary">Notice</span>
                   <span id="teaching-notice" class="ml-2">The ranking looks reasonable, but the system is still guessing about preferences, constraints, and success criteria.</span>
                 </p>
+                <p class="mt-2 text-sm leading-6 text-app-text">
+                  <span class="font-semibold uppercase tracking-[0.16em] text-app-secondary">Pause</span>
+                  <span id="teaching-pause" class="ml-2">Before moving on: what assumption did the system just make?</span>
+                </p>
               </section>
             </div>
             <div id="demo-panel" class="mt-4 sm:mt-6">
