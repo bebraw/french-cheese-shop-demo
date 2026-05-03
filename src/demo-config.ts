@@ -129,7 +129,7 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     teachingNotice: "The goal is not one magical answer, but evidence that the recommendation is useful, trusted, and good enough.",
     presets: [
       { id: "explain", label: "Show why it fits", value: "show why it fits", voteGroupId: "explanation", voteGroupLabel: "Explanation" },
-      { id: "backup", label: "Mark a backup", value: "mark a backup choice", voteGroupId: "fallback", voteGroupLabel: "Fallback" },
+      { id: "tradeoffs", label: "Show trade-offs", value: "show trade-offs", voteGroupId: "tradeoffs", voteGroupLabel: "Trade-offs" },
       { id: "shortlist", label: "Two finalists", value: "keep it to two finalists", voteGroupId: "scope", voteGroupLabel: "Scope" },
     ],
   },

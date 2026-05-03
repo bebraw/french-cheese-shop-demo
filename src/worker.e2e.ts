@@ -414,7 +414,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.locator("#teaching-question")).toContainText("good answer visibly prove");
   await expect(audienceVoteButton(page, "In stock")).toHaveCount(0);
   await expect(audienceVoteButton(page, "Show why it fits")).toBeVisible();
-  await expect(audienceVoteButton(page, "Mark a backup")).toBeVisible();
+  await expect(audienceVoteButton(page, "Show trade-offs")).toBeVisible();
   await expect(audienceVoteButton(page, "Two finalists")).toBeVisible();
 });
 
@@ -585,20 +585,20 @@ test("challenge 3 options visibly change the results", async ({ page }) => {
   await claimLecturer(page);
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 3/, "Challenge 3: Evaluation");
-  await chooseAudienceOption(page, "Mark a backup");
+  await chooseAudienceOption(page, "Show trade-offs");
   await chooseAudienceOption(page, "Two finalists");
   await chooseAudienceOption(page, "Show why it fits");
 
   await expect(page.locator("#search-status")).toHaveText("2 results");
   await expect(page.locator("#search-results > li")).toHaveCount(2);
   await expect(page.locator("#search-results > li").first()).toContainText("Top pick");
-  await expect(page.locator("#search-results > li").nth(1)).toContainText("Backup choice");
   await expect(page.locator("#scenario-insights")).toContainText("Showing two finalists");
 
   const topResult = page.locator("#search-results > li").first();
   await topResult.getByRole("button", { name: "More" }).click({ force: true });
   await expect(topResult).toContainText("Why it fits:");
-  await expect(topResult).toContainText("Backup choice is visible");
+  await expect(topResult).toContainText("Trade-off is visible");
+  await expect(topResult).toContainText("Gains:");
 });
 
 test("show why it fits explains challenge 3 results without reordering them", async ({ page }) => {

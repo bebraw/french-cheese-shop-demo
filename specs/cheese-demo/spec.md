@@ -79,7 +79,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `challenge-1` makes hidden requirements explicit in the ranking and insight output.
 - [ ] `challenge-2` uses extra product and context cues from the audience input.
 - [ ] `challenge-3` returns evaluation checks alongside the ranking.
-- [ ] Challenge 3 evaluation options produce visible result changes such as a two-finalist shortlist, a marked backup choice, or a direct why-it-fits explanation.
+- [ ] Challenge 3 evaluation options produce visible result changes such as a two-finalist shortlist, trade-off notes, or a direct why-it-fits explanation.
 - [ ] Spec and ADR updates land in the same change set as the implementation.
 - [ ] Automated tests cover Worker routing, scenario scoring, and browser tab flows.
 
@@ -218,7 +218,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 **Scenario: Audience defines success criteria**
 
 - Given: the presenter is on challenge 3
-- When: the audience votes for criteria such as `show why it fits`, `mark a backup choice`, or `keep it to two finalists`
+- When: the audience votes for criteria such as `show why it fits`, `show trade-offs`, or `keep it to two finalists`
 - Then: the results include visible changes that make the quality judgment inspectable, and the teaching prompt frames that step as evaluation under ambiguity
 
 **Scenario: Presenter asks for a why-it-fits explanation**

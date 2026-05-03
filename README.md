@@ -17,7 +17,7 @@ If time is short, run the demo like this:
 2. `Baseline`: show the plausible but shallow answer from surface wording alone.
 3. Press `Next` to reveal `Challenge 1`, then let the room vote on hidden requirements such as `keep it creamy` and milk-type alternatives like `cow`, `goat`, `sheep`, or `mixed`.
 4. Press `Next` again only if time allows. In `Challenge 2`, vote on missing data such as `serve it with cider` or `must be in stock`, while the foldable `Context` drawer can add world context like `Winter holiday` to change both seasonal fit and stock pressure.
-5. Use `Challenge 3` only as an optional final step for evaluation checks such as `show why it fits`, `mark a backup choice`, and `keep it to two finalists`.
+5. Use `Challenge 3` only as an optional final step for evaluation checks such as `show why it fits`, `show trade-offs`, and `keep it to two finalists`.
 
 Use the visible vote counts to keep the interaction short. If the room chooses
 an option that is more useful as a discussion point than as the next system

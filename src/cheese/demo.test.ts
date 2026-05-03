@@ -127,14 +127,15 @@ describe("searchDemoCatalog", () => {
     const response = searchDemoCatalog({
       query: "I want something like Brie but stronger",
       scenario: "challenge-3",
-      audienceInput: "It must be in stock, show why it fits, and mark a backup choice.",
+      audienceInput: "It must be in stock, show why it fits, and show trade-offs.",
     });
 
     expect(response.results[0]?.presentationTag).toBe("Top pick");
     expect(response.results[0]?.explanation).toContain("same ranking signals already in play");
     expect(response.results[0]?.checks).toHaveLength(5);
-    expect(response.results[1]?.presentationTag).toBe("Backup choice");
-    expect(response.insights).toContain(`Backup choice is marked on ${response.results[1]?.name}.`);
+    expect(response.results[0]?.checks.at(-1)?.label).toBe("Trade-off is visible");
+    expect(response.results[0]?.checks.at(-1)?.note).toContain("Gains:");
+    expect(response.insights).toContain("Expanded cards show what each result gains and gives up.");
     expect(response.insights).toContain("Expanded cards explain the current ranking instead of changing it.");
     expect(response.insights.at(-1)).toContain("current checks");
   });

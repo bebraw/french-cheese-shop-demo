@@ -55,7 +55,7 @@ interface ParsedIntent {
   maxPrice: number | null;
   requireInStock: boolean;
   wantsShortlist: boolean;
-  wantsBackup: boolean;
+  wantsTradeoffs: boolean;
   wantsExplanation: boolean;
   season: SimulationSeason | "";
   shopState: ShopState | "";
@@ -112,7 +112,6 @@ export function searchDemoCatalog({
     .sort((left, right) => right.score - left.score || left.cheese.name.localeCompare(right.cheese.name));
   const visibleCount = scenario === "challenge-3" ? (intent.wantsShortlist ? 2 : 4) : 5;
   const visibleScored = scored.slice(0, visibleCount);
-  const backupOptionName = intent.wantsBackup && visibleScored[1] ? visibleScored[1].cheese.name : null;
 
   const visibleResults = visibleScored.map(({ cheese, score, matchedSignals }, index) => {
     const effectiveStock = resolveEffectiveStock(cheese, intent);
@@ -125,9 +124,9 @@ export function searchDemoCatalog({
       score,
       reason: formatReason(cheese, matchedSignals, rankingScenario, intent, effectiveStock, backend),
       explanation: buildExplanation(cheese, matchedSignals, rankingScenario, intent),
-      presentationTag: buildPresentationTag(index, rankingScenario, intent),
+      presentationTag: buildPresentationTag(index, rankingScenario),
       matchedSignals,
-      checks: buildChecks(cheese, intent, rankingScenario, index, backupOptionName, effectiveStock, matchedSignals),
+      checks: buildChecks(cheese, intent, rankingScenario, effectiveStock, matchedSignals),
     };
   });
 
@@ -270,11 +269,12 @@ function parseIntent(
       combinedText.includes("options") ||
       combinedText.includes("few choices") ||
       combinedText.includes("two finalists"),
-    wantsBackup:
-      combinedText.includes("backup") ||
-      combinedText.includes("second option") ||
-      combinedText.includes("alternative") ||
-      combinedText.includes("fallback"),
+    wantsTradeoffs:
+      combinedText.includes("trade-off") ||
+      combinedText.includes("tradeoff") ||
+      combinedText.includes("trade offs") ||
+      combinedText.includes("tradeoffs") ||
+      combinedText.includes("pros and cons"),
     wantsExplanation:
       combinedText.includes("explain") ||
       combinedText.includes("why") ||
@@ -630,8 +630,6 @@ function buildChecks(
   cheese: CheeseRecord,
   intent: ParsedIntent,
   scenario: DemoScenarioId,
-  rank: number,
-  backupOptionName: string | null,
   effectiveStock: CheeseRecord["stock"],
   matchedSignals: string[],
 ): DemoResultCheck[] {
@@ -669,11 +667,11 @@ function buildChecks(
       : "Explanation not requested",
   });
 
-  if (intent.wantsBackup && rank === 0) {
+  if (intent.wantsTradeoffs) {
     checks.push({
-      label: "Backup choice is visible",
-      passed: backupOptionName !== null,
-      note: backupOptionName ? `Backup choice: ${backupOptionName}` : "No backup choice is visible yet",
+      label: "Trade-off is visible",
+      passed: matchedSignals.length >= 2,
+      note: formatTradeoffNote(cheese, intent, effectiveStock, matchedSignals),
     });
   }
 
@@ -754,8 +752,8 @@ function buildInsights(
     if (intent.wantsExplanation) {
       evaluationSignals.push("explain why it fits");
     }
-    if (intent.wantsBackup) {
-      evaluationSignals.push("give a backup option");
+    if (intent.wantsTradeoffs) {
+      evaluationSignals.push("show trade-offs");
     }
     if (intent.wantsShortlist) {
       evaluationSignals.push("return a shortlist");
@@ -767,8 +765,8 @@ function buildInsights(
     if (intent.wantsShortlist) {
       insights.push("Showing two finalists instead of the full shortlist.");
     }
-    if (intent.wantsBackup && results[1]) {
-      insights.push(`Backup choice is marked on ${results[1].name}.`);
+    if (intent.wantsTradeoffs) {
+      insights.push("Expanded cards show what each result gains and gives up.");
     }
     if (intent.wantsExplanation) {
       insights.push("Expanded cards explain the current ranking instead of changing it.");
@@ -794,7 +792,7 @@ function formatMilkType(milkType: CheeseRecord["milkType"]): string {
   return milkType === "mixed" ? "mixed milk" : milkType + "'s milk";
 }
 
-function buildPresentationTag(rank: number, scenario: DemoScenarioId, intent: ParsedIntent): string {
+function buildPresentationTag(rank: number, scenario: DemoScenarioId): string {
   if (scenario !== "challenge-3") {
     return "";
   }
@@ -802,11 +800,25 @@ function buildPresentationTag(rank: number, scenario: DemoScenarioId, intent: Pa
   if (rank === 0) {
     return "Top pick";
   }
-  if (intent.wantsBackup && rank === 1) {
-    return "Backup choice";
-  }
 
   return "";
+}
+
+function formatTradeoffNote(
+  cheese: CheeseRecord,
+  intent: ParsedIntent,
+  effectiveStock: CheeseRecord["stock"],
+  matchedSignals: string[],
+): string {
+  const gain = matchedSignals[0] || "closest overall fit";
+  const giveUp =
+    intent.requireInStock && effectiveStock !== "in"
+      ? formatStockNote(effectiveStock)
+      : intent.targetIntensity !== null && scoreTargetIntensity(cheese, intent.targetIntensity) < 0.75
+        ? `strength ${cheese.intensity}/5`
+        : matchedSignals[1] || "few explicit constraints to compare";
+
+  return `Gains: ${gain}; gives up: ${giveUp}`;
 }
 
 function buildExplanation(cheese: CheeseRecord, matchedSignals: string[], scenario: DemoScenarioId, intent: ParsedIntent): string {
