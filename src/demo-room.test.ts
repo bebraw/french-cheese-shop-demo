@@ -112,6 +112,29 @@ describe("demo room state", () => {
     expect(buildContextSummaryItems(state)).toEqual(["Winter holiday", "Holiday rush"]);
   });
 
+  it("normalizes persisted vote counts before deriving selected presets", () => {
+    const state = normalizeRoomState({
+      activeScenario: "challenge-1",
+      audienceByChallenge: {
+        "challenge-1": {
+          votesByPresetId: {
+            cow: 2.8,
+            goat: Number.POSITIVE_INFINITY,
+            sheep: -1,
+            bogus: 5,
+            creamy: 1,
+          },
+          lecturerOverridePresetIds: ["bogus"],
+          customText: "",
+        },
+      },
+    });
+
+    expect(state.audienceByChallenge["challenge-1"].votesByPresetId).toEqual({ cow: 2, creamy: 1 });
+    expect(state.audienceByChallenge["challenge-1"].lecturerOverridePresetIds).toEqual([]);
+    expect(state.audienceByChallenge["challenge-1"].selectedPresetIds).toEqual(["creamy", "cow"]);
+  });
+
   it("reveals and advances challenges in lecturer-paced order", () => {
     let record = createDefaultRoomRecord("advance-room");
 
@@ -125,6 +148,18 @@ describe("demo room state", () => {
 
     expect(record.state.activeScenario).toBe("challenge-2");
     expect(record.state.revealedChallengeIds).toEqual(["challenge-1", "challenge-2"]);
+  });
+
+  it("leaves the room unchanged when advancing past the final challenge", () => {
+    let record = createDefaultRoomRecord("advance-final-room");
+
+    record = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    record = applyOk(record, { type: "set-scenario", scenario: "challenge-3" }, "lecturer-token");
+    const versionBeforeAdvance = record.state.version;
+    record = applyOk(record, { type: "advance-scenario" }, "lecturer-token");
+
+    expect(record.state.activeScenario).toBe("challenge-3");
+    expect(record.state.version).toBe(versionBeforeAdvance);
   });
 
   it("normalizes room records stored before presenter access existed", () => {
@@ -192,6 +227,20 @@ describe("demo room state", () => {
     expect(record.state.audienceByChallenge["challenge-2"].selectedPresetIds).toEqual([]);
     expect(record.state.audienceByChallenge["challenge-2"].votesByPresetId).toEqual({});
     expect(record.state.audienceByChallenge["challenge-2"].lecturerOverridePresetIds).toEqual([]);
+  });
+
+  it("protects challenge vote clearing until the lecturer claims control", () => {
+    const record = createDefaultRoomRecord("protected-clear-room");
+    const unauthorizedResult = applyRoomCommand(record, { type: "reset-challenge", scenario: "challenge-1" }, null);
+
+    expect(unauthorizedResult.ok).toBe(false);
+    expect(unauthorizedResult.error).toContain("clearing challenge votes");
+
+    const claimedRecord = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    const wrongPresenterResult = applyRoomCommand(claimedRecord, { type: "reset-challenge", scenario: "challenge-1" }, "audience-token");
+
+    expect(wrongPresenterResult.ok).toBe(false);
+    expect(wrongPresenterResult.error).toContain("Only the lecturer");
   });
 
   it("resets the room to the default shared state", () => {
