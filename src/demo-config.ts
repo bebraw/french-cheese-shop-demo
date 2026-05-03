@@ -76,7 +76,7 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
     audiencePlaceholder: "Add another hidden preference.",
     audiencePrompt: "Vote on the hidden need that should become explicit.",
     audienceSummaryLabel: "Clarified needs",
-    audienceSummaryEmptyText: "Vote on the options the recommendation should use.",
+    audienceSummaryEmptyText: "No hidden need selected yet. Results still use the baseline ranking.",
     teachingOutcome: "Interpret vague requests",
     teachingFocus: "Challenge 1 turns hidden meaning into explicit requirements.",
     teachingQuestion: "Which preference or constraint did the first pass have to guess?",

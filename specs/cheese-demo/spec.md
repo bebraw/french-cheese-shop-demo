@@ -40,6 +40,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` keeps a compact lecturer-only teaching-focus panel in the main column with the current learning outcome plus short `Ask` and `Notice` prompts so the deck's pedagogical goal stays available to the presenter without distracting audience browsers.
 - [ ] `GET /` lets the lecturer enable a local focus mode for short demos that hides Context, keeps all challenge controls available, and narrows Challenge 1 to the clearest vote choices.
 - [ ] `GET /` keeps Challenge 1 on the same baseline ranking until the lecturer or audience selects an explicit hidden need.
+- [ ] `GET /` tells the room that Challenge 1 still uses baseline ranking while no hidden need is selected.
 - [ ] `GET /` shows a compact `What changed?` strip above results so the audience can see the stable query, added signals, and current leading recommendation.
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific vote choices before falling back to a custom note.
 - [ ] `GET /` groups semantic alternatives such as milk type so the audience votes between options instead of selecting contradictory cues.

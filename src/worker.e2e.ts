@@ -148,6 +148,9 @@ test("lecturer focus mode reduces visual noise for the five-minute flow", async 
 
   await expect(lecturerPage.locator("#scenario-title")).toHaveText("Challenge 1: Hidden Needs");
   await expect(lecturerPage.locator("#scenario-next-button")).toHaveText("Next: Challenge 2");
+  await expect(lecturerPage.locator("#audience-summary-empty")).toHaveText(
+    "No hidden need selected yet. Results still use the baseline ranking.",
+  );
   await expect(lecturerPage.locator("#audience-custom-field")).toBeHidden();
   await expect(audienceVoteButton(lecturerPage, "Keep it creamy")).toBeVisible();
   await expect(audienceVoteButton(lecturerPage, "Oozy center")).toBeVisible();
