@@ -26,7 +26,7 @@ explain why the override changes the recommendation.
 
 The point is not to explain every tab in depth. It is to show a clean progression from vague wording, to clarified needs, to concrete facts, to visible evaluation checks.
 
-If there is extra time, use the `Search Backend` controls inside the foldable `Context` drawer as a short coda. `Deterministic rules` shows the stable teaching path, while `LLM backend` offers a local contrast mode for discussing backend variance without adding a live remote dependency.
+If there is extra time, use the `Ranking Mode` controls inside the foldable `Context` drawer as a short coda. `Deterministic rules` shows the stable teaching path, while `LLM-style ranking` offers a local contrast mode for discussing backend variance without adding a live remote dependency.
 
 ## Teaching Alignment
 

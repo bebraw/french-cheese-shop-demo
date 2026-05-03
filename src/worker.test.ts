@@ -20,7 +20,7 @@ describe("worker", () => {
     expect(body).toContain("French Cheese Shop");
     expect(body).toContain("Challenge 1");
     expect(body).toContain("Context");
-    expect(body).toContain("Search Backend");
+    expect(body).toContain("Ranking Mode");
     expect(body).toContain("Shared Room");
     expect(body).toContain("Lecturer Controls");
     expect(body).toContain("Type the customer request");
@@ -203,7 +203,7 @@ describe("worker", () => {
     const payload = await response.json();
     expect(payload.ok).toBe(true);
     expect(payload.backend).toBe("llm");
-    expect(payload.insights).toContain("Backend mode: local LLM-style contrast.");
+    expect(payload.insights).toContain("Ranking mode: local LLM-style contrast.");
   });
 
   it("returns a not found page for unknown routes", async () => {

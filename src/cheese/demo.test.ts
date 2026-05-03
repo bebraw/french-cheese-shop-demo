@@ -66,8 +66,8 @@ describe("searchDemoCatalog", () => {
 
     expect(rulesResponse.results[0]?.name).toBe("Livarot");
     expect(llmResponse.backend).toBe("llm");
-    expect(llmResponse.backendLabel).toBe("LLM backend");
-    expect(llmResponse.insights).toContain("Backend mode: local LLM-style contrast.");
+    expect(llmResponse.backendLabel).toBe("LLM-style ranking");
+    expect(llmResponse.insights).toContain("Ranking mode: local LLM-style contrast.");
     expect(llmResponse.results[0]?.name).not.toBe(rulesResponse.results[0]?.name);
   });
 

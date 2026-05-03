@@ -186,12 +186,12 @@ export function renderHomePage(): string {
                   <ul id="context-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
                 </div>
                 <div class="mt-5 border-t border-app-line pt-4">
-                  <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Search Backend</p>
+                  <p class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-app-accent">Ranking Mode</p>
                   <p class="mt-2 text-sm leading-6 text-app-text-soft">Optional coda for contrasting the stable rules engine with an LLM-style backend.</p>
                   <div class="mt-4">
                     <p class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Mode</p>
-                    <div id="backend-controls" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Search backend options"></div>
-                    <p class="mt-3 text-xs leading-6 text-app-text-soft">The LLM backend option stays local and deterministic for rehearsal. It is a contrast mode, not a live remote call.</p>
+                    <div id="backend-controls" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Ranking mode options"></div>
+                    <p class="mt-3 text-xs leading-6 text-app-text-soft">The LLM-style ranking option stays local and deterministic for rehearsal. It is a contrast mode, not a live remote call.</p>
                   </div>
                 </div>
               </div>

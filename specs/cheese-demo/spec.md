@@ -108,7 +108,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - The cheese catalog should cover the visible vote options well enough that milk type, style, pairing, budget, serving context, season, and stock constraints can change the shortlist.
 - Challenge behavior must stay explainable through returned insights and, for challenge 3, evaluation checks.
 - Comparative follow-up requests such as `like Livarot, but stronger` should not keep the named reference cheese as the top result when the request explicitly asks for the next stronger or milder step away from it.
-- The `LLM backend` option must remain local and deterministic enough for rehearsal, even if it intentionally produces a different ranking style from the rules engine.
+- The `LLM-style ranking` option must remain local and deterministic enough for rehearsal, even if it intentionally produces a different ranking style from the rules engine.
 - Challenge 3 explanation requests should explain the current ranking signals rather than act as a hidden reranking criterion.
 - Challenge 3 should avoid abstract criteria that do not produce a visible change in the result set or result details.
 - Result rows should prioritize quick scanning and avoid showing every explanation block at full length by default.
@@ -160,7 +160,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 **Scenario: Presenter optionally compares backend styles**
 
 - Given: the presenter wants a short coda after the main requirements flow
-- When: the presenter opens the `Context` container and switches from `Deterministic rules` to `LLM backend`
+- When: the presenter opens the `Context` container and switches from `Deterministic rules` to `LLM-style ranking`
 - Then: the ranking and insights visibly change, while the app remains local and deterministic enough to rehearse
 
 **Scenario: Presenter expands one result**

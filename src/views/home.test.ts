@@ -40,12 +40,12 @@ describe("renderHomePage", () => {
     expect(html).toContain("Optional simulation state shared by baseline and every challenge.");
     expect(html).toContain("Season options");
     expect(html).toContain("Shop state options");
-    expect(html).toContain("Search Backend");
+    expect(html).toContain("Ranking Mode");
     expect(html).toContain("What changed?");
     expect(html).toContain('id="change-strip-items"');
     expect(html).toContain("Context in play");
-    expect(html).toContain("Search backend options");
-    expect(html).toContain("LLM backend");
+    expect(html).toContain("Ranking mode options");
+    expect(html).toContain("LLM-style ranking");
     expect(html).toContain("Audience vote");
     expect(html).toContain("Clear challenge votes");
     expect(html).toContain('id="audience-custom-field"');

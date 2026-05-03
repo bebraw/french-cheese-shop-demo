@@ -91,8 +91,8 @@ const backendCopy: Record<SearchBackend, { label: string; insight?: string }> = 
     label: "Deterministic rules",
   },
   llm: {
-    label: "LLM backend",
-    insight: "Backend mode: local LLM-style contrast.",
+    label: "LLM-style ranking",
+    insight: "Ranking mode: local LLM-style contrast.",
   },
 };
 

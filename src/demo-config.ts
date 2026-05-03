@@ -49,7 +49,7 @@ export const shopStateOptions = [
 
 export const backendOptions = [
   { id: "rules", label: "Deterministic rules" },
-  { id: "llm", label: "LLM backend" },
+  { id: "llm", label: "LLM-style ranking" },
 ] as const satisfies readonly { id: SearchBackend; label: string }[];
 
 export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {

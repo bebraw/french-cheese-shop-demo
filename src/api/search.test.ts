@@ -56,8 +56,8 @@ describe("createSearchResponse", () => {
     const payload = await response.json();
     expect(payload.ok).toBe(true);
     expect(payload.backend).toBe("llm");
-    expect(payload.backendLabel).toBe("LLM backend");
-    expect(payload.insights).toContain("Backend mode: local LLM-style contrast.");
+    expect(payload.backendLabel).toBe("LLM-style ranking");
+    expect(payload.insights).toContain("Ranking mode: local LLM-style contrast.");
   });
 
   it("falls back to baseline when the scenario parameter is unknown", async () => {

@@ -391,11 +391,11 @@ test("context drawer enables the optional llm contrast mode", async ({ page }) =
 
   await page.getByRole("button", { name: /Context/ }).click();
   await expect(page.getByRole("button", { name: "Deterministic rules" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "LLM backend" })).toBeVisible();
-  await page.getByRole("button", { name: "LLM backend" }).click();
+  await expect(page.getByRole("button", { name: "LLM-style ranking" })).toBeVisible();
+  await page.getByRole("button", { name: "LLM-style ranking" }).click();
 
-  await expect(page.getByRole("button", { name: "LLM backend" })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator("#scenario-insights")).toContainText("Backend mode: local LLM-style contrast.");
+  await expect(page.getByRole("button", { name: "LLM-style ranking" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#scenario-insights")).toContainText("Ranking mode: local LLM-style contrast.");
   await expect(page).toHaveURL(new RegExp("[?&]room=" + roomRunId + "-e2e-llm"));
   await expect(page.locator("#search-results > li h3").first()).not.toHaveText(topBefore || "");
 });
@@ -490,7 +490,7 @@ test("context drawer can reopen from the query state", async ({ page, request })
 
   await expect(page.getByRole("button", { name: "Winter holiday" })).toBeVisible();
   await expect(page.locator("#context-summary-chips")).toContainText("Winter holiday");
-  await expect(page.getByRole("button", { name: "LLM backend" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "LLM-style ranking" })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("an expanded result stays open across evaluation updates", async ({ page }) => {
