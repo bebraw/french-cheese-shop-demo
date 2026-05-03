@@ -59,6 +59,9 @@ test("renders the cheese demo home page", async ({ page }) => {
   await expect(page.locator("#scenario-next-button")).toBeHidden();
   await expect(page.locator("#room-panel-toggle")).toHaveAttribute("aria-expanded", "true");
   await expect(page.locator("#room-id-input")).toHaveValue(new RegExp("e2e-home$"));
+  await expect(page.getByRole("button", { name: "Join room" })).toBeHidden();
+  await page.locator("#room-id-input").fill(roomRunId + "-e2e-home-other");
+  await expect(page.getByRole("button", { name: "Join room" })).toBeVisible();
   await expect(page.getByRole("searchbox", { name: "Customer request" })).toBeVisible();
   await expect(page.getByRole("searchbox", { name: "Customer request" })).toHaveValue("I want something like Brie, but stronger.");
   await expect(page.locator("#teaching-focus-panel")).toBeHidden();
@@ -659,7 +662,7 @@ test("participants cannot change the active challenge after the lecturer claims 
   await expect(participantPage.getByRole("button", { name: "Focus mode" })).toBeHidden();
   await expect(participantPage.getByRole("button", { name: "Copy lecturer link" })).toBeHidden();
   await expect(participantPage.getByRole("button", { name: "Reset room" })).toBeHidden();
-  await expect(participantPage.getByRole("button", { name: "Join room" })).toBeVisible();
+  await expect(participantPage.getByRole("button", { name: "Join room" })).toBeHidden();
 
   await context.close();
 });

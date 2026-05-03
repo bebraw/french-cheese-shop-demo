@@ -953,6 +953,10 @@ function renderRoomPanel() {
   roomPanelIcon.textContent = roomPanelOpen ? "−" : "+";
 }
 
+function renderRoomJoinControl() {
+  roomJoinButton.hidden = sanitizeRoomId(roomIdInput.value) === activeRoomId;
+}
+
 function syncViewportDefaults() {
   if (compactViewportQuery.matches && roomPanelOpen) {
     roomPanelOpen = false;
@@ -1030,6 +1034,7 @@ function applySnapshot(snapshot) {
   }
 
   roomIdInput.value = snapshot.roomId;
+  renderRoomJoinControl();
   applyScenario(snapshot.state.activeScenario);
   renderSearchSnapshot(snapshot);
   updateUrlState();
@@ -1164,6 +1169,7 @@ async function joinRoom(nextRoomId) {
   localVoteState = readLocalVoteState(roomId);
   activeRoomId = roomId;
   roomIdInput.value = roomId;
+  renderRoomJoinControl();
   updateUrlState();
   setConnectionStatus("Connecting...");
 
@@ -1321,6 +1327,10 @@ audienceResetButton.addEventListener("click", () => {
 
 roomJoinButton.addEventListener("click", () => {
   void joinRoom(roomIdInput.value);
+});
+
+roomIdInput.addEventListener("input", () => {
+  renderRoomJoinControl();
 });
 
 roomIdInput.addEventListener("keydown", (event) => {
