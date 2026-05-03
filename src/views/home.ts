@@ -78,6 +78,7 @@ export function renderHomePage(): string {
                           <button id="room-simple-mode-button" type="button" class="audience-preset" aria-pressed="false">Focus mode</button>
                           <button id="room-copy-audience-link-button" type="button" class="audience-preset">Copy audience link</button>
                         </div>
+                        <p id="room-ready-status" class="mt-3 text-xs leading-5 text-app-text-soft">Ready check: claim lecturer controls before starting.</p>
                       </div>
                       <label class="block" for="room-id-input">
                         <span class="sr-only">Room id</span>

@@ -54,6 +54,7 @@ const roomPanelIcon = document.getElementById("room-panel-icon");
 const roomPanelBody = document.getElementById("room-panel-body");
 const roomLecturerControlsPanel = document.getElementById("room-lecturer-controls-panel");
 const roomLecturerStatusElement = document.getElementById("room-lecturer-status");
+const roomReadyStatusElement = document.getElementById("room-ready-status");
 const roomClaimLecturerButton = document.getElementById("room-claim-lecturer-button");
 const roomReleaseLecturerButton = document.getElementById("room-release-lecturer-button");
 const roomSimpleModeButton = document.getElementById("room-simple-mode-button");
@@ -616,6 +617,14 @@ function renderLecturerControls() {
     : access.presenterClaimed
       ? "The shared search query, world context, and challenge changes are locked to the lecturer device for this room."
       : "The shared search query, world context, and challenge changes stay unlocked only after the lecturer claims control on this device.";
+
+  roomReadyStatusElement.textContent = access.canManageScenario
+    ? state.activeScenario === "baseline" && state.query === defaultQuery
+      ? "Ready check: baseline loaded, lecturer controls active, focus mode " + (simpleModeActive ? "on." : "off.")
+      : "Ready check: reset room before the next run if you want the default baseline."
+    : access.presenterClaimed
+      ? "Ready check: waiting for the lecturer device."
+      : "Ready check: claim lecturer controls before starting.";
 
   renderContextPanel();
 }

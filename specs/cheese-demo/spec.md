@@ -67,6 +67,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` hides lecturer controls from non-lecturer browsers after another device has claimed lecturer controls for the room.
 - [ ] `GET /` hides lecturer-link copying and room reset actions from non-lecturer browsers after another device has claimed lecturer controls for the room.
 - [ ] `GET /` lets the lecturer completely reset the current room while keeping lecturer controls active for the next run.
+- [ ] `GET /` shows a lecturer ready check after reset so repeated demos can confirm baseline state, lecturer control, and focus-mode status.
 - [ ] `GET /` lets the lecturer release room controls manually without resetting the current room.
 - [ ] `GET /` exposes a safe audience-link copy action that joins the room without handing lecturer controls to participants.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.

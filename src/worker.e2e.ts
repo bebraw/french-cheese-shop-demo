@@ -370,6 +370,7 @@ test("lecturer can completely reset a shared room", async ({ browser }) => {
   await expect(lecturerPage.locator("#scenario-title")).toHaveText("Baseline");
   await expect(lecturerPage.getByRole("searchbox", { name: "Customer request" })).toHaveValue("I want something like Brie, but stronger.");
   await expect(lecturerPage.locator("#room-lecturer-status")).toContainText("This device controls");
+  await expect(lecturerPage.locator("#room-ready-status")).toContainText("baseline loaded");
   await expect(lecturerPage.locator("#teaching-focus-panel")).toBeVisible();
   await expect(participantPage.locator("#scenario-title")).toHaveText("Baseline");
   await expect(participantPage.getByRole("button", { name: /Challenge 1/ })).toHaveCount(0);
