@@ -39,6 +39,7 @@ Skip an ADR for small, reversible, or purely tactical choices.
 | [ADR-021](./ADR-021-gate-challenge-changes-with-a-room-scoped-lecturer-token.md)   | Accepted   | Restrict shared query, world-context, and challenge controls to the room's claimed lecturer device. |
 | [ADR-022](./ADR-022-use-vote-derived-audience-inputs.md)                           | Accepted   | Derive challenge inputs from grouped audience votes with lecturer overrides.                        |
 | [ADR-023](./ADR-023-reveal-demo-challenges-progressively.md)                       | Accepted   | Reveal challenge controls progressively so the lecturer can pace audience attention.                |
+| [ADR-024](./ADR-024-share-focus-mode-across-room.md)                               | Accepted   | Share Focus mode through room state so students and the lecturer see the same reduced surface.      |
 
 ## Creating A New ADR
 

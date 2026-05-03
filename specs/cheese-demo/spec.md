@@ -15,6 +15,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - **Simulation context contract:** `season` and `shopState` are shared world-context controls available from baseline through challenge 3.
 - **Backend contract:** `backend` must accept `rules` and `llm`, with `rules` as the default and `llm` implemented as a local contrast mode instead of a live remote model call.
 - **Multiplayer contract:** a room id selects one canonical shared demo session. Shared room state is coordinated server-side, while local-only UI state such as expanded result cards and the `Context` drawer open state stays per browser.
+- **Focus mode contract:** the lecturer can enable a room-scoped focus mode that hides `Context` for every connected browser while leaving challenge controls and audience choices aligned.
 - **Audience voting contract:** challenge presets are grouped vote options. Audience browsers contribute vote counts, the room derives active challenge inputs from the highest-voted option in each semantic group, and lecturer overrides take precedence per group.
 - **Complete reset contract:** the lecturer can reset the room back to the default query, baseline challenge, empty audience votes, empty lecturer overrides, empty world context, and rules backend while retaining lecturer control.
 - **Challenge pacing contract:** baseline is the only challenge visible to audience browsers by default. The lecturer can reveal later challenges one at a time, and revealed challenge state is shared by the room.
@@ -38,7 +39,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` hides unrevealed challenge controls from audience browsers so the lecturer can pace the demo without previewing later steps.
 - [ ] `GET /` gives the lecturer a next-challenge control that reveals and activates the next challenge for the room.
 - [ ] `GET /` keeps a compact lecturer-only teaching-focus panel in the main column with the current learning outcome plus short `Ask` and `Notice` prompts so the deck's pedagogical goal stays available to the presenter without distracting audience browsers.
-- [ ] `GET /` lets the lecturer enable a local focus mode for short demos that hides Context while keeping challenge controls and audience choices aligned with student browsers.
+- [ ] `GET /` lets the lecturer enable a room-scoped focus mode for short demos that hides Context for students and the lecturer while keeping challenge controls and audience choices aligned.
 - [ ] `GET /` keeps Challenge 1 on the same baseline ranking until the lecturer or audience selects an explicit hidden need.
 - [ ] `GET /` tells the room that Challenge 1 still uses baseline ranking while no hidden need is selected.
 - [ ] `GET /` shows a compact `What changed?` strip above results so the audience can see the stable query, added signals, and current leading recommendation.
@@ -99,7 +100,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - Phone-sized viewports should prioritize the search box and visible result rows over persistent room chrome or other sticky overlays.
 - URL-synced state should include whether the `Context` container is explicitly open, without forcing it open just because season or backend selections exist.
 - The live page copy should stay concise enough that the presenter can move through the full baseline-to-challenge flow quickly during a short demonstration.
-- Focus mode should stay a lecturer-device presentation setting instead of a shared room-state command, so normal audience links and the full demo path remain available.
+- Focus mode should be shared room state controlled by the lecturer, so already-joined student browsers lose the `Context` surface during the short demo flow.
 - The default baseline prompt should stay visible in the main request input instead of being repeated in separate promo copy.
 - The baseline and challenge summaries should remain easy to scan from a distance instead of depending on long body copy or tab switching to become understandable.
 - The audience capture flow should make the type of answer and vote count visible in the UI instead of relying on an abstract blank text box.

@@ -293,6 +293,24 @@ describe("createSessionResponse", () => {
     });
   });
 
+  it("rejects focus mode changes from non-lecturer clients", async () => {
+    const response = await createSessionResponse(
+      new Request("http://example.com/api/session?room=session-protected-focus", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ type: "set-focus-mode", focusMode: true }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringContaining("focus mode"),
+    });
+  });
+
   it("resets the in-memory room and keeps lecturer control", async () => {
     const roomUrl = "http://example.com/api/session?room=session-reset";
     const lecturerHeaders = {

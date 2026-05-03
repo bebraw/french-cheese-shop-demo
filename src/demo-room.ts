@@ -32,6 +32,7 @@ export interface DemoRoomState {
   activeScenario: DemoScenarioId;
   revealedChallengeIds: DemoChallengeId[];
   audienceByChallenge: Record<DemoChallengeId, DemoAudienceState>;
+  focusMode: boolean;
   season: SimulationSeason | "";
   shopState: ShopState | "";
   backend: SearchBackend;
@@ -60,6 +61,7 @@ export type DemoRoomCommand =
   | { type: "toggle-preset-override"; scenario: DemoChallengeId; presetId: string }
   | { type: "reset-challenge"; scenario: DemoChallengeId }
   | { type: "set-custom-text"; scenario: DemoChallengeId; customText: string }
+  | { type: "set-focus-mode"; focusMode: boolean }
   | { type: "set-season"; season: SimulationSeason | "" }
   | { type: "set-shop-state"; shopState: ShopState | "" }
   | { type: "set-backend"; backend: SearchBackend }
@@ -98,6 +100,7 @@ export function createDefaultRoomState(roomId = DEFAULT_ROOM_ID): DemoRoomState 
       "challenge-2": emptyAudienceState(),
       "challenge-3": emptyAudienceState(),
     },
+    focusMode: false,
     season: "",
     shopState: "",
     backend: "rules",
@@ -175,6 +178,10 @@ export function normalizeRoomState(candidate: unknown, roomId = DEFAULT_ROOM_ID)
 
   if (isSimulationSeason(raw.season)) {
     nextState.season = raw.season;
+  }
+
+  if (typeof raw.focusMode === "boolean") {
+    nextState.focusMode = raw.focusMode;
   }
 
   if (isShopState(raw.shopState)) {
@@ -437,6 +444,13 @@ function applyRoomStateCommand(
     });
   }
 
+  if (command.type === "set-focus-mode") {
+    return bumpVersion({
+      ...state,
+      focusMode: command.focusMode,
+    });
+  }
+
   if (command.type === "set-shop-state") {
     return bumpVersion({
       ...state,
@@ -453,6 +467,7 @@ function applyRoomStateCommand(
 function createResetRoomState(state: DemoRoomState): DemoRoomState {
   return {
     ...createDefaultRoomState(state.roomId),
+    focusMode: state.focusMode,
     version: state.version + 1,
     updatedAt: new Date().toISOString(),
   };
@@ -504,6 +519,10 @@ export function readRoomCommand(payload: unknown): DemoRoomCommand | null {
 
   if (raw.type === "set-custom-text" && isDemoChallengeId(challengeScenario) && typeof raw.customText === "string") {
     return { type: "set-custom-text", scenario: challengeScenario, customText: raw.customText };
+  }
+
+  if (raw.type === "set-focus-mode" && typeof raw.focusMode === "boolean") {
+    return { type: "set-focus-mode", focusMode: raw.focusMode };
   }
 
   if (raw.type === "set-season") {
@@ -707,6 +726,7 @@ function requiresPresenterControl(command: Exclude<DemoRoomCommand, { type: "cla
     command.type === "advance-scenario" ||
     command.type === "toggle-preset-override" ||
     command.type === "reset-challenge" ||
+    command.type === "set-focus-mode" ||
     command.type === "set-season" ||
     command.type === "set-shop-state" ||
     command.type === "reset-room"
@@ -728,6 +748,12 @@ function presenterControlError(command: Exclude<DemoRoomCommand, { type: "claim-
 
   if (command.type === "reset-room") {
     return presenterClaimed ? "Only the lecturer can reset this room." : "Lecturer controls must be claimed before this room can reset.";
+  }
+
+  if (command.type === "set-focus-mode") {
+    return presenterClaimed
+      ? "Only the lecturer can change focus mode for this room."
+      : "Lecturer controls must be claimed before focus mode can change.";
   }
 
   if (command.type === "advance-scenario") {

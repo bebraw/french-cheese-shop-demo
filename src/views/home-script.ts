@@ -83,10 +83,8 @@ let audienceSyncHandle = null;
 let pendingQueryDraft = null;
 let pendingAudienceDraft = null;
 const presenterStoragePrefix = "demo-presenter-token:";
-const simpleModeStorageKey = "demo-simple-mode";
 const voteStoragePrefix = "demo-vote-state:";
 let localVoteState = createEmptyVoteState();
-let simpleModeEnabled = false;
 
 function createFallbackSnapshot(roomId) {
   return {
@@ -103,6 +101,7 @@ function createFallbackSnapshot(roomId) {
         "challenge-2": { selectedPresetIds: [], votesByPresetId: {}, lecturerOverridePresetIds: [], customText: "" },
         "challenge-3": { selectedPresetIds: [], votesByPresetId: {}, lecturerOverridePresetIds: [], customText: "" },
       },
+      focusMode: false,
       season: "",
       shopState: "",
       backend: "rules",
@@ -148,24 +147,6 @@ function getPresenterStorageKey(roomId) {
 
 function createEmptyVoteState() {
   return Object.fromEntries(challengeSequence.map((scenario) => [scenario, []]));
-}
-
-function readStoredSimpleMode() {
-  try {
-    return window.localStorage.getItem(simpleModeStorageKey) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function persistSimpleMode(enabled) {
-  try {
-    if (enabled) {
-      window.localStorage.setItem(simpleModeStorageKey, "1");
-    } else {
-      window.localStorage.removeItem(simpleModeStorageKey);
-    }
-  } catch {}
 }
 
 function getVoteStorageKey(roomId) {
@@ -326,7 +307,7 @@ function getNextScenarioForMode(scenario) {
 }
 
 function isSimpleModeActive() {
-  return simpleModeEnabled && getRoomAccess().canManageScenario;
+  return Boolean(getRoomState().focusMode);
 }
 
 function getVisibleScenarioIds(access, state) {
@@ -389,7 +370,7 @@ function updateUrlState() {
   const url = new URL(window.location.href);
   url.searchParams.set("room", activeRoomId);
 
-  if (simpleModeEnabled) {
+  if (isSimpleModeActive()) {
     url.searchParams.set("simple", "1");
   } else {
     url.searchParams.delete("simple");
@@ -1311,12 +1292,12 @@ roomSimpleModeButton.addEventListener("click", () => {
     return;
   }
 
-  simpleModeEnabled = !simpleModeEnabled;
-  persistSimpleMode(simpleModeEnabled);
-  updateUrlState();
-
-  applySnapshot(activeSnapshot || createFallbackSnapshot(activeRoomId));
-  setStatus(simpleModeEnabled ? "Focus mode on." : "Focus mode off.");
+  const nextFocusMode = !isSimpleModeActive();
+  sendCommand({ type: "set-focus-mode", focusMode: nextFocusMode }).then((snapshot) => {
+    if (snapshot) {
+      setStatus(nextFocusMode ? "Focus mode on." : "Focus mode off.");
+    }
+  });
 });
 
 audienceResetButton.addEventListener("click", () => {
@@ -1349,7 +1330,7 @@ roomCopyLinkButton.addEventListener("click", async () => {
   } else {
     shareUrl.searchParams.delete("context");
   }
-  if (simpleModeEnabled) {
+  if (isSimpleModeActive()) {
     shareUrl.searchParams.set("simple", "1");
   } else {
     shareUrl.searchParams.delete("simple");
@@ -1410,7 +1391,6 @@ roomResetButton.addEventListener("click", () => {
 const initialUrl = new URL(window.location.href);
 const initialRoomId = sanitizeRoomId(initialUrl.searchParams.get("room"));
 const initialPresenterToken = sanitizePresenterToken(initialUrl.searchParams.get("presenter"));
-simpleModeEnabled = initialUrl.searchParams.get("simple") === "1" || readStoredSimpleMode();
 if (initialPresenterToken) {
   persistPresenterToken(initialRoomId, initialPresenterToken);
   activePresenterToken = initialPresenterToken;

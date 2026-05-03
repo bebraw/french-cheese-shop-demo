@@ -102,6 +102,7 @@ describe("demo room state", () => {
       },
       season: "winter",
       shopState: "holiday-rush",
+      focusMode: true,
       backend: "llm",
       version: 9,
       updatedAt: "2026-04-22T00:00:00.000Z",
@@ -109,6 +110,7 @@ describe("demo room state", () => {
 
     expect(state.audienceByChallenge["challenge-1"].selectedPresetIds).toEqual(["creamy"]);
     expect(state.revealedChallengeIds).toEqual(["challenge-1"]);
+    expect(state.focusMode).toBe(true);
     expect(buildContextSummaryItems(state)).toEqual(["Winter holiday", "Holiday rush"]);
   });
 
@@ -190,6 +192,7 @@ describe("demo room state", () => {
     expect(readRoomCommand({ type: "set-query", query: "Brie" })).toEqual({ type: "set-query", query: "Brie" });
     expect(readRoomCommand({ type: "set-season", season: "winter" })).toEqual({ type: "set-season", season: "winter" });
     expect(readRoomCommand({ type: "set-shop-state", shopState: "" })).toEqual({ type: "set-shop-state", shopState: "" });
+    expect(readRoomCommand({ type: "set-focus-mode", focusMode: true })).toEqual({ type: "set-focus-mode", focusMode: true });
     expect(readRoomCommand({ type: "set-backend", backend: "llm" })).toEqual({ type: "set-backend", backend: "llm" });
     expect(readRoomCommand({ type: "claim-presenter" })).toEqual({ type: "claim-presenter" });
     expect(readRoomCommand({ type: "reset-room" })).toEqual({ type: "reset-room" });
@@ -247,6 +250,7 @@ describe("demo room state", () => {
     let record = createDefaultRoomRecord("reset-room");
     record = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
     record = applyOk(record, { type: "set-query", query: "Custom" }, "lecturer-token");
+    record = applyOk(record, { type: "set-focus-mode", focusMode: true }, "lecturer-token");
     record = applyOk(record, { type: "set-scenario", scenario: "challenge-2" }, "lecturer-token");
     record = applyOk(record, { type: "toggle-preset", scenario: "challenge-2", presetId: "cider" });
     const versionBeforeReset = record.state.version;
@@ -258,6 +262,7 @@ describe("demo room state", () => {
     expect(state.revealedChallengeIds).toEqual([]);
     expect(state.audienceByChallenge["challenge-2"].selectedPresetIds).toEqual([]);
     expect(state.audienceByChallenge["challenge-2"].votesByPresetId).toEqual({});
+    expect(state.focusMode).toBe(true);
     expect(state.version).toBe(versionBeforeReset + 1);
     expect(record.presenterToken).toBe("lecturer-token");
   });
@@ -308,6 +313,20 @@ describe("demo room state", () => {
 
     const claimedRecord = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
     const wrongPresenterResult = applyRoomCommand(claimedRecord, { type: "set-shop-state", shopState: "holiday-rush" }, "audience-token");
+
+    expect(wrongPresenterResult.ok).toBe(false);
+    expect(wrongPresenterResult.error).toContain("Only the lecturer");
+  });
+
+  it("protects focus mode changes until the lecturer claims control", () => {
+    const record = createDefaultRoomRecord("protected-focus-room");
+    const unauthorizedResult = applyRoomCommand(record, { type: "set-focus-mode", focusMode: true }, null);
+
+    expect(unauthorizedResult.ok).toBe(false);
+    expect(unauthorizedResult.error).toContain("focus mode");
+
+    const claimedRecord = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    const wrongPresenterResult = applyRoomCommand(claimedRecord, { type: "set-focus-mode", focusMode: true }, "audience-token");
 
     expect(wrongPresenterResult.ok).toBe(false);
     expect(wrongPresenterResult.error).toContain("Only the lecturer");

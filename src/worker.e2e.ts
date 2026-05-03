@@ -145,7 +145,7 @@ test("lecturer focus mode reduces visual noise for the five-minute flow", async 
   await expect(lecturerPage.getByRole("button", { name: /Context/ })).toBeHidden();
   await expect(lecturerPage.getByRole("button", { name: /Challenge 2/ })).toBeVisible();
   await expect(lecturerPage.getByRole("button", { name: /Challenge 3/ })).toBeVisible();
-  await expect(participantPage.getByRole("button", { name: /Context/ })).toBeVisible();
+  await expect(participantPage.getByRole("button", { name: /Context/ })).toBeHidden();
 
   await lecturerPage.locator("#scenario-next-button").click();
 
