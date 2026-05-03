@@ -313,10 +313,6 @@ function getNextScenario(scenario) {
 }
 
 function getNextScenarioForMode(scenario) {
-  if (isSimpleModeActive()) {
-    return scenario === "baseline" ? "challenge-1" : scenario;
-  }
-
   return getNextScenario(scenario);
 }
 
@@ -325,10 +321,6 @@ function isSimpleModeActive() {
 }
 
 function getVisibleScenarioIds(access, state) {
-  if (isSimpleModeActive()) {
-    return new Set(["baseline", "challenge-1"]);
-  }
-
   if (access.canManageScenario) {
     return new Set(["baseline", ...challengeSequence]);
   }
@@ -520,7 +512,7 @@ function renderLecturerControls() {
 
   roomLecturerStatusElement.textContent = access.canManageScenario
     ? simpleModeActive
-      ? "This device is in simple mode: Baseline and Challenge 1 stay in focus for a short demo."
+      ? "This device is in simple mode: context stays hidden while all challenges remain available."
       : "This device controls the shared search query, world context, and challenge changes for the room."
     : access.presenterClaimed
       ? "The shared search query, world context, and challenge changes are locked to the lecturer device for this room."
@@ -1243,11 +1235,6 @@ scenarioNextButton.addEventListener("click", () => {
     return;
   }
 
-  if (isSimpleModeActive() && getRoomState().activeScenario !== "baseline") {
-    setStatus("Simple mode keeps the demo on Baseline and Challenge 1.");
-    return;
-  }
-
   sendCommand({ type: "advance-scenario" });
 });
 
@@ -1264,11 +1251,6 @@ roomSimpleModeButton.addEventListener("click", () => {
   simpleModeEnabled = !simpleModeEnabled;
   persistSimpleMode(simpleModeEnabled);
   updateUrlState();
-
-  if (isSimpleModeActive() && !new Set(["baseline", "challenge-1"]).has(getRoomState().activeScenario)) {
-    void sendCommand({ type: "set-scenario", scenario: "challenge-1" });
-    return;
-  }
 
   applySnapshot(activeSnapshot || createFallbackSnapshot(activeRoomId));
   setStatus(simpleModeEnabled ? "Simple mode on." : "Simple mode off.");

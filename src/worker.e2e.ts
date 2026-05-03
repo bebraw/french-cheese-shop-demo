@@ -137,16 +137,17 @@ test("lecturer simple mode focuses the five-minute flow", async ({ browser }) =>
   await lecturerPage.getByRole("button", { name: "Simple mode" }).click();
 
   await expect(lecturerPage.getByRole("button", { name: "Simple mode" })).toHaveAttribute("aria-pressed", "true");
-  await expect(lecturerPage.locator("#room-lecturer-status")).toContainText("Baseline and Challenge 1");
+  await expect(lecturerPage.locator("#room-lecturer-status")).toContainText("all challenges remain available");
   await expect(lecturerPage).toHaveURL(/[\?&]simple=1/);
   await expect(lecturerPage.getByRole("button", { name: /Context/ })).toBeHidden();
-  await expect(lecturerPage.getByRole("button", { name: /Challenge 2/ })).toHaveCount(0);
+  await expect(lecturerPage.getByRole("button", { name: /Challenge 2/ })).toBeVisible();
+  await expect(lecturerPage.getByRole("button", { name: /Challenge 3/ })).toBeVisible();
   await expect(participantPage.getByRole("button", { name: /Context/ })).toBeVisible();
 
   await lecturerPage.locator("#scenario-next-button").click();
 
   await expect(lecturerPage.locator("#scenario-title")).toHaveText("Challenge 1: Hidden Needs");
-  await expect(lecturerPage.locator("#scenario-next-button")).toHaveText("Simple flow ready");
+  await expect(lecturerPage.locator("#scenario-next-button")).toHaveText("Next: Challenge 2");
   await expect(lecturerPage.locator("#audience-custom-field")).toBeHidden();
   await expect(audienceVoteButton(lecturerPage, "Keep it creamy")).toBeVisible();
   await expect(audienceVoteButton(lecturerPage, "Oozy center")).toBeVisible();
@@ -155,6 +156,10 @@ test("lecturer simple mode focuses the five-minute flow", async ({ browser }) =>
   await expect(audienceVoteButton(lecturerPage, "Sheep's milk")).toHaveCount(0);
   await expect(audienceVoteButton(lecturerPage, "Mixed milk ok")).toHaveCount(0);
   await expect(audienceVoteButton(lecturerPage, "Much stronger")).toHaveCount(0);
+
+  await lecturerPage.locator("#scenario-next-button").click();
+  await expect(lecturerPage.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
+  await expect(lecturerPage.locator("#scenario-next-button")).toHaveText("Next: Challenge 3");
 
   await context.close();
 });
