@@ -1212,14 +1212,12 @@ async function resetRoom() {
 
   pendingQueryDraft = null;
   pendingAudienceDraft = null;
-  activePresenterToken = "";
-  persistPresenterToken(activeRoomId, "");
   localVoteState = createEmptyVoteState();
   persistLocalVoteState(activeRoomId);
   closeLiveSync();
   openLiveSync();
   applySnapshot(snapshot);
-  setStatus("Room reset. Lecturer controls are unclaimed.");
+  setStatus("Room reset. Lecturer controls remain active.");
 }
 
 function flashCopyButton(message) {

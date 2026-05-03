@@ -16,7 +16,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - **Backend contract:** `backend` must accept `rules` and `llm`, with `rules` as the default and `llm` implemented as a local contrast mode instead of a live remote model call.
 - **Multiplayer contract:** a room id selects one canonical shared demo session. Shared room state is coordinated server-side, while local-only UI state such as expanded result cards and the `Context` drawer open state stays per browser.
 - **Audience voting contract:** challenge presets are grouped vote options. Audience browsers contribute vote counts, the room derives active challenge inputs from the highest-voted option in each semantic group, and lecturer overrides take precedence per group.
-- **Complete reset contract:** the lecturer can reset the room back to the default query, baseline challenge, empty audience votes, empty lecturer overrides, empty world context, rules backend, and an unclaimed lecturer-control state.
+- **Complete reset contract:** the lecturer can reset the room back to the default query, baseline challenge, empty audience votes, empty lecturer overrides, empty world context, and rules backend while retaining lecturer control.
 - **Challenge pacing contract:** baseline is the only challenge visible to audience browsers by default. The lecturer can reveal later challenges one at a time, and revealed challenge state is shared by the room.
 - **Dependencies:** The deployed Worker depends only on the committed repo assets, generated CSS, and one Durable Object binding for room coordination. No remote AI, Vectorize, KV, or import-time credentials are part of the current runtime path.
 
@@ -60,7 +60,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` lets one device claim lecturer controls for the current room so only that device can change the shared search query, shared world context, active challenge, or reset the room.
 - [ ] `GET /` hides lecturer controls from non-lecturer browsers after another device has claimed lecturer controls for the room.
 - [ ] `GET /` hides lecturer-link copying and room reset actions from non-lecturer browsers after another device has claimed lecturer controls for the room.
-- [ ] `GET /` lets the lecturer completely reset the current room and leaves lecturer controls unclaimed afterward so the next run starts cleanly.
+- [ ] `GET /` lets the lecturer completely reset the current room while keeping lecturer controls active for the next run.
 - [ ] `GET /` exposes a safe audience-link copy action that joins the room without handing lecturer controls to participants.
 - [ ] `GET /` uses the same visual direction as the `french-cheese-shop` presentation, including the cream background, navy and burgundy accents, and Didot/Avenir Next typography.
 - [ ] `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...` returns ordered cheese recommendations from the committed catalog.
@@ -156,7 +156,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 
 - Given: the room has a custom query, revealed challenges, audience votes, and lecturer controls claimed
 - When: the lecturer resets the room
-- Then: all connected browsers return to the default baseline state, audience votes and lecturer overrides are cleared, and lecturer controls are unclaimed until a lecturer claims them again
+- Then: all connected browsers return to the default baseline state, audience votes and lecturer overrides are cleared, and the lecturer keeps control for the next run
 
 **Scenario: Presenter optionally compares backend styles**
 

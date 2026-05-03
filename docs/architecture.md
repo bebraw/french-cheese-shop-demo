@@ -134,7 +134,8 @@ audience/backend inputs. Local browser state such as expanded result cards and
 that browser's vote selections remains outside the shared room model. A complete
 room reset returns the shared state to the default baseline, increments the room
 version from the previous state, clears audience votes and lecturer overrides,
-and releases the lecturer token so the next run starts unclaimed.
+and keeps the lecturer token so the same lecturer can immediately start the next
+run.
 
 ## Data Model
 

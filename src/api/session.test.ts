@@ -293,7 +293,7 @@ describe("createSessionResponse", () => {
     });
   });
 
-  it("resets the in-memory room and releases lecturer control", async () => {
+  it("resets the in-memory room and keeps lecturer control", async () => {
     const roomUrl = "http://example.com/api/session?room=session-reset";
     const lecturerHeaders = {
       "content-type": "application/json",
@@ -326,18 +326,20 @@ describe("createSessionResponse", () => {
 
     expect(resetPayload.ok).toBe(true);
     expect(resetPayload.snapshot.state.query).toBe("I want something like Brie, but stronger.");
-    expect(resetPayload.snapshot.access.presenterClaimed).toBe(false);
-    expect(resetPayload.snapshot.access.canManageScenario).toBe(false);
+    expect(resetPayload.snapshot.access.presenterClaimed).toBe(true);
+    expect(resetPayload.snapshot.access.canManageScenario).toBe(true);
 
-    const protectedResponse = await createSessionResponse(
+    const nextScenarioResponse = await createSessionResponse(
       new Request(roomUrl, {
         method: "POST",
         headers: lecturerHeaders,
         body: JSON.stringify({ type: "set-scenario", scenario: "challenge-1" }),
       }),
     );
+    const nextScenarioPayload = await nextScenarioResponse.json();
 
-    expect(protectedResponse.status).toBe(403);
+    expect(nextScenarioPayload.ok).toBe(true);
+    expect(nextScenarioPayload.snapshot.state.activeScenario).toBe("challenge-1");
   });
 
   it("rejects vote overrides from non-lecturer clients", async () => {

@@ -256,7 +256,7 @@ export function applyRoomCommand(record: DemoRoomRecord, command: DemoRoomComman
       ok: true,
       record: {
         state: createResetRoomState(record.state),
-        presenterToken: null,
+        presenterToken: record.presenterToken,
       },
     };
   }
