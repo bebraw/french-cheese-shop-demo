@@ -43,6 +43,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` tells the room that Challenge 1 still uses baseline ranking while no hidden need is selected.
 - [ ] `GET /` shows a compact `What changed?` strip above results so the audience can see the stable query, added signals, and current leading recommendation.
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific vote choices before falling back to a custom note.
+- [ ] `GET /` gives each challenge a direct audience instruction so participants know the one action expected at that step.
 - [ ] `GET /` groups semantic alternatives such as milk type so the audience votes between options instead of selecting contradictory cues.
 - [ ] `GET /` shows vote counts beside challenge options and in the selected audience summary.
 - [ ] `GET /` lets the lecturer override the audience vote for one option group by pressing an option in that group when the teaching path needs a deliberate contrast.

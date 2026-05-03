@@ -349,6 +349,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.locator("#teaching-focus-panel")).toBeVisible();
   await page.locator("[data-scenario='challenge-1']").click();
   await expect(page.locator("#insights-label")).toHaveText("Explicit requirements");
+  await expect(page.locator("#audience-prompt")).toHaveText("Now: choose the hidden need that should become explicit.");
   await expect(page.locator("#scenario-description")).toContainText("customer really means");
   await expect(page.locator("#teaching-outcome")).toHaveText("Interpret vague requests");
   await expect(page.locator("#teaching-notice")).toContainText("meaning became explicit");
@@ -357,6 +358,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
 
   await page.locator("[data-scenario='challenge-2']").click();
   await expect(page.locator("#insights-label")).toHaveText("Extra data in play");
+  await expect(page.locator("#audience-prompt")).toHaveText("Now: choose the fact or constraint the system should use.");
   await expect(page.locator("#scenario-description")).toContainText("facts and constraints");
   await expect(page.locator("#teaching-outcome")).toHaveText("Specify domain and operational context");
   await expect(page.locator("#teaching-focus-copy")).toContainText("domain and shop context");
@@ -365,6 +367,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
 
   await page.locator("[data-scenario='challenge-3']").click();
   await expect(page.locator("#insights-label")).toHaveText("Evaluation checks");
+  await expect(page.locator("#audience-prompt")).toHaveText("Now: choose what the results should visibly prove.");
   await expect(page.locator("#scenario-description")).toContainText("visibly prove");
   await expect(page.locator("#teaching-outcome")).toHaveText("Evaluate ambiguity");
   await expect(page.locator("#teaching-question")).toContainText("good answer visibly prove");
