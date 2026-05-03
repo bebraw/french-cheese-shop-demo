@@ -151,7 +151,8 @@ test("lecturer focus mode reduces visual noise for the five-minute flow", async 
   await expect(lecturerPage.locator("#audience-summary-empty")).toHaveText(
     "No hidden need selected yet. Results still use the baseline ranking.",
   );
-  await expect(lecturerPage.locator("#audience-custom-field")).toBeHidden();
+  await expect(lecturerPage.locator("#audience-custom-field")).toBeVisible();
+  await expect(participantPage.locator("#audience-custom-field")).toBeVisible();
   await expect(audienceVoteButton(lecturerPage, "Keep it creamy")).toBeVisible();
   await expect(audienceVoteButton(lecturerPage, "Oozy center")).toBeVisible();
   await expect(audienceVoteButton(lecturerPage, "Cow's milk")).toBeVisible();
@@ -166,6 +167,15 @@ test("lecturer focus mode reduces visual noise for the five-minute flow", async 
   await lecturerPage.locator("#scenario-next-button").click();
   await expect(lecturerPage.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
   await expect(lecturerPage.locator("#scenario-next-button")).toHaveText("Next: Challenge 3");
+  await expect(audienceVoteButton(lecturerPage, "With Burgundy")).toBeVisible();
+  await expect(audienceVoteButton(participantPage, "With Burgundy")).toBeVisible();
+  await expect(audienceVoteButton(lecturerPage, "Budget")).toBeVisible();
+  await expect(audienceVoteButton(participantPage, "Budget")).toBeVisible();
+
+  await lecturerPage.locator("#scenario-next-button").click();
+  await expect(lecturerPage.locator("#scenario-title")).toHaveText("Challenge 3: Evaluation");
+  await expect(audienceVoteButton(lecturerPage, "Show why it fits")).toBeVisible();
+  await expect(audienceVoteButton(participantPage, "Show why it fits")).toBeVisible();
 
   await context.close();
 });

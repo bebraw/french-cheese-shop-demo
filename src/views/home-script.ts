@@ -904,7 +904,7 @@ function applyScenario(nextScenario) {
   scenarioDescriptionElement.textContent = copy.description;
   insightsLabelElement.textContent = copy.insightLabel;
   audienceControls.classList.toggle("hidden", nextScenario === "baseline");
-  audienceCustomField.hidden = isSimpleModeActive();
+  audienceCustomField.hidden = nextScenario === "baseline";
   audiencePromptElement.textContent = copy.audiencePrompt;
   audienceSummaryLabelElement.textContent = copy.audienceSummaryLabel;
   audienceLabel.textContent = copy.audienceLabel;
