@@ -130,6 +130,10 @@ export function renderHomePage(): string {
             </div>
             <div id="demo-panel" class="mt-4 sm:mt-6">
               <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Search Results</p>
+              <section id="change-strip" class="mt-4 rounded-[1.15rem] border border-app-line bg-white px-4 py-3" aria-live="polite">
+                <p class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-app-secondary">What changed?</p>
+                <ul id="change-strip-items" class="mt-3 flex flex-wrap gap-2"></ul>
+              </section>
               <ol id="search-results" class="mt-4 grid gap-4 sm:mt-5" aria-live="polite"></ol>
             </div>
           </div>

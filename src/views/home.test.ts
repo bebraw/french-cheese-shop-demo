@@ -41,6 +41,8 @@ describe("renderHomePage", () => {
     expect(html).toContain("Season options");
     expect(html).toContain("Shop state options");
     expect(html).toContain("Search Backend");
+    expect(html).toContain("What changed?");
+    expect(html).toContain('id="change-strip-items"');
     expect(html).toContain("Context in play");
     expect(html).toContain("Search backend options");
     expect(html).toContain("LLM backend");

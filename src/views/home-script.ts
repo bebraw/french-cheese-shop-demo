@@ -35,6 +35,8 @@ const teachingFocusElement = document.getElementById("teaching-focus-copy");
 const teachingQuestionElement = document.getElementById("teaching-question");
 const teachingNoticeElement = document.getElementById("teaching-notice");
 const resultsElement = document.getElementById("search-results");
+const changeStripElement = document.getElementById("change-strip");
+const changeStripItemsElement = document.getElementById("change-strip-items");
 const scenarioTitleElement = document.getElementById("scenario-title");
 const scenarioDescriptionElement = document.getElementById("scenario-description");
 const insightsLabelElement = document.getElementById("insights-label");
@@ -271,6 +273,10 @@ function clearResults() {
   clearChildren(resultsElement);
 }
 
+function clearChangeStrip() {
+  clearChildren(changeStripItemsElement);
+}
+
 function clearInsights() {
   clearChildren(scenarioInsightsElement);
 }
@@ -455,6 +461,30 @@ function renderContextSummary() {
     item.textContent = itemText;
     contextSummaryChipsElement.appendChild(item);
   }
+}
+
+function renderChangeStrip(search) {
+  clearChangeStrip();
+
+  const topResult = search.results[0]?.name || "no top result";
+  const audienceInput = search.audienceInput || "";
+  const changeItems =
+    search.scenario === "baseline"
+      ? ["Same query", "Baseline only: request wording", "Current lead: " + topResult]
+      : [
+          "Same query",
+          audienceInput ? "Added: " + audienceInput : "No added requirement yet",
+          "Current lead: " + topResult,
+        ];
+
+  for (const itemText of changeItems) {
+    const item = document.createElement("li");
+    item.className = "audience-summary-chip";
+    item.textContent = itemText;
+    changeStripItemsElement.appendChild(item);
+  }
+
+  changeStripElement.hidden = false;
 }
 
 function renderTeachingGuide(scenario) {
@@ -921,6 +951,7 @@ function renderSearchSnapshot(snapshot) {
 
   if (query.length < minimumQueryLength) {
     clearResults();
+    clearChangeStrip();
     clearInsights();
     setStatus("Type at least " + minimumQueryLength + " characters.");
     return;
@@ -928,6 +959,7 @@ function renderSearchSnapshot(snapshot) {
 
   if (!search) {
     clearResults();
+    clearChangeStrip();
     clearInsights();
     setStatus("Search unavailable.");
     return;
@@ -935,11 +967,13 @@ function renderSearchSnapshot(snapshot) {
 
   if (!search.results.length) {
     clearResults();
+    clearChangeStrip();
     clearInsights();
     setStatus("No cheeses matched that combination.");
     return;
   }
 
+  renderChangeStrip(search);
   renderResults(search.results, search.scenario);
   renderInsights(search.insights || [], search.promptLabel);
   setStatus(search.results.length + (search.results.length === 1 ? " result" : " results"));
