@@ -77,7 +77,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] Context controls produce visible suitability and availability changes in the results and requirements lens.
 - [ ] `baseline` ranks from the request wording alone unless the presenter enables shared world context.
 - [ ] `challenge-1` makes hidden requirements explicit in the ranking and insight output.
-- [ ] `challenge-2` uses extra product and context cues from the audience input.
+- [ ] `challenge-2` uses extra product, operating constraint, and use-context cues from the audience input.
 - [ ] `challenge-3` returns evaluation checks alongside the ranking.
 - [ ] Challenge 3 evaluation options produce visible result changes such as a two-finalist shortlist, trade-off notes, or a direct why-it-fits explanation.
 - [ ] Spec and ADR updates land in the same change set as the implementation.
@@ -206,7 +206,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 **Scenario: Audience adds data needs**
 
 - Given: the presenter is on challenge 2
-- When: the audience votes for extra context such as `serve it with cider`, `it must be in stock`, or `Winter holiday`
+- When: the audience votes for extra context such as `Pairing: cider`, `Availability: in stock`, or `Winter holiday`
 - Then: the ranking changes to use those product, context, and simulation cues, and the teaching prompt ties those changes back to domain and operational context
 
 **Scenario: Presenter carries earlier requirements into later challenges**

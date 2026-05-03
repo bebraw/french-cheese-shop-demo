@@ -34,7 +34,7 @@ describe("demo room state", () => {
 
     const state = record.state;
     expect(buildAudienceInput(state, "challenge-2")).toBe("keep it creamy. cow's milk. with cider");
-    expect(buildAudienceSummaryItems(state, "challenge-2")).toEqual(["Keep it creamy", "Cow's milk", "With cider"]);
+    expect(buildAudienceSummaryItems(state, "challenge-2")).toEqual(["Keep it creamy", "Cow's milk", "Pairing: cider"]);
   });
 
   it("derives active challenge input from grouped vote winners", () => {

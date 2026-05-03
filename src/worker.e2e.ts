@@ -190,10 +190,10 @@ test("lecturer focus mode reduces visual noise for the five-minute flow", async 
   await lecturerPage.locator("#scenario-next-button").click();
   await expect(lecturerPage.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
   await expect(lecturerPage.locator("#scenario-next-button")).toHaveText("Next: Challenge 3");
-  await expect(audienceVoteButton(lecturerPage, "With Burgundy")).toBeVisible();
-  await expect(audienceVoteButton(participantPage, "With Burgundy")).toBeVisible();
-  await expect(audienceVoteButton(lecturerPage, "Budget")).toBeVisible();
-  await expect(audienceVoteButton(participantPage, "Budget")).toBeVisible();
+  await expect(audienceVoteButton(lecturerPage, "Pairing: Burgundy")).toBeVisible();
+  await expect(audienceVoteButton(participantPage, "Pairing: Burgundy")).toBeVisible();
+  await expect(audienceVoteButton(lecturerPage, "Price cap: under EUR 12")).toBeVisible();
+  await expect(audienceVoteButton(participantPage, "Price cap: under EUR 12")).toBeVisible();
 
   await lecturerPage.locator("#scenario-next-button").click();
   await expect(lecturerPage.locator("#scenario-title")).toHaveText("Challenge 3: Evaluation");
@@ -268,14 +268,14 @@ test("switching to challenge 2 uses audience data to change the top result", asy
   await claimLecturer(page);
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
-  await chooseAudienceOption(page, "With cider");
-  await chooseAudienceOption(page, "Washed rind");
-  await chooseAudienceOption(page, "In stock");
+  await chooseAudienceOption(page, "Pairing: cider");
+  await chooseAudienceOption(page, "Catalog style: washed rind");
+  await chooseAudienceOption(page, "Availability: in stock");
 
   await expect(page.locator("#search-status")).toHaveText("5 results");
   await expect(page.getByRole("heading", { level: 3, name: "Livarot" })).toBeVisible();
   await expect(page.locator("#scenario-insights")).toContainText("cider");
-  await expect(page.locator("#audience-summary-chips")).toContainText("With cider");
+  await expect(page.locator("#audience-summary-chips")).toContainText("Pairing: cider");
 });
 
 test("signals in play stays synced and cumulative through challenges", async ({ page }) => {
@@ -291,13 +291,13 @@ test("signals in play stays synced and cumulative through challenges", async ({ 
   await expect(page.locator("#scenario-insights")).toContainText("Explicit milk types: cow.");
 
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
-  await chooseAudienceOption(page, "With cider");
+  await chooseAudienceOption(page, "Pairing: cider");
 
   await expect(page.locator("#scenario-insights")).toContainText("Explicit textures: creamy.");
   await expect(page.locator("#scenario-insights")).toContainText("Explicit milk types: cow.");
   await expect(page.locator("#audience-summary-chips")).toContainText("Keep it creamy");
   await expect(page.locator("#audience-summary-chips")).toContainText("Cow's milk");
-  await expect(page.locator("#audience-summary-chips")).toContainText("With cider");
+  await expect(page.locator("#audience-summary-chips")).toContainText("Pairing: cider");
 });
 
 test("audience votes show counts and lecturer override wins one option group", async ({ browser }) => {
@@ -397,17 +397,17 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.locator("#teaching-outcome")).toHaveText("Interpret vague requests");
   await expect(page.locator("#teaching-notice")).toContainText("meaning became explicit");
   await expect(audienceVoteButton(page, "Oozy center")).toBeVisible();
-  await expect(audienceVoteButton(page, "Washed rind")).toHaveCount(0);
+  await expect(audienceVoteButton(page, "Catalog style: washed rind")).toHaveCount(0);
 
   await page.locator("[data-scenario='challenge-2']").click();
   await expect(page.locator("#insights-label")).toHaveText("Extra data in play");
-  await expect(page.locator("#audience-prompt")).toHaveText("Now: choose the fact or constraint the system should use.");
+  await expect(page.locator("#audience-prompt")).toHaveText("Now: choose the data or operating constraint the system should use.");
   await expect(page.locator("#scenario-description")).toContainText("facts and constraints");
   await expect(page.locator("#teaching-outcome")).toHaveText("Specify domain and operational context");
   await expect(page.locator("#teaching-focus-copy")).toContainText("domain and shop context");
   await expect(page.locator("#teaching-pause")).toContainText("missing fact");
-  await expect(audienceVoteButton(page, "Washed rind")).toBeVisible();
-  await expect(audienceVoteButton(page, "In stock")).toBeVisible();
+  await expect(audienceVoteButton(page, "Catalog style: washed rind")).toBeVisible();
+  await expect(audienceVoteButton(page, "Availability: in stock")).toBeVisible();
 
   await page.locator("[data-scenario='challenge-3']").click();
   await expect(page.locator("#insights-label")).toHaveText("Evaluation checks");
@@ -416,7 +416,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.locator("#teaching-outcome")).toHaveText("Evaluate ambiguity");
   await expect(page.locator("#teaching-question")).toContainText("good answer visibly prove");
   await expect(page.locator("#teaching-pause")).toContainText("ready to use");
-  await expect(audienceVoteButton(page, "In stock")).toHaveCount(0);
+  await expect(audienceVoteButton(page, "Availability: in stock")).toHaveCount(0);
   await expect(audienceVoteButton(page, "Show why it fits")).toBeVisible();
   await expect(audienceVoteButton(page, "Show trade-offs")).toBeVisible();
   await expect(audienceVoteButton(page, "Two finalists")).toBeVisible();
@@ -428,9 +428,9 @@ test("context drawer enables the optional llm contrast mode", async ({ page }) =
   await claimLecturer(page);
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
-  await chooseAudienceOption(page, "With cider");
-  await chooseAudienceOption(page, "Washed rind");
-  await chooseAudienceOption(page, "In stock");
+  await chooseAudienceOption(page, "Pairing: cider");
+  await chooseAudienceOption(page, "Catalog style: washed rind");
+  await chooseAudienceOption(page, "Availability: in stock");
 
   const topBefore = await page.locator("#search-results > li h3").first().textContent();
 
@@ -452,7 +452,7 @@ test("season visibly changes challenge 2 recommendations", async ({ page }) => {
   await claimLecturer(page);
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
-  await chooseAudienceOption(page, "With cider");
+  await chooseAudienceOption(page, "Pairing: cider");
   await chooseContextOption(page, "Summer picnic");
 
   await expect(page.locator("#search-results > li h3").first()).toHaveText("Camembert de Normandie");
@@ -481,7 +481,7 @@ test("shop demand still changes visible stock within world context", async ({ pa
   await claimLecturer(page);
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await switchScenario(page, /Challenge 2/, "Challenge 2: Data Requirements");
-  await chooseAudienceOption(page, "With cider");
+  await chooseAudienceOption(page, "Pairing: cider");
   await chooseContextOption(page, "Winter holiday");
   await chooseContextOption(page, "Holiday rush");
 
@@ -655,10 +655,10 @@ test("two pages in the same room stay synchronized", async ({ browser }) => {
   await expect(pageA.locator("#teaching-focus-panel")).toBeVisible();
   await expect(pageB.locator("#teaching-focus-panel")).toBeHidden();
   await switchScenario(pageA, /Challenge 2/, "Challenge 2: Data Requirements");
-  await chooseAudienceOption(pageA, "With cider");
+  await chooseAudienceOption(pageA, "Pairing: cider");
 
   await expect(pageB.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
-  await expect(pageB.locator("#audience-summary-chips")).toContainText("With cider");
+  await expect(pageB.locator("#audience-summary-chips")).toContainText("Pairing: cider");
 
   await pageA.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
   await expect(pageB.getByRole("searchbox", { name: "Customer request" })).toHaveValue("I want something like Brie but stronger");
