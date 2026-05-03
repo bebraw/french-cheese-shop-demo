@@ -464,6 +464,10 @@ async function resetCurrentChallengeVotes() {
   }
 
   const snapshot = await sendCommand({ type: "reset-challenge", scenario: activeScenario });
+  if (!snapshot) {
+    return;
+  }
+
   localVoteState = {
     ...localVoteState,
     [activeScenario]: [],
@@ -963,6 +967,7 @@ function renderSearchSnapshot(snapshot) {
 
   if (!query) {
     clearResults();
+    clearChangeStrip();
     clearInsights();
     setStatus("");
     return;
