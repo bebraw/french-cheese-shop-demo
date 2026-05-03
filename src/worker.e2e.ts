@@ -37,7 +37,7 @@ function escapeRegex(value: string): string {
 }
 
 function audienceVoteButton(page: import("@playwright/test").Page, buttonLabel: string) {
-  return page.getByRole("button", { name: new RegExp("^" + escapeRegex(buttonLabel) + " · \\d+ votes?$") });
+  return page.getByRole("button", { name: new RegExp("^" + escapeRegex(buttonLabel) + "(?: · Suggested path)? · \\d+ votes?$") });
 }
 
 async function chooseAudienceOption(page: import("@playwright/test").Page, buttonLabel: string, summaryText = buttonLabel): Promise<void> {
@@ -176,6 +176,7 @@ test("lecturer focus mode reduces visual noise for the five-minute flow", async 
   );
   await expect(lecturerPage.locator("#audience-custom-field")).toBeVisible();
   await expect(participantPage.locator("#audience-custom-field")).toBeVisible();
+  await expect(lecturerPage.getByRole("button", { name: /Keep it creamy · Suggested path/ })).toBeVisible();
   await expect(audienceVoteButton(lecturerPage, "Keep it creamy")).toBeVisible();
   await expect(audienceVoteButton(lecturerPage, "Oozy center")).toBeVisible();
   await expect(audienceVoteButton(lecturerPage, "Cow's milk")).toBeVisible();
@@ -197,6 +198,7 @@ test("lecturer focus mode reduces visual noise for the five-minute flow", async 
 
   await lecturerPage.locator("#scenario-next-button").click();
   await expect(lecturerPage.locator("#scenario-title")).toHaveText("Challenge 3: Evaluation");
+  await expect(lecturerPage.getByRole("button", { name: /Show why it fits · Suggested path/ })).toBeVisible();
   await expect(audienceVoteButton(lecturerPage, "Show why it fits")).toBeVisible();
   await expect(audienceVoteButton(participantPage, "Show why it fits")).toBeVisible();
 

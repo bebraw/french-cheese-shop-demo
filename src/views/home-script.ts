@@ -763,7 +763,12 @@ function renderAudiencePresets(scenario) {
       const voteButton = document.createElement("button");
       voteButton.type = "button";
       voteButton.className = "audience-preset";
-      voteButton.textContent = preset.label + " · " + formatVoteCount(voteCount) + (isOverride ? " · Lecturer choice" : "");
+      voteButton.textContent =
+        preset.label +
+        (preset.recommended ? " · Suggested path" : "") +
+        " · " +
+        formatVoteCount(voteCount) +
+        (isOverride ? " · Lecturer choice" : "");
       voteButton.setAttribute("aria-pressed", String(access.canManageScenario ? isOverride : hasLocalVote));
       voteButton.classList.toggle("audience-preset-active", hasLocalVote || isSelected || isOverride);
       voteButton.addEventListener("click", () => {

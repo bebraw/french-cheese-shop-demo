@@ -47,6 +47,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` shows a compact `Requirements learned` summary that closes the loop from original request to clarified preferences, operational constraints, and evaluation checks.
 - [ ] `GET /` lets the presenter capture audience answers through visible challenge-specific vote choices before falling back to a custom note.
 - [ ] `GET /` gives each challenge a direct audience instruction so participants know the one action expected at that step.
+- [ ] `GET /` marks one lecturer-friendly suggested path option per challenge so a live demo can proceed quickly without forcing the lecturer to improvise the next vote.
 - [ ] `GET /` groups semantic alternatives such as milk type so the audience votes between options instead of selecting contradictory cues.
 - [ ] `GET /` shows vote counts beside challenge options and in the selected audience summary.
 - [ ] `GET /` lets the lecturer override the audience vote for one option group by pressing an option in that group when the teaching path needs a deliberate contrast.
