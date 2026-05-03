@@ -476,7 +476,7 @@ function renderAudienceSummary(scenario) {
     } else {
       const voteText = typeof summaryItem.votes === "number" ? " · " + formatVoteCount(summaryItem.votes) : "";
       const overrideText = summaryItem.isOverride ? " · lecturer override" : "";
-      chip.textContent = summaryItem.groupLabel + ": " + summaryItem.label + voteText + overrideText;
+      chip.textContent = "Room chose: " + summaryItem.groupLabel + ": " + summaryItem.label + voteText + overrideText;
     }
     audienceSummaryChipsElement.appendChild(chip);
   }

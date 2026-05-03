@@ -50,6 +50,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` marks one lecturer-friendly suggested path option per challenge so a live demo can proceed quickly without forcing the lecturer to improvise the next vote.
 - [ ] `GET /` groups semantic alternatives such as milk type so the audience votes between options instead of selecting contradictory cues.
 - [ ] `GET /` shows vote counts beside challenge options and in the selected audience summary.
+- [ ] `GET /` frames selected vote winners as room choices so students can see their collective input in the requirements lens.
 - [ ] `GET /` lets the lecturer override the audience vote for one option group by pressing an option in that group when the teaching path needs a deliberate contrast.
 - [ ] `GET /` lets the lecturer clear the current challenge's audience votes and overrides without resetting the full room.
 - [ ] `GET /` carries forward earlier challenge answers into later challenge searches so the teaching flow can layer requirements instead of replacing them.
