@@ -276,6 +276,8 @@ test("switching to challenge 2 uses audience data to change the top result", asy
   await expect(page.getByRole("heading", { level: 3, name: "Livarot" })).toBeVisible();
   await expect(page.locator("#scenario-insights")).toContainText("cider");
   await expect(page.locator("#audience-summary-chips")).toContainText("Pairing: cider");
+  await expect(page.locator("#requirements-learned")).toContainText("Operational constraints");
+  await expect(page.locator("#requirements-learned")).toContainText("Pairing: cider");
 });
 
 test("signals in play stays synced and cumulative through challenges", async ({ page }) => {

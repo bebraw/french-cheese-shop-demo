@@ -154,6 +154,8 @@ export function renderHomePage(): string {
               </p>
               <p id="insights-label" class="mt-6 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Signals in play</p>
               <ul id="scenario-insights" class="mt-4 grid gap-3 text-sm leading-6 text-app-text-soft"></ul>
+              <p class="mt-6 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Requirements learned</p>
+              <ul id="requirements-learned" class="mt-4 grid gap-3 text-sm leading-6 text-app-text-soft"></ul>
             </section>
             <section class="relative mt-6 lg:mt-0">
               <button

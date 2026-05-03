@@ -46,6 +46,8 @@ describe("renderHomePage", () => {
     expect(html).toContain("Ranking Mode");
     expect(html).toContain("What changed?");
     expect(html).toContain('id="change-strip-items"');
+    expect(html).toContain("Requirements learned");
+    expect(html).toContain('id="requirements-learned"');
     expect(html).toContain("Context in play");
     expect(html).toContain("Ranking mode options");
     expect(html).toContain("LLM-style ranking");

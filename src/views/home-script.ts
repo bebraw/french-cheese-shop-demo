@@ -43,6 +43,7 @@ const scenarioTitleElement = document.getElementById("scenario-title");
 const scenarioDescriptionElement = document.getElementById("scenario-description");
 const insightsLabelElement = document.getElementById("insights-label");
 const scenarioInsightsElement = document.getElementById("scenario-insights");
+const requirementsLearnedElement = document.getElementById("requirements-learned");
 const scenarioButtons = Array.from(document.querySelectorAll("[data-scenario]"));
 const scenarioNextButton = document.getElementById("scenario-next-button");
 const roomIdInput = document.getElementById("room-id-input");
@@ -266,6 +267,10 @@ function clearInsights() {
   clearChildren(scenarioInsightsElement);
 }
 
+function clearRequirementsLearned() {
+  clearChildren(requirementsLearnedElement);
+}
+
 function clearAudienceSummary() {
   clearChildren(audienceSummaryChipsElement);
 }
@@ -351,6 +356,15 @@ function buildAudienceSummaryItems(scenario) {
   }));
 }
 
+function buildSingleChallengeSummaryItems(scenario) {
+  const audienceState = getAudienceState(scenario);
+  const selectedPresets = scenarios[scenario].presets.filter((preset) => audienceState.selectedPresetIds.includes(preset.id));
+  const items = selectedPresets.map((preset) => preset.label);
+  const customText = audienceState.customText.trim();
+
+  return customText ? [...items, customText] : items;
+}
+
 function buildContextSummaryItems() {
   const state = getRoomState();
   const items = [];
@@ -400,6 +414,38 @@ function renderInsights(insights, promptLabel) {
     item.className = "rounded-[1.1rem] border border-app-line bg-white px-4 py-3";
     item.textContent = insight;
     scenarioInsightsElement.appendChild(item);
+  }
+}
+
+function renderRequirementsLearned() {
+  clearRequirementsLearned();
+
+  const state = getRoomState();
+  const contextItems = buildContextSummaryItems();
+  const learnedItems = [
+    ["Original request", state.query],
+    ["Clarified preferences", buildSingleChallengeSummaryItems("challenge-1").join(", ") || "Not captured yet"],
+    [
+      "Operational constraints",
+      [...buildSingleChallengeSummaryItems("challenge-2"), ...contextItems].join(", ") || "Not captured yet",
+    ],
+    ["Evaluation checks", buildSingleChallengeSummaryItems("challenge-3").join(", ") || "Not captured yet"],
+  ];
+
+  for (const [labelText, valueText] of learnedItems) {
+    const item = document.createElement("li");
+    item.className = "rounded-[1.1rem] border border-app-line bg-white px-4 py-3";
+
+    const label = document.createElement("span");
+    label.className = "block text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-app-secondary";
+    label.textContent = labelText;
+
+    const value = document.createElement("span");
+    value.className = "mt-1 block";
+    value.textContent = valueText;
+
+    item.append(label, value);
+    requirementsLearnedElement.appendChild(item);
   }
 }
 
@@ -923,6 +969,7 @@ function applyScenario(nextScenario) {
   renderAudienceSummary(nextScenario);
   renderContextControls();
   renderContextSummary();
+  renderRequirementsLearned();
   renderBackendControls();
   renderLecturerControls();
 }
