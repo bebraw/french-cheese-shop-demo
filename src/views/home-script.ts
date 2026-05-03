@@ -54,6 +54,7 @@ const roomClaimLecturerButton = document.getElementById("room-claim-lecturer-but
 const roomSimpleModeButton = document.getElementById("room-simple-mode-button");
 const roomCopyAudienceLinkButton = document.getElementById("room-copy-audience-link-button");
 const roomJoinButton = document.getElementById("room-join-button");
+const roomLecturerActionButtons = document.getElementById("room-lecturer-action-buttons");
 const roomCopyLinkButton = document.getElementById("room-copy-link-button");
 const roomResetButton = document.getElementById("room-reset-button");
 const roomConnectionStatusElement = document.getElementById("room-connection-status");
@@ -539,6 +540,7 @@ function renderLecturerControls() {
 
   const controlsClaimedByOtherDevice = access.presenterClaimed && !access.canManageScenario;
   roomLecturerControlsPanel.hidden = controlsClaimedByOtherDevice;
+  roomLecturerActionButtons.hidden = controlsClaimedByOtherDevice;
 
   roomClaimLecturerButton.disabled = access.canManageScenario;
   roomClaimLecturerButton.setAttribute("aria-disabled", String(access.canManageScenario));

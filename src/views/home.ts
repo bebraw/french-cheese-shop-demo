@@ -84,8 +84,10 @@ export function renderHomePage(): string {
                       </label>
                       <div class="mt-3 flex flex-wrap gap-2">
                         <button id="room-join-button" type="button" class="audience-preset audience-preset-active">Join room</button>
-                        <button id="room-copy-link-button" type="button" class="audience-preset">Copy lecturer link</button>
-                        <button id="room-reset-button" type="button" class="audience-preset">Reset room</button>
+                        <span id="room-lecturer-action-buttons" class="contents">
+                          <button id="room-copy-link-button" type="button" class="audience-preset">Copy lecturer link</button>
+                          <button id="room-reset-button" type="button" class="audience-preset">Reset room</button>
+                        </span>
                       </div>
                     </div>
                     <div class="rounded-[1.15rem] border border-app-line bg-app-canvas px-4 py-3 sm:max-w-[14rem]">
