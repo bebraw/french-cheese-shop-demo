@@ -401,6 +401,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.locator("#scenario-description")).toContainText("customer really means");
   await expect(page.locator("#teaching-outcome")).toHaveText("Interpret vague requests");
   await expect(page.locator("#teaching-notice")).toContainText("meaning became explicit");
+  await expect(page.locator("#teaching-stop-here")).toContainText("Stop here if time is short");
   await expect(audienceVoteButton(page, "Oozy center")).toBeVisible();
   await expect(audienceVoteButton(page, "Catalog style: washed rind")).toHaveCount(0);
 
@@ -412,6 +413,7 @@ test("challenge copy keeps hidden needs, data, and evaluation distinct", async (
   await expect(page.locator("#teaching-focus-copy")).toContainText("domain and shop context");
   await expect(page.locator("#teaching-pause")).toContainText("missing fact");
   await expect(page.locator("#teaching-timebox")).toContainText("45 sec vote");
+  await expect(page.locator("#teaching-stop-here")).toContainText("user meaning and operating context");
   await expect(audienceVoteButton(page, "Catalog style: washed rind")).toBeVisible();
   await expect(audienceVoteButton(page, "Availability: in stock")).toBeVisible();
 

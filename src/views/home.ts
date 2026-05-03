@@ -138,6 +138,7 @@ export function renderHomePage(): string {
                   <span class="font-semibold uppercase tracking-[0.16em] text-app-secondary">Timebox</span>
                   <span id="teaching-timebox" class="ml-2">30 sec setup</span>
                 </p>
+                <p id="teaching-stop-here" class="mt-3 rounded-[1rem] border border-app-line bg-app-canvas px-3 py-3 text-sm leading-6 text-app-text-soft">Continue: reveal Challenge 1 to turn one hidden assumption into an explicit requirement.</p>
               </section>
             </div>
             <div id="demo-panel" class="mt-4 sm:mt-6">

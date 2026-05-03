@@ -31,6 +31,7 @@ describe("renderHomePage", () => {
     expect(html).toContain('id="teaching-focus-panel"');
     expect(html).toContain('id="teaching-pause"');
     expect(html).toContain('id="teaching-timebox"');
+    expect(html).toContain('id="teaching-stop-here"');
     expect(html).toContain('id="teaching-focus-panel" class=');
     expect(html).toContain("hidden>");
     expect(html).toContain("Interpret vague requests");
@@ -40,6 +41,7 @@ describe("renderHomePage", () => {
     );
     expect(html).toContain("Before moving on: what assumption did the system just make?");
     expect(html).toContain("30 sec setup");
+    expect(html).toContain("Continue: reveal Challenge 1");
     expect(html).toContain("Context");
     expect(html).toContain("World Context");
     expect(html).toContain("Optional simulation state shared by baseline and every challenge.");

@@ -37,6 +37,7 @@ const teachingQuestionElement = document.getElementById("teaching-question");
 const teachingNoticeElement = document.getElementById("teaching-notice");
 const teachingPauseElement = document.getElementById("teaching-pause");
 const teachingTimeboxElement = document.getElementById("teaching-timebox");
+const teachingStopHereElement = document.getElementById("teaching-stop-here");
 const resultsElement = document.getElementById("search-results");
 const changeStripElement = document.getElementById("change-strip");
 const changeStripItemsElement = document.getElementById("change-strip-items");
@@ -554,6 +555,7 @@ function renderTeachingGuide(scenario) {
   teachingNoticeElement.textContent = copy.teachingNotice;
   teachingPauseElement.textContent = copy.teachingPause;
   teachingTimeboxElement.textContent = copy.teachingTimebox;
+  teachingStopHereElement.textContent = copy.teachingStopHere;
 }
 
 function renderLecturerControls() {
