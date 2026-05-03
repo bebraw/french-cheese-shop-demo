@@ -621,9 +621,7 @@ test("participants cannot change the active challenge after the lecturer claims 
 
   await expect(participantPage.getByRole("button", { name: /Challenge 3/ })).toHaveCount(0);
   await expect(participantPage.locator("#scenario-title")).toHaveText("Challenge 2: Data Requirements");
-  await expect(participantPage.locator("#room-lecturer-status")).toContainText(
-    "The shared search query, world context, and challenge changes are locked to the lecturer device for this room.",
-  );
+  await expect(participantPage.locator("#room-lecturer-controls-panel")).toBeHidden();
   await expect(participantPage.getByRole("button", { name: "Claim lecturer controls" })).toBeHidden();
   await expect(participantPage.getByRole("button", { name: "Focus mode" })).toBeHidden();
 

@@ -45,6 +45,7 @@ const roomIdInput = document.getElementById("room-id-input");
 const roomPanelToggle = document.getElementById("room-panel-toggle");
 const roomPanelIcon = document.getElementById("room-panel-icon");
 const roomPanelBody = document.getElementById("room-panel-body");
+const roomLecturerControlsPanel = document.getElementById("room-lecturer-controls-panel");
 const roomLecturerStatusElement = document.getElementById("room-lecturer-status");
 const roomClaimLecturerButton = document.getElementById("room-claim-lecturer-button");
 const roomSimpleModeButton = document.getElementById("room-simple-mode-button");
@@ -483,14 +484,14 @@ function renderLecturerControls() {
       : "All challenges revealed";
 
   const controlsClaimedByOtherDevice = access.presenterClaimed && !access.canManageScenario;
+  roomLecturerControlsPanel.hidden = controlsClaimedByOtherDevice;
+
   roomClaimLecturerButton.disabled = access.canManageScenario;
-  roomClaimLecturerButton.hidden = controlsClaimedByOtherDevice;
   roomClaimLecturerButton.setAttribute("aria-disabled", String(access.canManageScenario));
   roomClaimLecturerButton.classList.toggle("opacity-60", access.canManageScenario);
   roomClaimLecturerButton.textContent = access.canManageScenario ? "Lecturer controls active" : "Claim lecturer controls";
 
   roomSimpleModeButton.disabled = !access.canManageScenario;
-  roomSimpleModeButton.hidden = controlsClaimedByOtherDevice;
   roomSimpleModeButton.setAttribute("aria-disabled", String(!access.canManageScenario));
   roomSimpleModeButton.setAttribute("aria-pressed", String(simpleModeActive));
   roomSimpleModeButton.classList.toggle("opacity-60", !access.canManageScenario);

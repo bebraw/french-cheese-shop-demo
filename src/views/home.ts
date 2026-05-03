@@ -69,7 +69,7 @@ export function renderHomePage(): string {
                 <div id="room-panel-body" class="mt-4">
                   <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div class="min-w-0 flex-1">
-                      <div class="mb-3 rounded-[1rem] border border-app-line bg-app-canvas px-4 py-3">
+                      <div id="room-lecturer-controls-panel" class="mb-3 rounded-[1rem] border border-app-line bg-app-canvas px-4 py-3">
                         <p class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-app-secondary">Lecturer Controls</p>
                         <p id="room-lecturer-status" class="mt-2 text-sm leading-6 text-app-text-soft">The shared search query, world context, and challenge changes stay unlocked only after the lecturer claims control on this device.</p>
                         <div class="mt-3 flex flex-wrap gap-2">
