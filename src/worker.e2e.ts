@@ -222,6 +222,8 @@ test("shows baseline results for a vague request", async ({ page }) => {
   await page.getByRole("searchbox", { name: "Customer request" }).fill("I want something like Brie but stronger");
 
   await expect(page.locator("#search-status")).toHaveText("5 results");
+  await expect(page.locator("#change-strip-items")).toContainText("Before: vague request only");
+  await expect(page.locator("#change-strip-items")).toContainText("After: no extra requirements yet");
   await expect(page.locator("#change-strip-items")).toContainText("Current lead");
   await expect(page.getByRole("heading", { level: 3, name: "Brie de Meaux" })).toBeVisible();
   await expect(page).toHaveURL(new RegExp("[?&]room=" + roomRunId + "-e2e-baseline"));

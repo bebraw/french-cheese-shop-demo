@@ -481,10 +481,10 @@ function renderChangeStrip(search) {
   const audienceInput = search.audienceInput || "";
   const changeItems =
     search.scenario === "baseline"
-      ? ["Same query", "Baseline only: request wording", "Current lead: " + topResult]
+      ? ["Before: vague request only", "After: no extra requirements yet", "Current lead: " + topResult]
       : [
-          "Same query",
-          audienceInput ? "Added: " + audienceInput : "No added requirement yet",
+          "Before: vague request only",
+          audienceInput ? "After: " + audienceInput : "After: no explicit requirement yet",
           "Current lead: " + topResult,
         ];
 
