@@ -20,6 +20,7 @@ const audienceLabel = document.getElementById("audience-label");
 const audienceSummaryLabelElement = document.getElementById("audience-summary-label");
 const audienceSummaryEmptyElement = document.getElementById("audience-summary-empty");
 const audienceSummaryChipsElement = document.getElementById("audience-summary-chips");
+const audienceResetButton = document.getElementById("audience-reset-button");
 const contextDrawerToggle = document.getElementById("context-drawer-toggle");
 const contextDrawerIcon = document.getElementById("context-drawer-icon");
 const contextDrawerPanel = document.getElementById("context-drawer-panel");
@@ -424,6 +425,8 @@ function formatVoteCount(votes) {
 
 function renderAudienceSummary(scenario) {
   clearAudienceSummary();
+  const access = getRoomAccess();
+  audienceResetButton.hidden = scenario === "baseline" || !access.canManageScenario;
 
   if (scenario === "baseline") {
     audienceSummaryEmptyElement.textContent = "";
@@ -446,6 +449,27 @@ function renderAudienceSummary(scenario) {
     }
     audienceSummaryChipsElement.appendChild(chip);
   }
+}
+
+async function resetCurrentChallengeVotes() {
+  if (!getRoomAccess().canManageScenario) {
+    setStatus("Only the lecturer can clear challenge votes.");
+    return;
+  }
+
+  if (activeScenario === "baseline") {
+    setStatus("No challenge votes to clear in baseline.");
+    return;
+  }
+
+  const snapshot = await sendCommand({ type: "reset-challenge", scenario: activeScenario });
+  localVoteState = {
+    ...localVoteState,
+    [activeScenario]: [],
+  };
+  persistLocalVoteState(activeRoomId);
+  applySnapshot(snapshot);
+  setStatus("Challenge votes cleared.");
 }
 
 function renderContextSummary() {
@@ -1289,6 +1313,10 @@ roomSimpleModeButton.addEventListener("click", () => {
 
   applySnapshot(activeSnapshot || createFallbackSnapshot(activeRoomId));
   setStatus(simpleModeEnabled ? "Focus mode on." : "Focus mode off.");
+});
+
+audienceResetButton.addEventListener("click", () => {
+  void resetCurrentChallengeVotes();
 });
 
 roomJoinButton.addEventListener("click", () => {

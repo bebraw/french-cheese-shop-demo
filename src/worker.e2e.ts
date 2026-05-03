@@ -285,6 +285,14 @@ test("audience votes show counts and lecturer override wins one option group", a
   await expect(participantPage.locator("#audience-summary-chips")).toContainText("Goat's milk");
   await expect(participantPage.locator("#scenario-insights")).toContainText("Explicit milk types: goat.");
 
+  await lecturerPage.getByRole("button", { name: "Clear challenge votes" }).click();
+  await expect(lecturerPage.locator("#audience-summary-empty")).toHaveText(
+    "No hidden need selected yet. Results still use the baseline ranking.",
+  );
+  await expect(participantPage.locator("#audience-summary-empty")).toHaveText(
+    "No hidden need selected yet. Results still use the baseline ranking.",
+  );
+
   await context.close();
 });
 

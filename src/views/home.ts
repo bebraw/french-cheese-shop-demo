@@ -111,6 +111,7 @@ export function renderHomePage(): string {
                   <p id="audience-summary-label" class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary">Selected by votes</p>
                   <p id="audience-summary-empty" class="mt-3 text-sm leading-6 text-app-text-soft">Choose one or more answers below.</p>
                   <ul id="audience-summary-chips" class="mt-3 flex flex-wrap gap-2" aria-live="polite"></ul>
+                  <button id="audience-reset-button" type="button" class="audience-preset mt-4">Clear challenge votes</button>
                 </div>
               </div>
               <div id="search-status" class="mt-3 text-sm leading-6 text-app-text-soft"></div>

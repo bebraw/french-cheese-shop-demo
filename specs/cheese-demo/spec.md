@@ -46,6 +46,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - [ ] `GET /` groups semantic alternatives such as milk type so the audience votes between options instead of selecting contradictory cues.
 - [ ] `GET /` shows vote counts beside challenge options and in the selected audience summary.
 - [ ] `GET /` lets the lecturer override the audience vote for one option group by pressing an option in that group when the teaching path needs a deliberate contrast.
+- [ ] `GET /` lets the lecturer clear the current challenge's audience votes and overrides without resetting the full room.
 - [ ] `GET /` carries forward earlier challenge answers into later challenge searches so the teaching flow can layer requirements instead of replacing them.
 - [ ] Each challenge preset list teaches one distinct step in the story: hidden needs, concrete facts, then evaluation criteria.
 - [ ] `GET /` exposes simulation context controls inside a compact foldable `Context` container on the right so the presenter can change season and shop state explicitly from baseline through challenge 3.

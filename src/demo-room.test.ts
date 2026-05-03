@@ -170,8 +170,28 @@ describe("demo room state", () => {
       scenario: "challenge-1",
       presetId: "goat",
     });
+    expect(readRoomCommand({ type: "reset-challenge", scenario: "challenge-1" })).toEqual({
+      type: "reset-challenge",
+      scenario: "challenge-1",
+    });
     expect(readRoomCommand({ type: "toggle-preset", scenario: "baseline", presetId: "creamy" })).toBeNull();
     expect(readRoomCommand({ type: "cast-preset-vote", scenario: "challenge-1", presetId: "cow", voteDelta: 2 })).toBeNull();
+  });
+
+  it("lets the lecturer clear only the current challenge votes", () => {
+    let record = createDefaultRoomRecord("clear-votes");
+    record = applyOk(record, { type: "claim-presenter" }, "lecturer-token");
+    record = applyOk(record, { type: "set-scenario", scenario: "challenge-2" }, "lecturer-token");
+    record = applyOk(record, { type: "cast-preset-vote", scenario: "challenge-1", presetId: "cow", voteDelta: 1 });
+    record = applyOk(record, { type: "cast-preset-vote", scenario: "challenge-2", presetId: "cider", voteDelta: 1 });
+    record = applyOk(record, { type: "toggle-preset-override", scenario: "challenge-2", presetId: "beer" }, "lecturer-token");
+    record = applyOk(record, { type: "reset-challenge", scenario: "challenge-2" }, "lecturer-token");
+
+    expect(record.state.activeScenario).toBe("challenge-2");
+    expect(record.state.audienceByChallenge["challenge-1"].selectedPresetIds).toEqual(["cow"]);
+    expect(record.state.audienceByChallenge["challenge-2"].selectedPresetIds).toEqual([]);
+    expect(record.state.audienceByChallenge["challenge-2"].votesByPresetId).toEqual({});
+    expect(record.state.audienceByChallenge["challenge-2"].lecturerOverridePresetIds).toEqual([]);
   });
 
   it("resets the room to the default shared state", () => {

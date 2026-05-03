@@ -58,6 +58,7 @@ export type DemoRoomCommand =
   | { type: "toggle-preset"; scenario: DemoChallengeId; presetId: string }
   | { type: "cast-preset-vote"; scenario: DemoChallengeId; presetId: string; voteDelta: 1 | -1 }
   | { type: "toggle-preset-override"; scenario: DemoChallengeId; presetId: string }
+  | { type: "reset-challenge"; scenario: DemoChallengeId }
   | { type: "set-custom-text"; scenario: DemoChallengeId; customText: string }
   | { type: "set-season"; season: SimulationSeason | "" }
   | { type: "set-shop-state"; shopState: ShopState | "" }
@@ -406,6 +407,16 @@ function applyRoomStateCommand(
     });
   }
 
+  if (command.type === "reset-challenge") {
+    return bumpVersion({
+      ...state,
+      audienceByChallenge: {
+        ...state.audienceByChallenge,
+        [command.scenario]: emptyAudienceState(),
+      },
+    });
+  }
+
   if (command.type === "set-custom-text") {
     return bumpVersion({
       ...state,
@@ -485,6 +496,10 @@ export function readRoomCommand(payload: unknown): DemoRoomCommand | null {
 
   if (raw.type === "toggle-preset-override" && isDemoChallengeId(challengeScenario) && typeof raw.presetId === "string") {
     return { type: "toggle-preset-override", scenario: challengeScenario, presetId: raw.presetId };
+  }
+
+  if (raw.type === "reset-challenge" && isDemoChallengeId(challengeScenario)) {
+    return { type: "reset-challenge", scenario: challengeScenario };
   }
 
   if (raw.type === "set-custom-text" && isDemoChallengeId(challengeScenario) && typeof raw.customText === "string") {
@@ -691,6 +706,7 @@ function requiresPresenterControl(command: Exclude<DemoRoomCommand, { type: "cla
     command.type === "set-scenario" ||
     command.type === "advance-scenario" ||
     command.type === "toggle-preset-override" ||
+    command.type === "reset-challenge" ||
     command.type === "set-season" ||
     command.type === "set-shop-state" ||
     command.type === "reset-room"
@@ -724,6 +740,12 @@ function presenterControlError(command: Exclude<DemoRoomCommand, { type: "claim-
     return presenterClaimed
       ? "Only the lecturer can override the audience vote for this room."
       : "Lecturer controls must be claimed before overriding the audience vote.";
+  }
+
+  if (command.type === "reset-challenge") {
+    return presenterClaimed
+      ? "Only the lecturer can clear challenge votes for this room."
+      : "Lecturer controls must be claimed before clearing challenge votes.";
   }
 
   return presenterClaimed

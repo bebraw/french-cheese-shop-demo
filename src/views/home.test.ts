@@ -47,6 +47,7 @@ describe("renderHomePage", () => {
     expect(html).toContain("Search backend options");
     expect(html).toContain("LLM backend");
     expect(html).toContain("Audience vote");
+    expect(html).toContain("Clear challenge votes");
     expect(html).toContain('id="audience-custom-field"');
     expect(html).toContain("Other audience note");
     expect(html).toContain("Selected by votes");
