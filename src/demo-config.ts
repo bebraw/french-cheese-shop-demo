@@ -17,7 +17,6 @@ export interface DemoPresetOption {
   value: string;
   voteGroupId: string;
   voteGroupLabel: string;
-  recommended?: boolean;
 }
 
 export interface DemoScenarioCopy {
@@ -98,7 +97,6 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
         value: "keep it creamy",
         voteGroupId: "texture",
         voteGroupLabel: "Texture",
-        recommended: true,
       },
       { id: "oozy", label: "Oozy center", value: "oozy center", voteGroupId: "texture", voteGroupLabel: "Texture" },
       { id: "cow", label: "Cow's milk", value: "cow's milk", voteGroupId: "milk", voteGroupLabel: "Milk" },
@@ -141,7 +139,6 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
         value: "it must be in stock",
         voteGroupId: "availability",
         voteGroupLabel: "Availability constraint",
-        recommended: true,
       },
       { id: "budget", label: "Price cap: under EUR 12", value: "under EUR 12", voteGroupId: "budget", voteGroupLabel: "Price constraint" },
       { id: "salad", label: "Use case: salad", value: "for salad", voteGroupId: "serving", voteGroupLabel: "Use context" },
@@ -170,7 +167,6 @@ export const scenarioCopy: Record<DemoScenarioId, DemoScenarioCopy> = {
         value: "show why it fits",
         voteGroupId: "explanation",
         voteGroupLabel: "Explanation",
-        recommended: true,
       },
       { id: "tradeoffs", label: "Show trade-offs", value: "show trade-offs", voteGroupId: "tradeoffs", voteGroupLabel: "Trade-offs" },
       { id: "shortlist", label: "Two finalists", value: "keep it to two finalists", voteGroupId: "scope", voteGroupLabel: "Scope" },
