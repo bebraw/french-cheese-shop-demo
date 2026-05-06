@@ -41,6 +41,7 @@ Skip an ADR for small, reversible, or purely tactical choices.
 | [ADR-023](./ADR-023-reveal-demo-challenges-progressively.md)                       | Accepted   | Reveal challenge controls progressively so the lecturer can pace audience attention.                |
 | [ADR-024](./ADR-024-share-focus-mode-across-room.md)                               | Accepted   | Share Focus mode through room state so students and the lecturer see the same reduced surface.      |
 | [ADR-025](./ADR-025-bundle-browser-script-with-vite.md)                            | Accepted   | Bundle the browser script with Vite so TypeScript checks the interactive client code.               |
+| [ADR-026](./ADR-026-adopt-strict-indexed-typescript-checks.md)                     | Accepted   | Adopt stricter TypeScript indexed access, optional property, and override checks.                   |
 
 ## Creating A New ADR
 

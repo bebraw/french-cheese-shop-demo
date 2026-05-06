@@ -797,7 +797,10 @@ function renderAudiencePresets(scenario: ClientScenarioId): void {
       });
     }
 
-    groupedPresets[groupIndexById.get(preset.voteGroupId) ?? 0].presets.push(preset);
+    const groupIndex = groupIndexById.get(preset.voteGroupId);
+    if (groupIndex !== undefined) {
+      groupedPresets[groupIndex]?.presets.push(preset);
+    }
   }
 
   for (const group of groupedPresets) {

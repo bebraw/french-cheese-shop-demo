@@ -72,7 +72,7 @@ The Vitest setup is generic as well. `vitest.config.ts` targets colocated `src/*
 
 The coverage gate is stricter than the basic test run. `npm run test:coverage` measures runtime `src/**` code with the V8 provider, writes reports to `reports/coverage/`, and enforces high thresholds once a project actually has `src/` code. Colocated unit tests, end-to-end tests, test-support files, and the Vite browser entry do not count toward unit coverage; the browser entry is checked by TypeScript and Playwright.
 
-The TypeScript setup is generic too. `tsconfig.json` covers repo-level `.ts` files and `src/**/*.ts`, including the Vite-bundled browser module, and `npm run typecheck` runs `tsc --noEmit`.
+The TypeScript setup follows the strict upstream `bebraw/vibe-template` baseline. `tsconfig.json` covers repo-level `.ts` files and `src/**/*.ts`, including the Vite-bundled browser module, and `npm run typecheck` runs `tsc --noEmit` with unchecked indexed access, exact optional property types, and implicit overrides rejected.
 
 ## Cheese Demo Notes
 

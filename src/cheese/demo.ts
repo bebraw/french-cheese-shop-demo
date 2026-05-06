@@ -793,7 +793,8 @@ function buildInsights(
     }
   }
   if (scenario === "challenge-3" && results.length > 0) {
-    const failedChecks = results[0].checks.filter((check) => !check.passed).map((check) => check.label.toLowerCase());
+    const topResult = results[0]!;
+    const failedChecks = topResult.checks.filter((check) => !check.passed).map((check) => check.label.toLowerCase());
     insights.push(
       failedChecks.length > 0 ? `Top result still misses: ${failedChecks.join(", ")}.` : "Top result passes the current checks.",
     );

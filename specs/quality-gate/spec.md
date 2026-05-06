@@ -45,11 +45,13 @@ The template needs a verification baseline that stays strict enough for end-to-e
 - The CI workflow must cancel superseded runs for the same ref.
 - The CI workflow must read the pinned Node version from `package.json` instead of a separate version file.
 - The CI workflow must align npm to the version pinned in `package.json` instead of assuming the npm release bundled with the cached Node runtime is sufficient.
+- The typecheck step must run with unchecked indexed access, exact optional property types, and implicit overrides rejected.
 - The pinned npm CLI path used by CI must resolve correctly in both GitHub Actions runners and local Agent CI containers.
 - The browser CI job must use the pinned Playwright container instead of reinstalling Chromium at runtime.
 - The coverage gate must only require unit tests when runtime `src/` code exists.
 - The coverage gate must work in both the normal workspace and local Agent CI's warmed `node_modules` layout.
 - The repo's local CI scripts should use the repo-pinned `agent-ci` binary directly instead of carrying repo-specific runtime patching.
+- Local Agent CI should run one workflow job at a time to avoid shared-workspace dependency installation races.
 - The local verification workflow should document macOS as the supported host baseline instead of implying cross-platform support.
 - The Playwright server path must avoid macOS file-watcher exhaustion in local runs without changing the normal `npm run dev` workflow.
 - The local CI documentation must cover the no-`origin` case through `.env.agent-ci` and `GITHUB_REPO` instead of treating that warning as normal noise.
