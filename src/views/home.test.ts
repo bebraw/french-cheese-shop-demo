@@ -20,7 +20,8 @@ describe("renderHomePage", () => {
     expect(html).toContain("Ready check: claim lecturer controls before starting.");
     expect(html).toContain("Copy audience link");
     expect(html).toContain("Join room");
-    expect(html).toContain("Copy lecturer link");
+    expect(html).toContain("Copy private lecturer link");
+    expect(html).toContain("Private link includes lecturer controls.");
     expect(html).toContain("Reset room");
     expect(html).toContain('aria-label="Choose demo challenge"');
     expect(html).toContain("Hidden meaning");

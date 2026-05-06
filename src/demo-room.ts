@@ -71,6 +71,7 @@ export type DemoRoomCommand =
 export interface DemoRoomSnapshot {
   roomId: string;
   participantCount: number;
+  liveSyncAvailable: boolean;
   state: DemoRoomState;
   search: DemoSearchResponse | null;
   access: DemoRoomAccess;
@@ -570,6 +571,7 @@ export function buildRoomSnapshot(
   record: DemoRoomRecord,
   participantCount: number,
   presenterToken: string | null = null,
+  liveSyncAvailable = true,
 ): DemoRoomSnapshot {
   const state = record.state;
   const query = state.query.trim();
@@ -589,6 +591,7 @@ export function buildRoomSnapshot(
   return {
     roomId: state.roomId,
     participantCount,
+    liveSyncAvailable,
     state,
     search,
     access: {

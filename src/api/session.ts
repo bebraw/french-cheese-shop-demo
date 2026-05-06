@@ -60,7 +60,7 @@ export async function createSessionResponse(request: Request, env?: SessionEnv):
     }
 
     inMemoryRooms.set(roomId, result.record);
-    return jsonResponse({ ok: true, snapshot: buildRoomSnapshot(result.record, 1, readPresenterToken(request)) });
+    return jsonResponse({ ok: true, snapshot: buildRoomSnapshot(result.record, 1, readPresenterToken(request), false) });
   }
 
   return jsonResponse({ ok: false, error: "Method not allowed." }, { status: 405 });
@@ -78,7 +78,7 @@ export async function createSessionLiveResponse(request: Request, env?: SessionE
 }
 
 function readInMemorySnapshot(roomId: string, request: Request): DemoRoomSnapshot {
-  return buildRoomSnapshot(readInMemoryRecord(roomId, request), 1, readPresenterToken(request));
+  return buildRoomSnapshot(readInMemoryRecord(roomId, request), 1, readPresenterToken(request), false);
 }
 
 function readInMemoryRecord(roomId: string, request: Request): DemoRoomRecord {

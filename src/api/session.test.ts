@@ -7,6 +7,7 @@ describe("createSessionResponse", () => {
     const payload = await response.json();
 
     expect(payload.roomId).toBe("session-default");
+    expect(payload.liveSyncAvailable).toBe(false);
     expect(payload.state.query).toBe("I want something like Brie, but stronger.");
     expect(payload.search.results[0]?.name).toBe("Brie de Meaux");
   });

@@ -697,7 +697,7 @@ test("participants cannot change the active challenge after the lecturer claims 
   await expect(participantPage.locator("#room-lecturer-controls-panel")).toBeHidden();
   await expect(participantPage.getByRole("button", { name: "Claim lecturer controls" })).toBeHidden();
   await expect(participantPage.getByRole("button", { name: "Focus mode" })).toBeHidden();
-  await expect(participantPage.getByRole("button", { name: "Copy lecturer link" })).toBeHidden();
+  await expect(participantPage.getByRole("button", { name: "Copy private lecturer link" })).toBeHidden();
   await expect(participantPage.getByRole("button", { name: "Reset room" })).toBeHidden();
   await expect(participantPage.getByRole("button", { name: "Join room" })).toBeHidden();
 

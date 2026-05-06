@@ -87,9 +87,10 @@ export function renderHomePage(): string {
                       <div class="mt-3 flex flex-wrap gap-2">
                         <button id="room-join-button" type="button" class="audience-preset audience-preset-active">Join room</button>
                         <span id="room-lecturer-action-buttons" class="contents">
-                          <button id="room-copy-link-button" type="button" class="audience-preset">Copy lecturer link</button>
+                          <button id="room-copy-link-button" type="button" class="audience-preset" aria-describedby="room-copy-link-warning">Copy private lecturer link</button>
                           <button id="room-reset-button" type="button" class="audience-preset">Reset room</button>
                         </span>
+                        <span id="room-copy-link-warning" class="sr-only">Private link includes lecturer controls. Use Copy audience link for participants.</span>
                       </div>
                     </div>
                     <div class="rounded-[1.15rem] border border-app-line bg-app-canvas px-4 py-3 sm:max-w-[14rem]">

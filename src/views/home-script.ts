@@ -1136,6 +1136,9 @@ function applySnapshot(snapshot: ClientSnapshot): void {
   activeSnapshot = snapshot;
   syncLocalVotesWithSnapshot(snapshot, previousSnapshot);
   setRoomParticipantCount(snapshot.participantCount || 1);
+  if (snapshot.liveSyncAvailable === false) {
+    setConnectionStatus("Local-only mode: live audience sync unavailable");
+  }
 
   if (pendingQueryDraft !== null && snapshot.state.query === pendingQueryDraft) {
     pendingQueryDraft = null;
@@ -1151,7 +1154,9 @@ function applySnapshot(snapshot: ClientSnapshot): void {
     queryInput.value = pendingQueryDraft;
   }
 
-  roomIdInput.value = snapshot.roomId;
+  if (document.activeElement !== roomIdInput) {
+    roomIdInput.value = snapshot.roomId;
+  }
   renderRoomJoinControl();
   applyScenario(snapshot.state.activeScenario);
   renderSearchSnapshot(snapshot);
@@ -1198,6 +1203,12 @@ function closeLiveSync() {
 
 function openLiveSync() {
   stopPolling();
+
+  if (activeSnapshot?.liveSyncAvailable === false) {
+    setConnectionStatus("Local-only mode: live audience sync unavailable");
+    startPolling();
+    return;
+  }
 
   const liveUrl = new URL("/api/session/live", window.location.href);
   liveUrl.searchParams.set("room", activeRoomId);
@@ -1500,11 +1511,13 @@ roomCopyLinkButton.addEventListener("click", async () => {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(shareUrl.toString());
       flashCopyButton("Copied");
+      setStatus("Private lecturer link copied. Use the audience link for participants.");
       return;
     }
   } catch {}
 
   flashCopyButton("Copy manually");
+  setStatus("Private lecturer link includes controls. Use the audience link for participants.");
 });
 
 roomCopyAudienceLinkButton.addEventListener("click", async () => {
@@ -1524,6 +1537,7 @@ roomCopyAudienceLinkButton.addEventListener("click", async () => {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(shareUrl.toString());
       roomCopyAudienceLinkButton.textContent = "Copied";
+      setStatus("Audience link copied without lecturer controls.");
       window.setTimeout(() => {
         roomCopyAudienceLinkButton.textContent = originalLabel;
       }, 1200);
@@ -1532,6 +1546,7 @@ roomCopyAudienceLinkButton.addEventListener("click", async () => {
   } catch {}
 
   roomCopyAudienceLinkButton.textContent = "Copy manually";
+  setStatus("Audience link excludes lecturer controls.");
   window.setTimeout(() => {
     roomCopyAudienceLinkButton.textContent = originalLabel;
   }, 1200);

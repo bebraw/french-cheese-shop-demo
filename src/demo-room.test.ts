@@ -81,6 +81,7 @@ describe("demo room state", () => {
     const snapshot = buildRoomSnapshot(record, 3, "lecturer-token");
 
     expect(snapshot.participantCount).toBe(3);
+    expect(snapshot.liveSyncAvailable).toBe(true);
     expect(snapshot.search?.scenario).toBe("challenge-2");
     expect(snapshot.state.revealedChallengeIds).toEqual(["challenge-1", "challenge-2"]);
     expect(snapshot.search?.results[0]?.name).toBe("Livarot");
