@@ -52,6 +52,7 @@ const roomIdInput = document.getElementById("room-id-input");
 const roomPanelToggle = document.getElementById("room-panel-toggle");
 const roomPanelIcon = document.getElementById("room-panel-icon");
 const roomPanelBody = document.getElementById("room-panel-body");
+const roomPanelSummaryElement = document.getElementById("room-panel-summary");
 const roomLecturerControlsPanel = document.getElementById("room-lecturer-controls-panel");
 const roomLecturerStatusElement = document.getElementById("room-lecturer-status");
 const roomReadyStatusElement = document.getElementById("room-ready-status");
@@ -201,13 +202,41 @@ function persistPresenterToken(roomId, presenterToken) {
   } catch {}
 }
 
-function syncLocalVotesWithSnapshot(snapshot) {
-  if (!isResetSnapshot(snapshot) || challengeSequence.every((scenario) => (localVoteState[scenario] || []).length === 0)) {
+function syncLocalVotesWithSnapshot(snapshot, previousSnapshot = null) {
+  if (previousSnapshot && snapshot.state.version <= previousSnapshot.state.version) {
     return;
   }
 
-  localVoteState = createEmptyVoteState();
-  persistLocalVoteState(activeRoomId);
+  let nextVoteState = localVoteState;
+
+  if (isResetSnapshot(snapshot)) {
+    nextVoteState = createEmptyVoteState();
+  } else {
+    for (const scenario of challengeSequence) {
+      const localPresetIds = localVoteState[scenario] || [];
+      if (localPresetIds.length === 0) {
+        continue;
+      }
+
+      const audienceState = snapshot.state.audienceByChallenge[scenario];
+      const challengeHasSharedVotes =
+        Object.keys(audienceState.votesByPresetId).length > 0 || audienceState.lecturerOverridePresetIds.length > 0;
+
+      if (challengeHasSharedVotes) {
+        continue;
+      }
+
+      nextVoteState = {
+        ...nextVoteState,
+        [scenario]: [],
+      };
+    }
+  }
+
+  if (nextVoteState !== localVoteState) {
+    localVoteState = nextVoteState;
+    persistLocalVoteState(activeRoomId);
+  }
 }
 
 function isResetSnapshot(snapshot) {
@@ -578,6 +607,7 @@ function renderLecturerControls() {
       : "All challenges revealed";
 
   const controlsClaimedByOtherDevice = access.presenterClaimed && !access.canManageScenario;
+  roomPanelSummaryElement.hidden = !access.canManageScenario;
   roomLecturerControlsPanel.hidden = controlsClaimedByOtherDevice;
   roomLecturerActionButtons.hidden = controlsClaimedByOtherDevice;
 
@@ -1085,8 +1115,9 @@ function applySnapshot(snapshot) {
     return;
   }
 
+  const previousSnapshot = activeSnapshot;
   activeSnapshot = snapshot;
-  syncLocalVotesWithSnapshot(snapshot);
+  syncLocalVotesWithSnapshot(snapshot, previousSnapshot);
   setRoomParticipantCount(snapshot.participantCount || 1);
 
   if (pendingQueryDraft !== null && snapshot.state.query === pendingQueryDraft) {

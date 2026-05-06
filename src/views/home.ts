@@ -58,7 +58,7 @@ export function renderHomePage(): string {
                 >
                   <span class="min-w-0">
                     <span class="block text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-accent">Shared Room</span>
-                    <span class="mt-2 block text-sm leading-6 text-app-text-soft">Room link, collaboration status, and reset controls.</span>
+                    <span id="room-panel-summary" class="mt-2 block text-sm leading-6 text-app-text-soft">Room link, collaboration status, and reset controls.</span>
                   </span>
                   <span
                     id="room-panel-icon"

@@ -317,6 +317,7 @@ test("audience votes show counts and lecturer override wins one option group", a
   await secondParticipantPage.goto(roomUrl(roomId));
 
   await claimLecturer(lecturerPage);
+  await expect(participantPage.locator("#room-panel-summary")).toBeHidden();
   await switchScenario(lecturerPage, /Challenge 1/, "Challenge 1: Hidden Needs");
 
   await audienceVoteButton(participantPage, "Cow's milk").click();
@@ -341,6 +342,7 @@ test("audience votes show counts and lecturer override wins one option group", a
   await expect(participantPage.locator("#audience-summary-empty")).toHaveText(
     "No hidden need selected yet. Results still use the baseline ranking.",
   );
+  await expect(audienceVoteButton(participantPage, "Cow's milk")).toHaveAttribute("aria-pressed", "false");
 
   await context.close();
 });
