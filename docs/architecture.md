@@ -68,7 +68,7 @@ It routes:
 
 - `GET /` to the demo page
 - `GET /styles.css` to generated CSS
-- `GET /app.js` to the browser script
+- `GET /app.js` to the generated Vite browser bundle
 - `GET /api/search` to the JSON search endpoint
 - `GET /api/health` to a minimal health response
 
@@ -165,7 +165,7 @@ Defined through `wrangler.jsonc`:
 - Worker name
 - entry module
 - Durable Object binding and migration for room coordination
-- generated CSS build step
+- generated CSS and browser-script build steps
 
 No remote bindings or secret-backed runtime controls are required for the current demo.
 

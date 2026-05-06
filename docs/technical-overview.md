@@ -17,7 +17,7 @@ This document keeps the implementation-facing repo summary in one place. Use it 
 
 - `GET /` serves the French cheese shop demo UI
 - `GET /styles.css` serves the generated Tailwind stylesheet
-- `GET /app.js` serves the browser tab and search logic
+- `GET /app.js` serves the generated Vite bundle for browser tab and search logic
 - `GET /api/search?q=...&scenario=...&audience=...&season=...&shopState=...&backend=...` serves live demo results as JSON
 - `GET /api/session?room=...` serves the canonical shared room snapshot plus lecturer access flags for the current client
 - `POST /api/session?room=...` applies one shared room command, with shared query changes, world-context changes, challenge switching, and room reset reserved for the claimed lecturer device
@@ -44,5 +44,5 @@ control by default.
 - `src/demo-room*.ts` holds the shared multiplayer room state and Durable
   Object coordination code
 - `src/cheese/` holds the deterministic cheese catalog and scenario scoring logic
-- `src/views/` holds HTML rendering modules and browser script output
+- `src/views/` holds HTML rendering modules and the typed browser-script entry
 - Tests live next to the code they exercise under `src/`

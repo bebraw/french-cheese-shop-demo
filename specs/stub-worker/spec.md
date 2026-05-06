@@ -10,7 +10,7 @@ This template needs a concrete runnable starting point so developers can clone i
 
 - **Entry points:** `wrangler dev` via `src/worker.ts`
 - **Source layout:** `src/worker.ts` routes requests, `src/api/` holds API handlers, and `src/views/` holds HTML rendering modules.
-- **Styling pipeline:** `src/tailwind-input.css` compiles to `.generated/styles.css`, which the Worker serves at `/styles.css`.
+- **Asset pipeline:** `src/tailwind-input.css` compiles to `.generated/styles.css`, and `src/views/home-script.ts` bundles through Vite to `.generated/app.js`. The Worker serves those generated assets at `/styles.css` and `/app.js`.
 - **Data models:** None yet. The stub is stateless.
 - **Dependencies:** Wrangler provides the Worker runtime; Playwright and Vitest verify the behavior.
 
@@ -35,13 +35,14 @@ This template needs a concrete runnable starting point so developers can clone i
 
 - `GET /` must keep returning HTML with a recognizable starter heading.
 - `GET /styles.css` must keep returning the generated stylesheet.
+- `GET /app.js` must keep returning the generated browser script.
 - `GET /api/health` must keep returning HTTP 200 JSON with `ok: true`.
 - Unknown routes must return HTTP 404.
 
 ### Verification
 
 - **Automated tests:** colocated Vitest files under `src/**/*.test.ts` for module behavior and colocated Playwright files under `src/**/*.e2e.ts` for the browser-visible flow.
-- **Coverage target:** Keep the `src/worker.ts`, `src/api/**`, and `src/views/**` branches, lines, functions, and statements above the repo coverage thresholds.
+- **Coverage target:** Keep the server-rendered `src/worker.ts`, `src/api/**`, and `src/views/**` branches, lines, functions, and statements above the repo coverage thresholds. The Vite browser entry is checked by TypeScript and covered through Playwright browser flows instead of unit coverage.
 
 ### Scenarios
 

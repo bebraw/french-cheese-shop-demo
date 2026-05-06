@@ -6,7 +6,7 @@ This document describes how to take `french-cheese-shop-demo` to production on C
 
 The current deployment is lightweight:
 
-1. Build the generated stylesheet.
+1. Build generated CSS and browser assets.
 2. Deploy the Worker.
 3. Smoke-test the public demo routes.
 
@@ -29,7 +29,7 @@ npm run ci:local:quiet
 
 - Worker name: `french-cheese-shop-demo`
 - entry module: `src/worker.ts`
-- CSS build command: `npm run build:css`
+- asset build command: `npm run build:assets`
 
 No runtime bindings or secrets are required for the current demo.
 

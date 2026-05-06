@@ -19,13 +19,18 @@
     },
   ],
   "build": {
-    "command": "npm run build:css",
+    "command": "npm run build:assets",
     "watch_dir": "src",
   },
   "rules": [
     {
       "type": "Text",
       "globs": ["**/*.css"],
+      "fallthrough": true,
+    },
+    {
+      "type": "Text",
+      "globs": ["**/.generated/*.js"],
       "fallthrough": true,
     },
   ],

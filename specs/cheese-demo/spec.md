@@ -20,7 +20,7 @@ French Cheese Shop Demo supports a fast live teaching flow around AI in requirem
 - **Complete reset contract:** the lecturer can reset the room back to the default query, baseline challenge, empty audience votes, empty lecturer overrides, empty world context, and rules backend while retaining lecturer control.
 - **Lecturer release contract:** the current lecturer can release room controls without resetting shared demo state so another lecturer device can claim the room.
 - **Challenge pacing contract:** baseline is the only challenge visible to audience browsers by default. The lecturer can reveal later challenges one at a time, and revealed challenge state is shared by the room.
-- **Dependencies:** The deployed Worker depends only on the committed repo assets, generated CSS, and one Durable Object binding for room coordination. No remote AI, Vectorize, KV, or import-time credentials are part of the current runtime path.
+- **Dependencies:** The deployed Worker depends only on the committed repo assets, generated CSS, the generated browser bundle, and one Durable Object binding for room coordination. No remote AI, Vectorize, KV, or import-time credentials are part of the current runtime path.
 
 ### Anti-Patterns
 

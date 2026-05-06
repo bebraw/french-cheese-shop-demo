@@ -9,91 +9,103 @@ import {
   shopStateOptions,
 } from "../demo-config";
 
-export function renderHomeScript(): string {
-  return `const queryInput = document.getElementById("customer-query");
-const audienceControls = document.getElementById("audience-controls");
-const audiencePromptElement = document.getElementById("audience-prompt");
-const audiencePresetsElement = document.getElementById("audience-presets");
-const audienceCustomInput = document.getElementById("audience-custom-input");
-const audienceCustomField = document.getElementById("audience-custom-field");
-const audienceLabel = document.getElementById("audience-label");
-const audienceSummaryLabelElement = document.getElementById("audience-summary-label");
-const audienceSummaryEmptyElement = document.getElementById("audience-summary-empty");
-const audienceSummaryChipsElement = document.getElementById("audience-summary-chips");
-const audienceResetButton = document.getElementById("audience-reset-button");
-const contextDrawerToggle = document.getElementById("context-drawer-toggle");
-const contextDrawerIcon = document.getElementById("context-drawer-icon");
-const contextDrawerPanel = document.getElementById("context-drawer-panel");
-const seasonControlsElement = document.getElementById("season-controls");
-const shopStateControlsElement = document.getElementById("shop-state-controls");
-const contextSummaryEmptyElement = document.getElementById("context-summary-empty");
-const contextSummaryChipsElement = document.getElementById("context-summary-chips");
-const backendControlsElement = document.getElementById("backend-controls");
-const statusElement = document.getElementById("search-status");
-const teachingFocusPanelElement = document.getElementById("teaching-focus-panel");
-const teachingOutcomeElement = document.getElementById("teaching-outcome");
-const teachingFocusElement = document.getElementById("teaching-focus-copy");
-const teachingQuestionElement = document.getElementById("teaching-question");
-const teachingNoticeElement = document.getElementById("teaching-notice");
-const teachingPauseElement = document.getElementById("teaching-pause");
-const teachingTimeboxElement = document.getElementById("teaching-timebox");
-const teachingStopHereElement = document.getElementById("teaching-stop-here");
-const resultsElement = document.getElementById("search-results");
-const changeStripElement = document.getElementById("change-strip");
-const changeStripItemsElement = document.getElementById("change-strip-items");
-const scenarioTitleElement = document.getElementById("scenario-title");
-const scenarioDescriptionElement = document.getElementById("scenario-description");
-const insightsLabelElement = document.getElementById("insights-label");
-const scenarioInsightsElement = document.getElementById("scenario-insights");
-const requirementsLearnedElement = document.getElementById("requirements-learned");
-const scenarioButtons = Array.from(document.querySelectorAll("[data-scenario]"));
-const scenarioNextButton = document.getElementById("scenario-next-button");
-const roomIdInput = document.getElementById("room-id-input");
-const roomPanelToggle = document.getElementById("room-panel-toggle");
-const roomPanelIcon = document.getElementById("room-panel-icon");
-const roomPanelBody = document.getElementById("room-panel-body");
-const roomPanelSummaryElement = document.getElementById("room-panel-summary");
-const roomLecturerControlsPanel = document.getElementById("room-lecturer-controls-panel");
-const roomLecturerStatusElement = document.getElementById("room-lecturer-status");
-const roomReadyStatusElement = document.getElementById("room-ready-status");
-const roomClaimLecturerButton = document.getElementById("room-claim-lecturer-button");
-const roomReleaseLecturerButton = document.getElementById("room-release-lecturer-button");
-const roomSimpleModeButton = document.getElementById("room-simple-mode-button");
-const roomCopyAudienceLinkButton = document.getElementById("room-copy-audience-link-button");
-const roomJoinButton = document.getElementById("room-join-button");
-const roomLecturerActionButtons = document.getElementById("room-lecturer-action-buttons");
-const roomCopyLinkButton = document.getElementById("room-copy-link-button");
-const roomResetButton = document.getElementById("room-reset-button");
-const roomConnectionStatusElement = document.getElementById("room-connection-status");
-const roomParticipantCountElement = document.getElementById("room-participant-count");
-const minimumQueryLength = ${JSON.stringify(MINIMUM_QUERY_LENGTH)};
-const defaultQuery = ${JSON.stringify(DEFAULT_QUERY)};
-const defaultRoomId = ${JSON.stringify(DEFAULT_ROOM_ID)};
-const challengeSequence = ${JSON.stringify(challengeSequence)};
-const scenarios = ${JSON.stringify(scenarioCopy)};
-const seasonOptions = ${JSON.stringify(seasonOptions)};
-const shopStateOptions = ${JSON.stringify(shopStateOptions)};
-const backendOptions = ${JSON.stringify(backendOptions)};
-const expandedResultIds = new Set();
+type ClientSnapshot = any;
+type ClientScenarioId = keyof typeof scenarioCopy;
+type ClientChallengeId = (typeof challengeSequence)[number];
+type LocalVoteState = Record<ClientChallengeId, string[]>;
+type PendingAudienceDraft = { scenario: ClientChallengeId; value: string };
+
+function requireElement<T extends HTMLElement>(id: string): T {
+  const element = document.getElementById(id);
+  if (!element) {
+    throw new Error("Missing required element: " + id);
+  }
+
+  return element as T;
+}
+
+const queryInput = requireElement<HTMLInputElement>("customer-query");
+const audienceControls = requireElement("audience-controls");
+const audiencePromptElement = requireElement("audience-prompt");
+const audiencePresetsElement = requireElement("audience-presets");
+const audienceCustomInput = requireElement<HTMLInputElement>("audience-custom-input");
+const audienceCustomField = requireElement("audience-custom-field");
+const audienceLabel = requireElement("audience-label");
+const audienceSummaryLabelElement = requireElement("audience-summary-label");
+const audienceSummaryEmptyElement = requireElement("audience-summary-empty");
+const audienceSummaryChipsElement = requireElement("audience-summary-chips");
+const audienceResetButton = requireElement<HTMLButtonElement>("audience-reset-button");
+const contextDrawerToggle = requireElement<HTMLButtonElement>("context-drawer-toggle");
+const contextDrawerIcon = requireElement("context-drawer-icon");
+const contextDrawerPanel = requireElement("context-drawer-panel");
+const seasonControlsElement = requireElement("season-controls");
+const shopStateControlsElement = requireElement("shop-state-controls");
+const contextSummaryEmptyElement = requireElement("context-summary-empty");
+const contextSummaryChipsElement = requireElement("context-summary-chips");
+const backendControlsElement = requireElement("backend-controls");
+const statusElement = requireElement("search-status");
+const teachingFocusPanelElement = requireElement("teaching-focus-panel");
+const teachingOutcomeElement = requireElement("teaching-outcome");
+const teachingFocusElement = requireElement("teaching-focus-copy");
+const teachingQuestionElement = requireElement("teaching-question");
+const teachingNoticeElement = requireElement("teaching-notice");
+const teachingPauseElement = requireElement("teaching-pause");
+const teachingTimeboxElement = requireElement("teaching-timebox");
+const teachingStopHereElement = requireElement("teaching-stop-here");
+const resultsElement = requireElement("search-results");
+const changeStripElement = requireElement("change-strip");
+const changeStripItemsElement = requireElement("change-strip-items");
+const scenarioTitleElement = requireElement("scenario-title");
+const scenarioDescriptionElement = requireElement("scenario-description");
+const insightsLabelElement = requireElement("insights-label");
+const scenarioInsightsElement = requireElement("scenario-insights");
+const requirementsLearnedElement = requireElement("requirements-learned");
+const scenarioButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-scenario]"));
+const scenarioNextButton = requireElement<HTMLButtonElement>("scenario-next-button");
+const roomIdInput = requireElement<HTMLInputElement>("room-id-input");
+const roomPanelToggle = requireElement<HTMLButtonElement>("room-panel-toggle");
+const roomPanelIcon = requireElement("room-panel-icon");
+const roomPanelBody = requireElement("room-panel-body");
+const roomPanelSummaryElement = requireElement("room-panel-summary");
+const roomLecturerControlsPanel = requireElement("room-lecturer-controls-panel");
+const roomLecturerStatusElement = requireElement("room-lecturer-status");
+const roomReadyStatusElement = requireElement("room-ready-status");
+const roomClaimLecturerButton = requireElement<HTMLButtonElement>("room-claim-lecturer-button");
+const roomReleaseLecturerButton = requireElement<HTMLButtonElement>("room-release-lecturer-button");
+const roomSimpleModeButton = requireElement<HTMLButtonElement>("room-simple-mode-button");
+const roomCopyAudienceLinkButton = requireElement<HTMLButtonElement>("room-copy-audience-link-button");
+const roomJoinButton = requireElement<HTMLButtonElement>("room-join-button");
+const roomLecturerActionButtons = requireElement("room-lecturer-action-buttons");
+const roomCopyLinkButton = requireElement<HTMLButtonElement>("room-copy-link-button");
+const roomResetButton = requireElement<HTMLButtonElement>("room-reset-button");
+const roomConnectionStatusElement = requireElement("room-connection-status");
+const roomParticipantCountElement = requireElement("room-participant-count");
+const minimumQueryLength = MINIMUM_QUERY_LENGTH;
+const defaultQuery = DEFAULT_QUERY;
+const defaultRoomId = DEFAULT_ROOM_ID;
+
+const scenarios = scenarioCopy;
+
+const expandedResultIds = new Set<string>();
 const compactViewportQuery = window.matchMedia("(max-width: 639px)");
 let activeRoomId = defaultRoomId;
-let activeScenario = "baseline";
-let activeSnapshot = null;
+let activeScenario: ClientScenarioId = "baseline";
+let activeSnapshot: ClientSnapshot | null = null;
 let contextDrawerOpen = false;
 let roomPanelOpen = !compactViewportQuery.matches;
-let activePresenterToken = null;
-let liveSocket = null;
-let reconnectHandle = null;
-let pollHandle = null;
-let querySyncHandle = null;
-let audienceSyncHandle = null;
-let pendingQueryDraft = null;
-let pendingAudienceDraft = null;
+let activePresenterToken = "";
+let liveSocket: WebSocket | null = null;
+let reconnectHandle: number | undefined;
+let pollHandle: number | undefined;
+let querySyncHandle: number | undefined;
+let audienceSyncHandle: number | undefined;
+let pendingQueryDraft: string | null = null;
+let pendingAudienceDraft: PendingAudienceDraft | null = null;
 const presenterStoragePrefix = "demo-presenter-token:";
 const voteStoragePrefix = "demo-vote-state:";
-let localVoteState = createEmptyVoteState();
+let localVoteState: LocalVoteState = createEmptyVoteState();
 
-function createFallbackSnapshot(roomId) {
+function createFallbackSnapshot(roomId: string): ClientSnapshot {
   return {
     roomId,
     participantCount: 1,
@@ -122,7 +134,7 @@ function getRoomState() {
   return activeSnapshot ? activeSnapshot.state : createFallbackSnapshot(activeRoomId).state;
 }
 
-function getAudienceState(scenario) {
+function getAudienceState(scenario: ClientChallengeId) {
   return getRoomState().audienceByChallenge[scenario];
 }
 
@@ -132,7 +144,7 @@ function getRoomAccess() {
     : { presenterClaimed: false, canManageQuery: false, canManageContext: false, canManageScenario: false };
 }
 
-function sanitizeRoomId(rawRoomId) {
+function sanitizeRoomId(rawRoomId: unknown): string {
   const normalized = String(rawRoomId || "")
     .trim()
     .toLowerCase()
@@ -143,24 +155,24 @@ function sanitizeRoomId(rawRoomId) {
   return normalized.length >= 3 ? normalized.slice(0, 32) : defaultRoomId;
 }
 
-function sanitizePresenterToken(rawToken) {
+function sanitizePresenterToken(rawToken: unknown): string {
   const normalized = String(rawToken || "").trim();
   return normalized ? normalized.slice(0, 256) : "";
 }
 
-function getPresenterStorageKey(roomId) {
+function getPresenterStorageKey(roomId: string): string {
   return presenterStoragePrefix + roomId;
 }
 
-function createEmptyVoteState() {
-  return Object.fromEntries(challengeSequence.map((scenario) => [scenario, []]));
+function createEmptyVoteState(): LocalVoteState {
+  return Object.fromEntries(challengeSequence.map((scenario) => [scenario, []])) as unknown as LocalVoteState;
 }
 
-function getVoteStorageKey(roomId) {
+function getVoteStorageKey(roomId: string): string {
   return voteStoragePrefix + roomId;
 }
 
-function readLocalVoteState(roomId) {
+function readLocalVoteState(roomId: string): LocalVoteState {
   try {
     const parsed = JSON.parse(window.localStorage.getItem(getVoteStorageKey(roomId)) || "{}");
     const nextState = createEmptyVoteState();
@@ -178,13 +190,13 @@ function readLocalVoteState(roomId) {
   }
 }
 
-function persistLocalVoteState(roomId) {
+function persistLocalVoteState(roomId: string): void {
   try {
     window.localStorage.setItem(getVoteStorageKey(roomId), JSON.stringify(localVoteState));
   } catch {}
 }
 
-function readStoredPresenterToken(roomId) {
+function readStoredPresenterToken(roomId: string): string {
   try {
     return sanitizePresenterToken(window.localStorage.getItem(getPresenterStorageKey(roomId)));
   } catch {
@@ -192,7 +204,7 @@ function readStoredPresenterToken(roomId) {
   }
 }
 
-function persistPresenterToken(roomId, presenterToken) {
+function persistPresenterToken(roomId: string, presenterToken: string): void {
   try {
     if (presenterToken) {
       window.localStorage.setItem(getPresenterStorageKey(roomId), presenterToken);
@@ -202,7 +214,7 @@ function persistPresenterToken(roomId, presenterToken) {
   } catch {}
 }
 
-function syncLocalVotesWithSnapshot(snapshot, previousSnapshot = null) {
+function syncLocalVotesWithSnapshot(snapshot: ClientSnapshot, previousSnapshot: ClientSnapshot | null = null): void {
   if (previousSnapshot && snapshot.state.version <= previousSnapshot.state.version) {
     return;
   }
@@ -239,7 +251,7 @@ function syncLocalVotesWithSnapshot(snapshot, previousSnapshot = null) {
   }
 }
 
-function isResetSnapshot(snapshot) {
+function isResetSnapshot(snapshot: ClientSnapshot): boolean {
   const state = snapshot.state;
 
   return (
@@ -269,19 +281,19 @@ function createPresenterToken() {
   return "lecturer-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-function setConnectionStatus(message) {
+function setConnectionStatus(message: string): void {
   roomConnectionStatusElement.textContent = message;
 }
 
-function setRoomParticipantCount(participantCount) {
+function setRoomParticipantCount(participantCount: number): void {
   roomParticipantCountElement.textContent = participantCount + " participant" + (participantCount === 1 ? "" : "s");
 }
 
-function setStatus(message) {
+function setStatus(message: string): void {
   statusElement.textContent = message;
 }
 
-function clearChildren(container) {
+function clearChildren(container: HTMLElement): void {
   while (container.firstChild) {
     container.removeChild(container.firstChild);
   }
@@ -327,12 +339,12 @@ function clearBackendControls() {
   clearChildren(backendControlsElement);
 }
 
-function getScenarioTrail(scenario) {
-  const scenarioIndex = challengeSequence.indexOf(scenario);
+function getScenarioTrail(scenario: ClientScenarioId): ClientChallengeId[] {
+  const scenarioIndex = challengeSequence.indexOf(scenario as ClientChallengeId);
   return scenarioIndex >= 0 ? challengeSequence.slice(0, scenarioIndex + 1) : [];
 }
 
-function getNextScenario(scenario) {
+function getNextScenario(scenario: ClientScenarioId): ClientScenarioId {
   if (scenario === "baseline") {
     return "challenge-1";
   }
@@ -341,7 +353,7 @@ function getNextScenario(scenario) {
   return challengeSequence[scenarioIndex + 1] || scenario;
 }
 
-function getNextScenarioForMode(scenario) {
+function getNextScenarioForMode(scenario: ClientScenarioId): ClientScenarioId {
   return getNextScenario(scenario);
 }
 
@@ -349,7 +361,7 @@ function isSimpleModeActive() {
   return Boolean(getRoomState().focusMode);
 }
 
-function getVisibleScenarioIds(access, state) {
+function getVisibleScenarioIds(access: any, state: any): Set<ClientScenarioId> {
   if (access.canManageScenario) {
     return new Set(["baseline", ...challengeSequence]);
   }
@@ -357,7 +369,7 @@ function getVisibleScenarioIds(access, state) {
   return new Set(["baseline", ...(state.revealedChallengeIds || []), state.activeScenario]);
 }
 
-function buildAccumulatedAudienceParts(scenario, valueSelector) {
+function buildAccumulatedAudienceParts(scenario: ClientScenarioId, valueSelector: (preset: any, audienceState: any) => any): any[] {
   const parts = [];
   const seen = new Set();
 
@@ -379,7 +391,7 @@ function buildAccumulatedAudienceParts(scenario, valueSelector) {
   return parts;
 }
 
-function buildAudienceSummaryItems(scenario) {
+function buildAudienceSummaryItems(scenario: ClientScenarioId): any[] {
   return buildAccumulatedAudienceParts(scenario, (preset, audienceState) => ({
     label: preset.label,
     groupLabel: preset.voteGroupLabel,
@@ -388,7 +400,7 @@ function buildAudienceSummaryItems(scenario) {
   }));
 }
 
-function buildSingleChallengeSummaryItems(scenario) {
+function buildSingleChallengeSummaryItems(scenario: ClientChallengeId): string[] {
   const audienceState = getAudienceState(scenario);
   const selectedPresets = scenarios[scenario].presets.filter((preset) => audienceState.selectedPresetIds.includes(preset.id));
   const items = selectedPresets.map((preset) => preset.label);
@@ -437,7 +449,7 @@ function updateUrlState() {
   window.history.replaceState(window.history.state, "", url);
 }
 
-function renderInsights(insights, promptLabel) {
+function renderInsights(insights: string[], promptLabel: string | null | undefined): void {
   clearInsights();
   insightsLabelElement.textContent = promptLabel || scenarios[activeScenario].insightLabel;
 
@@ -457,10 +469,7 @@ function renderRequirementsLearned() {
   const learnedItems = [
     ["Original request", state.query],
     ["Clarified preferences", buildSingleChallengeSummaryItems("challenge-1").join(", ") || "Not captured yet"],
-    [
-      "Operational constraints",
-      [...buildSingleChallengeSummaryItems("challenge-2"), ...contextItems].join(", ") || "Not captured yet",
-    ],
+    ["Operational constraints", [...buildSingleChallengeSummaryItems("challenge-2"), ...contextItems].join(", ") || "Not captured yet"],
     ["Evaluation checks", buildSingleChallengeSummaryItems("challenge-3").join(", ") || "Not captured yet"],
   ];
 
@@ -481,11 +490,11 @@ function renderRequirementsLearned() {
   }
 }
 
-function formatVoteCount(votes) {
+function formatVoteCount(votes: number): string {
   return votes + " " + (votes === 1 ? "vote" : "votes");
 }
 
-function renderAudienceSummary(scenario) {
+function renderAudienceSummary(scenario: ClientScenarioId): void {
   clearAudienceSummary();
   const access = getRoomAccess();
   audienceResetButton.hidden = scenario === "baseline" || !access.canManageScenario;
@@ -553,7 +562,7 @@ function renderContextSummary() {
   }
 }
 
-function renderChangeStrip(search) {
+function renderChangeStrip(search: any): void {
   clearChangeStrip();
 
   const topResult = search.results[0]?.name || "no top result";
@@ -577,7 +586,7 @@ function renderChangeStrip(search) {
   changeStripElement.hidden = false;
 }
 
-function renderTeachingGuide(scenario) {
+function renderTeachingGuide(scenario: ClientScenarioId): void {
   const copy = scenarios[scenario];
   teachingOutcomeElement.textContent = copy.teachingOutcome;
   teachingFocusElement.textContent = copy.teachingFocus;
@@ -659,7 +668,7 @@ function renderLecturerControls() {
   renderContextPanel();
 }
 
-function sendCommand(command) {
+function sendCommand(command: any): Promise<ClientSnapshot | null> {
   return fetch("/api/session?room=" + encodeURIComponent(activeRoomId), {
     method: "POST",
     headers: {
@@ -692,7 +701,13 @@ function sendCommand(command) {
     });
 }
 
-function renderToggleGroup(options, selectedId, container, onSelect, interaction = null) {
+function renderToggleGroup(
+  options: readonly any[],
+  selectedId: string,
+  container: HTMLElement,
+  onSelect: (selectedId: string) => void,
+  interaction: { canInteract: boolean; lockedMessage: string } | null = null,
+): void {
   for (const option of options) {
     const button = document.createElement("button");
     button.type = "button";
@@ -759,7 +774,7 @@ function renderContextControls() {
   );
 }
 
-function renderAudiencePresets(scenario) {
+function renderAudiencePresets(scenario: ClientScenarioId): void {
   clearAudiencePresets();
 
   if (scenario === "baseline") {
@@ -769,8 +784,8 @@ function renderAudiencePresets(scenario) {
   const audienceState = getAudienceState(scenario);
   const access = getRoomAccess();
   const localPresetIds = new Set(localVoteState[scenario] || []);
-  const groupedPresets = [];
-  const groupIndexById = new Map();
+  const groupedPresets: { id: string; label: string; presets: any[] }[] = [];
+  const groupIndexById = new Map<string, number>();
 
   for (const preset of getVisiblePresets(scenario)) {
     if (!groupIndexById.has(preset.voteGroupId)) {
@@ -782,7 +797,7 @@ function renderAudiencePresets(scenario) {
       });
     }
 
-    groupedPresets[groupIndexById.get(preset.voteGroupId)].presets.push(preset);
+    groupedPresets[groupIndexById.get(preset.voteGroupId) ?? 0].presets.push(preset);
   }
 
   for (const group of groupedPresets) {
@@ -830,11 +845,11 @@ function renderAudiencePresets(scenario) {
   }
 }
 
-function getVisiblePresets(scenario) {
+function getVisiblePresets(scenario: ClientScenarioId): readonly any[] {
   return scenarios[scenario].presets;
 }
 
-function handlePresetVote(scenario, preset) {
+function handlePresetVote(scenario: ClientChallengeId, preset: any): void {
   const currentPresetIds = new Set(localVoteState[scenario] || []);
   const voteCommands = [];
 
@@ -865,13 +880,12 @@ function handlePresetVote(scenario, preset) {
   }
 }
 
-function renderResults(results, scenario) {
+function renderResults(results: any[], scenario: ClientScenarioId): void {
   clearResults();
 
   for (const result of results) {
     const item = document.createElement("li");
-    item.className =
-      "scroll-mt-80 rounded-[1.35rem] border border-app-line bg-app-canvas px-4 py-4 sm:px-5 lg:scroll-mt-[24rem]";
+    item.className = "scroll-mt-80 rounded-[1.35rem] border border-app-line bg-app-canvas px-4 py-4 sm:px-5 lg:scroll-mt-[24rem]";
 
     const meta = document.createElement("p");
     meta.className = "text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-secondary";
@@ -999,7 +1013,7 @@ function renderResults(results, scenario) {
   }
 }
 
-function applyScenario(nextScenario) {
+function applyScenario(nextScenario: ClientScenarioId): void {
   activeScenario = nextScenario;
   const copy = scenarios[nextScenario];
   const access = getRoomAccess();
@@ -1020,7 +1034,7 @@ function applyScenario(nextScenario) {
   for (const button of scenarioButtons) {
     const isActive = button.dataset.scenario === nextScenario;
     const scenarioId = button.dataset.scenario || "baseline";
-    const isVisible = visibleScenarioIds.has(scenarioId);
+    const isVisible = visibleScenarioIds.has(scenarioId as ClientScenarioId);
     button.hidden = !isVisible;
     button.setAttribute("aria-pressed", String(isActive));
     button.classList.toggle("scenario-guide-item-active", isActive);
@@ -1067,7 +1081,7 @@ function syncViewportDefaults() {
   }
 }
 
-function renderSearchSnapshot(snapshot) {
+function renderSearchSnapshot(snapshot: ClientSnapshot): void {
   const state = snapshot.state;
   const search = snapshot.search;
   const query = state.query.trim();
@@ -1110,7 +1124,7 @@ function renderSearchSnapshot(snapshot) {
   setStatus(search.results.length + (search.results.length === 1 ? " result" : " results"));
 }
 
-function applySnapshot(snapshot) {
+function applySnapshot(snapshot: ClientSnapshot): void {
   if (activeSnapshot && snapshot.state.version < activeSnapshot.state.version) {
     return;
   }
@@ -1124,10 +1138,7 @@ function applySnapshot(snapshot) {
     pendingQueryDraft = null;
   }
 
-  if (
-    pendingAudienceDraft &&
-    snapshot.state.audienceByChallenge[pendingAudienceDraft.scenario].customText === pendingAudienceDraft.value
-  ) {
+  if (pendingAudienceDraft && snapshot.state.audienceByChallenge[pendingAudienceDraft.scenario].customText === pendingAudienceDraft.value) {
     pendingAudienceDraft = null;
   }
 
@@ -1153,7 +1164,7 @@ function scheduleReconnect() {
 
 function stopPolling() {
   window.clearInterval(pollHandle);
-  pollHandle = null;
+  pollHandle = undefined;
 }
 
 function startPolling() {
@@ -1171,7 +1182,7 @@ function startPolling() {
 
 function closeLiveSync() {
   window.clearTimeout(reconnectHandle);
-  reconnectHandle = null;
+  reconnectHandle = undefined;
 
   if (liveSocket) {
     const socket = liveSocket;
@@ -1250,7 +1261,7 @@ function openLiveSync() {
   });
 }
 
-async function fetchSessionSnapshot(roomId) {
+async function fetchSessionSnapshot(roomId: string): Promise<ClientSnapshot> {
   const response = await fetch("/api/session?room=" + encodeURIComponent(roomId), {
     headers: {
       accept: "application/json",
@@ -1266,7 +1277,7 @@ async function fetchSessionSnapshot(roomId) {
   return payload;
 }
 
-async function joinRoom(nextRoomId) {
+async function joinRoom(nextRoomId: string): Promise<void> {
   const roomId = sanitizeRoomId(nextRoomId);
   closeLiveSync();
   activePresenterToken = readStoredPresenterToken(roomId) || "";
@@ -1343,7 +1354,7 @@ async function resetRoom() {
   setStatus("Room reset. Lecturer controls remain active.");
 }
 
-function flashCopyButton(message) {
+function flashCopyButton(message: string): void {
   const originalLabel = roomCopyLinkButton.textContent;
   roomCopyLinkButton.textContent = message;
   window.setTimeout(() => {
@@ -1548,5 +1559,3 @@ renderLecturerControls();
 setRoomParticipantCount(1);
 syncViewportDefaults();
 void joinRoom(initialRoomId);
-`;
-}

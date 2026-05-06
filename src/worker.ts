@@ -4,7 +4,6 @@ import { createSessionLiveResponse, createSessionResponse, type SessionEnv } fro
 import { appRoutes } from "./app-routes";
 import { DemoRoomObject } from "./demo-room-object";
 import { renderHomePage } from "./views/home";
-import { renderHomeScript } from "./views/home-script";
 import { renderNotFoundPage } from "./views/not-found";
 import { cssResponse, htmlResponse, javascriptResponse } from "./views/shared";
 
@@ -24,7 +23,7 @@ export async function handleRequest(request: Request, env?: SessionEnv): Promise
   }
 
   if (url.pathname === "/app.js") {
-    return javascriptResponse(renderHomeScript());
+    return javascriptResponse(await loadAppScript());
   }
 
   if (url.pathname === "/api/health") {
@@ -58,4 +57,14 @@ async function loadStylesheet(): Promise<string> {
 
   const styles = await import("../.generated/styles.css");
   return styles.default;
+}
+
+async function loadAppScript(): Promise<string> {
+  if (typeof process !== "undefined" && process.release?.name === "node") {
+    const { readFile } = await import("node:fs/promises");
+    return await readFile(new URL("../.generated/app.js", import.meta.url), "utf8");
+  }
+
+  const script = await import("../.generated/app.js");
+  return script.default;
 }
